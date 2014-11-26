@@ -1,0 +1,16 @@
+
+body {
+  font: 11pt/15pt 'Segoe UI', 'Open Sans', Verdana, Arial;
+  margin: 20px;
+  padding: 0;
+}
+
+button {
+  padding: 6px;
+  margin-bottom: 20px;
+  margin-right: 10px;
+}
+
+canvas {
+  border: 1px solid;
+}
