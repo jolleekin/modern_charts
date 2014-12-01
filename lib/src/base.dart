@@ -141,8 +141,11 @@ abstract class _Entity {
   num value;
   String color;
   String highlightColor;
+  num oldValue;
   void draw(CanvasRenderingContext2D ctx, double percent, bool highlight);
-  void save();
+  void save() {
+    oldValue = value;
+  }
 }
 
 class _Series {
@@ -266,11 +269,9 @@ class Chart {
 
   /// Called when the animation ends.
   void _animationEnd() {
-    // TODO: Remove the condition.
     for (var series in _seriesList) {
-      if (series.entities == null) continue;
       for (var entity in series.entities) {
-        if (entity != null) entity.save();
+        entity.save();
       }
     }
   }
@@ -696,7 +697,7 @@ class Chart {
 
     // Tooltip items.
     for (var i = 1; i < columnCount; i++) {
-      if (!_seriesVisible[i - 1]) continue;
+      if (_seriesVisible != null && !_seriesVisible[i - 1]) continue;
       var series = _seriesList[i - 1];
       var value = row[i];
       if (value == null) continue;

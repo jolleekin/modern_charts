@@ -1,7 +1,8 @@
 A package for creating simple yet modern looking charts.
 
-#### Four chart types
+#### Five chart types
 - Bar
+- Gauge
 - Line
 - Pie/Donut
 - Radar
@@ -28,9 +29,9 @@ Animations are supported for different types of data modifications:
 Charts automatically resize when the browser is resized.
 
 #### Interactive
-- Support for tooltips and legends
-- When you click a legend item, the visibility of the corresponding series is
-  toggled.
+- Shows tooltips on hovering/touch start
+- The visibility of a series is toggled when you click the corresponding legend
+  item
 
 #### Modular
 Each chart type has its own class, so your final production code only contains

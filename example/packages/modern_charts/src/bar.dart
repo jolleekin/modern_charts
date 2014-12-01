@@ -2,12 +2,12 @@ part of modern_charts;
 
 final _barChartDefaultOptions = {
   // Map - An object that controls the series.
-  'series': const {
+  'series': {
     // Map - An object that controls the series labels.
-    'labels': const {
+    'labels': {
       // bool - Whether to show the labels.
       'enabled': false,
-      'style': const {
+      'style': {
         'color': '#212121',
         'fontFamily': _GLOBAL_FONT_FAMILY,
         'fontSize': 13,
@@ -176,6 +176,7 @@ class _Bar extends _Entity {
     oldLeft = left;
     oldWidth = width;
     oldHeight = height;
+    super.save();
   }
 }
 
@@ -239,7 +240,8 @@ class BarChart extends _TwoAxisChart {
 
   @override
   bool _drawSeries(double percent) {
-    for (var i = 0, n = _seriesList.length; i < n; i++) {
+    for (var i = 0,
+        n = _seriesList.length; i < n; i++) {
       if (percent == 1.0 && !_seriesVisible[i]) continue;
 
       var series = _seriesList[i];
@@ -247,10 +249,8 @@ class BarChart extends _TwoAxisChart {
       // Draw the bars.
       for (_Bar bar in series.entities) {
         if (bar.value == null) continue;
-        bar.draw(
-            _seriesContext,
-            percent,
-            bar.index == _focusedEntityGroupIndex);
+        var highlight = bar.index == _focusedEntityGroupIndex;
+        bar.draw(_seriesContext, percent, highlight);
       }
 
       // Draw the labels.

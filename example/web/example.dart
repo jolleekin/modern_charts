@@ -6,13 +6,14 @@ import 'dart:math';
 
 final random = new Random();
 
-int rand() => random.nextInt(18) + 2;
+int rand(int min, int max) => random.nextInt(max - min) + min;
 
 void main() {
   createBarChart();
   createLineChart();
   createPieChart();
   createRadarChart();
+  createGaugeChart();
 }
 
 Element createContainer() {
@@ -78,7 +79,7 @@ void createBarChart() {
     disableAllButtons();
     for (var row in table.rows) {
       for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand();
+        row[i] = rand(2, 20);
       }
     }
     chart.update();
@@ -90,7 +91,7 @@ void createBarChart() {
     if (insertColumn) {
       table.columns.insert(2, new DataColumn('New series', num));
       for (var row in table.rows) {
-        row[2] = rand();
+        row[2] = rand(2, 20);
       }
     } else {
       table.columns.removeAt(2);
@@ -105,7 +106,7 @@ void createBarChart() {
     if (insertRow) {
       var values = ['New'];
       for (var i = 1; i < table.columns.length; i++) {
-        values.add(rand());
+        values.add(rand(2, 20));
       }
       table.rows.insert(2, values);
     } else {
@@ -148,11 +149,6 @@ void createLineChart() {
         insertRemoveColumnButton.disabled = false;
         insertRemoveRowButton.disabled = false;
       }
-    },
-    'series': {
-      'labels': {
-        'enabled': true
-      }
     }
   };
 
@@ -169,7 +165,7 @@ void createLineChart() {
     disableAllButtons();
     for (var row in table.rows) {
       for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand();
+        row[i] = rand(2, 20);
       }
     }
     chart.update();
@@ -181,7 +177,7 @@ void createLineChart() {
     if (insertColumn) {
       table.columns.insert(2, new DataColumn('New series', num));
       for (var row in table.rows) {
-        row[2] = rand();
+        row[2] = rand(2, 20);
       }
     } else {
       table.columns.removeAt(2);
@@ -196,7 +192,7 @@ void createLineChart() {
     if (insertRow) {
       var values = ['New'];
       for (var i = 1; i < table.columns.length; i++) {
-        values.add(rand());
+        values.add(rand(2, 20));
       }
       table.rows.insert(2, values);
     } else {
@@ -249,7 +245,7 @@ void createPieChart() {
     disableAllButtons();
     for (var row in table.rows) {
       for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand();
+        row[i] = rand(2, 25);
       }
     }
     chart.update();
@@ -323,7 +319,7 @@ void createRadarChart() {
     disableAllButtons();
     for (var row in table.rows) {
       for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand();
+        row[i] = rand(5, 20);
       }
     }
     chart.update();
@@ -335,7 +331,7 @@ void createRadarChart() {
     if (insertColumn) {
       table.columns.insert(2, new DataColumn('New series', num));
       for (var row in table.rows) {
-        row[2] = rand();
+        row[2] = rand(5, 20);
       }
     } else {
       table.columns.removeAt(2);
@@ -350,7 +346,7 @@ void createRadarChart() {
     if (insertRow) {
       var values = ['New'];
       for (var i = 1; i < table.columns.length; i++) {
-        values.add(rand());
+        values.add(rand(5, 20));
       }
       table.rows.insert(2, values);
     } else {
@@ -359,4 +355,64 @@ void createRadarChart() {
     insertRow = !insertRow;
     chart.update();
   });
+}
+
+void createGaugeChart() {
+  var changeDataButton = new ButtonElement()..text = 'Change data';
+  document.body.append(changeDataButton);
+
+  var insertRemoveRowButton =
+      new ButtonElement()..text = 'Insert/remove data row';
+  document.body.append(insertRemoveRowButton);
+
+  var container = createContainer();
+  var table = new DataTable(
+      [
+          ['Browser', 'Share'],
+          ['Memory', 25],
+          ['CPU', 75],
+          ['Disk', 40]]);
+  var chart = new GaugeChart(container);
+  chart.draw(table, {
+    'animation': {
+      'onEnd': () {
+        changeDataButton.disabled = false;
+        insertRemoveRowButton.disabled = false;
+      }
+    },
+    'series': {
+      'labels': {
+        'enabled': true
+      }
+    }
+  });
+
+  void disableAllButtons() {
+    changeDataButton.disabled = true;
+    insertRemoveRowButton.disabled = true;
+  }
+
+  changeDataButton.onClick.listen((_) {
+    disableAllButtons();
+    for (var row in table.rows) {
+      for (var i = 1; i < table.columns.length; i++) {
+        row[i] = rand(0, 101);
+      }
+    }
+    chart.update();
+  });
+
+  var insertRow = true;
+  insertRemoveRowButton.onClick.listen((_) {
+    insertRemoveRowButton.disabled = true;
+    if (insertRow) {
+      var values = ['New', rand(0, 101)];
+      table.rows.insert(2, values);
+    } else {
+      table.rows.removeAt(2);
+    }
+    insertRow = !insertRow;
+    chart.update();
+  });
+
 }

@@ -2,7 +2,7 @@ part of modern_charts;
 
 final _lineChartDefaultOptions = {
   // Map - An object that controls the series.
-  'series': const {
+  'series': {
     // num - The curve tension. The typical value is from 0.3 to 0.5.
     // To draw straight lines, set this to zero.
     'curveTension': .4,
@@ -14,10 +14,10 @@ final _lineChartDefaultOptions = {
     'lineWidth': 2,
 
     // Map - An object that controls the series labels.
-    'labels': const {
+    'labels': {
       // bool - Whether to show the labels.
       'enabled': false,
-      'style': const {
+      'style': {
         'color': '#212121',
         'fontFamily': _GLOBAL_FONT_FAMILY,
         'fontSize': 13,
@@ -26,7 +26,7 @@ final _lineChartDefaultOptions = {
     },
 
     // Map - An object that controls the markers.
-    'markers': const {
+    'markers': {
       // String - The fill color. If `null`, the stroke color of the series
       // will be used.
       'fillColor': null,
@@ -44,7 +44,7 @@ final _lineChartDefaultOptions = {
   },
 
   // Map - An object that controls the x-axis.
-  'xAxis': const {
+  'xAxis': {
     // String - The color of the horizontal grid lines.
     'gridLineColor': '#c0c0c0',
 
@@ -58,8 +58,8 @@ final _lineChartDefaultOptions = {
     'lineWidth': 1,
 
     // Map - An object that controls the axis labels.
-    'labels': const {
-      'style': const {
+    'labels': {
+      'style': {
         // String - The labels' color.
         'color': '#212121',
 
@@ -79,9 +79,9 @@ final _lineChartDefaultOptions = {
     'position': 'bottom',
 
     // Map - An object that controls the axis title.
-    'title': const {
+    'title': {
       // Map - An object that controls the styling of the axis title.
-      'style': const {
+      'style': {
         // String - The title's color.
         'color': '#212121',
 
@@ -101,7 +101,7 @@ final _lineChartDefaultOptions = {
   },
 
   // Map - An object that controls the y-axis.
-  'yAxis': const {
+  'yAxis': {
     // String - The color of the vertial grid lines.
     'gridLineColor': '#c0c0c0',
 
@@ -127,12 +127,12 @@ final _lineChartDefaultOptions = {
     'minValue': null,
 
     // Map - An object that controls the axis labels.
-    'labels': const {
+    'labels': {
       // (num value) -> String - A function that formats the labels.
       'formatter': null,
 
       // Map - An object that controls the styling of the axis labels.
-      'style': const {
+      'style': {
         // String - The labels' color.
         'color': '#212121',
 
@@ -152,9 +152,9 @@ final _lineChartDefaultOptions = {
     'position': 'left',
 
     // Map - An object that controls the axis title.
-    'title': const {
+    'title': {
       // Map - An object that controls the styling of the axis title.
-      'style': const {
+      'style': {
         // String - The title's color.
         'color': '#212121',
 
@@ -218,6 +218,7 @@ class _Point extends _Entity {
     oldCp1 = cp1;
     oldCp2 = cp2;
     oldPointRadius = pointRadius;
+    super.save();
   }
 
   Point get asPoint => new Point(x, y);
@@ -246,7 +247,7 @@ class LineChart extends _TwoAxisChart {
           count++;
         }
       }
-      if (count > 0) _averageYValues[i] = sum ~/ count;
+      _averageYValues[i] = (count > 0) ? sum ~/ count : null;
     }
   }
 

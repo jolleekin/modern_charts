@@ -1,22 +1,22 @@
 part of modern_charts;
 
-final _pieChartDefaultOptions = utils.extendMap(globalOptions, {
+final _pieChartDefaultOptions = {
   // num - If between 0 and 1, displays a donut chart. The hole with have a
   // radius equal to this value times the radius of the chart.
   'pieHole': 0,
 
   // Map - An object that controls the series.
-  'series': const {
+  'series': {
 
     // Map - An object that controls the series labels.
-    'labels': const {
+    'labels': {
       // bool - Whether to show the labels.
       'enabled': false,
 
       // (num) -> String - A function used to format the labels.
       'formatter': null,
 
-      'style': const {
+      'style': {
         'color': 'white',
         'fontFamily': _GLOBAL_FONT_FAMILY,
         'fontSize': 13,
@@ -24,7 +24,7 @@ final _pieChartDefaultOptions = utils.extendMap(globalOptions, {
       }
     }
   }
-});
+};
 
 /// 12 o'clock.
 const _START_ANGLE = -_PI_2;
@@ -44,6 +44,15 @@ class _Pie extends _Entity {
   String name;
 
   bool get isEmpty => startAngle == endAngle;
+
+  bool containsPoint(Point p) {
+    p = p - center;
+    var mag = p.magnitude;
+    if (mag >= outerRadius || mag <= innerRadius) return false;
+    var angle = math.atan2(p.y, p.x);
+    if (angle < _START_ANGLE) angle += _2PI;
+    return angle > startAngle && angle < endAngle;
+  }
 
   @override
   void draw(CanvasRenderingContext2D ctx, double percent, bool highlight) {
@@ -68,6 +77,7 @@ class _Pie extends _Entity {
   void save() {
     oldStartAngle = startAngle;
     oldEndAngle = endAngle;
+    super.save();
   }
 }
 
@@ -141,7 +151,8 @@ class PieChart extends Chart {
   @override
   int _getEntityGroupIndex(num x, num y) {
     var p = new Point(x - _center.x, y - _center.y);
-    if (p.magnitude >= _outerRadius) return -1;
+    var mag = p.magnitude;
+    if (mag >= _outerRadius || mag <= _innerRadius) return -1;
     var angle = math.atan2(p.y, p.x);
     if (angle < _START_ANGLE) angle += _2PI;
     var pies = _seriesList.first.entities;
@@ -245,7 +256,6 @@ class PieChart extends Chart {
     if (_tooltipValueFormatter != null) {
       value = _tooltipValueFormatter(pie.value);
     }
-    // TODO: (pie) Add label formatter
     _tooltip.innerHtml = '${pie.name}: <strong>$value</strong>';
   }
 
