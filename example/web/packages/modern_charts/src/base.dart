@@ -520,6 +520,9 @@ class Chart {
   }
 
   void _initializeLegend() {
+    _seriesVisible =
+        new List<bool>.filled(_getLegendLabels().length, true).toList();
+
     if (_legend != null) _legend.remove();
 
     if (_options['legend']['position'] == 'none') return;
@@ -527,8 +530,6 @@ class Chart {
     _legend = _createTooltipOrLegend(_options['legend']['style']);
     _legend.style.lineHeight = '180%';
     _updateLegendContent();
-    _seriesVisible =
-        new List<bool>.filled(_legend.children.length, true).toList();
     container.append(_legend);
   }
 
@@ -580,7 +581,7 @@ class Chart {
       e.onClick.listen(_legendItemClick);
       e.onMouseOver.listen(_legendItemMouseOver);
       e.onMouseOut.listen(_legendItemMouseOut);
-      if (_seriesVisible != null && !_seriesVisible[i]) e.style.opacity = '.5';
+      if (!_seriesVisible[i]) e.style.opacity = '.5';
       // Display the items in one row if the legend's position is 'top' or
       // 'bottom'.
       var pos = _options['legend']['position'];
@@ -697,7 +698,7 @@ class Chart {
 
     // Tooltip items.
     for (var i = 1; i < columnCount; i++) {
-      if (_seriesVisible != null && !_seriesVisible[i - 1]) continue;
+      if (!_seriesVisible[i - 1]) continue;
       var series = _seriesList[i - 1];
       var value = row[i];
       if (value == null) continue;
