@@ -1,7 +1,7 @@
 /**
  * This package contains a experimental features of PetitParser. The code here
  * might be removed or changed in incompatible ways without keeping backward
- * compatiblity.
+ * compatibility.
  */
 library beta;
 
@@ -40,12 +40,11 @@ import 'package:petitparser/petitparser.dart';
  *       }
  *     }
  *
- * Creavats: Pay attention with production names that conflict with methods
+ * Cravats: Pay attention with production names that conflict with methods
  * defined in superclasses. The generated JavaScript code is slightly bigger,
  * due to the use of [noSuchMethod]. However, the resulting parser is identical.
  */
 abstract class CompositeParser2 extends CompositeParser {
-
   @override
   dynamic noSuchMethod(Invocation mirror) {
     String name = MirrorSystem.getName(mirror.memberName);
@@ -53,7 +52,8 @@ abstract class CompositeParser2 extends CompositeParser {
       if (mirror.isGetter) {
         return ref(name);
       } else if (mirror.isSetter) {
-        return def(name.substring(0, name.length - 1), mirror.positionalArguments.first);
+        return def(name.substring(0, name.length - 1),
+            mirror.positionalArguments.first);
       } else if (mirror.isMethod && mirror.positionalArguments.length == 1) {
         var argument = mirror.positionalArguments.first;
         if (argument is Parser) {
@@ -65,5 +65,4 @@ abstract class CompositeParser2 extends CompositeParser {
     }
     return super.noSuchMethod(mirror);
   }
-
 }

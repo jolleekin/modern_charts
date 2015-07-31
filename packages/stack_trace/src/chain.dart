@@ -6,6 +6,7 @@ library stack_trace.chain;
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math' as math;
 
 import 'frame.dart';
 import 'stack_zone_specification.dart';
@@ -14,6 +15,10 @@ import 'utils.dart';
 
 /// A function that handles errors in the zone wrapped by [Chain.capture].
 typedef void ChainHandler(error, Chain chain);
+
+/// The line used in the string representation of stack chains to represent
+/// the gap between traces.
+const _gap = '===== asynchronous gap ===========================\n';
 
 /// A chain of stack traces.
 ///
@@ -35,18 +40,7 @@ typedef void ChainHandler(error, Chain chain);
 ///       print("Caught error $error\n"
 ///             "$stackChain");
 ///     });
-///
-/// For the most part [Chain.capture] will notice when an error is thrown and
-/// associate the correct stack chain with it; the chain can be accessed using
-/// [new Chain.forTrace]. However, there are some cases where exceptions won't
-/// be automatically detected: any [Future] constructor,
-/// [Completer.completeError], [Stream.addError], and libraries that use these.
-/// For these, all you need to do is wrap the Future or Stream in a call to
-/// [Chain.track] and the errors will be tracked correctly.
 class Chain implements StackTrace {
-  /// The line used in the string representation of stack chains to represent
-  /// the gap between traces.
-  static const _GAP = '===== asynchronous gap ===========================\n';
 
   /// The stack traces that make up this chain.
   ///
@@ -68,13 +62,6 @@ class Chain implements StackTrace {
   /// [onError] may be called more than once. If [onError] isn't passed, the
   /// parent Zone's `unhandledErrorHandler` will be called with the error and
   /// its chain.
-  ///
-  /// For the most part an error thrown in the zone will have the correct stack
-  /// chain associated with it. However, there are some cases where exceptions
-  /// won't be automatically detected: any [Future] constructor,
-  /// [Completer.completeError], [Stream.addError], and libraries that use
-  /// these. For these, all you need to do is wrap the Future or Stream in a
-  /// call to [Chain.track] and the errors will be tracked correctly.
   ///
   /// Note that even if [onError] isn't passed, this zone will still be an error
   /// zone. This means that any errors that would cross the zone boundary are
@@ -102,33 +89,13 @@ class Chain implements StackTrace {
     });
   }
 
-  /// Ensures that any errors emitted by [futureOrStream] have the correct stack
-  /// chain information associated with them.
+  /// Returns [futureOrStream] unmodified.
   ///
-  /// For the most part an error thrown within a [capture] zone will have the
-  /// correct stack chain automatically associated with it. However, there are
-  /// some cases where exceptions won't be automatically detected: any [Future]
-  /// constructor, [Completer.completeError], [Stream.addError], and libraries
-  /// that use these.
-  ///
-  /// This returns a [Future] or [Stream] that will emit the same values and
-  /// errors as [futureOrStream]. The only exception is that if [futureOrStream]
-  /// emits an error without a stack trace, one will be added in the return
-  /// value.
-  ///
-  /// If this is called outside of a [capture] zone, it just returns
-  /// [futureOrStream] as-is.
-  ///
-  /// As the name suggests, [futureOrStream] may be either a [Future] or a
-  /// [Stream].
-  static track(futureOrStream) {
-    if (_currentSpec == null) return futureOrStream;
-    if (futureOrStream is Future) {
-      return _currentSpec.trackFuture(futureOrStream, 1);
-    } else {
-      return _currentSpec.trackStream(futureOrStream, 1);
-    }
-  }
+  /// Prior to Dart 1.7, this was necessary to ensure that stack traces for
+  /// exceptions reported with [Completer.completeError] and
+  /// [StreamController.addError] were tracked correctly.
+  @Deprecated("Chain.track is not necessary in Dart 1.7+.")
+  static track(futureOrStream) => futureOrStream;
 
   /// Returns the current stack chain.
   ///
@@ -161,7 +128,7 @@ class Chain implements StackTrace {
   ///
   /// Specifically, this parses the output of [Chain.toString].
   factory Chain.parse(String chain) =>
-    new Chain(chain.split(_GAP).map((trace) => new Trace.parseFriendly(trace)));
+    new Chain(chain.split(_gap).map((trace) => new Trace.parseFriendly(trace)));
 
   /// Returns a new [Chain] comprised of [traces].
   Chain(Iterable<Trace> traces)
@@ -171,21 +138,7 @@ class Chain implements StackTrace {
   ///
   /// This calls [Trace.terse] on every trace in [traces], and discards any
   /// trace that contain only internal frames.
-  Chain get terse {
-    var terseTraces = traces.map((trace) => trace.terse);
-    var nonEmptyTraces = terseTraces.where((trace) {
-      // Ignore traces that contain only internal processing.
-      return trace.frames.length > 1;
-    });
-
-    // If all the traces contain only internal processing, preserve the last
-    // (top-most) one so that the chain isn't empty.
-    if (nonEmptyTraces.isEmpty && terseTraces.isNotEmpty) {
-      return new Chain([terseTraces.last]);
-    }
-
-    return new Chain(nonEmptyTraces);
-  }
+  Chain get terse => foldFrames((_) => false, terse: true);
 
   /// Returns a new [Chain] based on [this] where multiple stack frames matching
   /// [predicate] are folded together.
@@ -196,12 +149,22 @@ class Chain implements StackTrace {
   ///
   /// This is useful for limiting the amount of library code that appears in a
   /// stack trace by only showing user code and code that's called by user code.
-  Chain foldFrames(bool predicate(Frame frame)) {
-    var foldedTraces = traces.map((trace) => trace.foldFrames(predicate));
+  ///
+  /// If [terse] is true, this will also fold together frames from the core
+  /// library or from this package, and simplify core library frames as in
+  /// [Trace.terse].
+  Chain foldFrames(bool predicate(Frame frame), {bool terse: false}) {
+    var foldedTraces = traces.map(
+        (trace) => trace.foldFrames(predicate, terse: terse));
     var nonEmptyTraces = foldedTraces.where((trace) {
-      // Ignore traces that contain only folded frames. These traces will be
-      // folded into a single frame each.
-      return trace.frames.length > 1;
+      // Ignore traces that contain only folded frames.
+      if (trace.frames.length > 1) return true;
+
+      // In terse mode, the trace may have removed an outer folded frame,
+      // leaving a single non-folded frame. We can detect a folded frame because
+      // it has no line information.
+      if (!terse) return false;
+      return trace.frames.single.line != null;
     });
 
     // If all the traces contain only internal processing, preserve the last
@@ -219,5 +182,19 @@ class Chain implements StackTrace {
   /// in the chain.
   Trace toTrace() => new Trace(flatten(traces.map((trace) => trace.frames)));
 
-  String toString() => traces.join(_GAP);
+  String toString() {
+    // Figure out the longest path so we know how much to pad.
+    var longest = traces.map((trace) {
+      return trace.frames.map((frame) => frame.location.length)
+          .fold(0, math.max);
+    }).fold(0, math.max);
+
+    // Don't call out to [Trace.toString] here because that doesn't ensure that
+    // padding is consistent across all traces.
+    return traces.map((trace) {
+      return trace.frames.map((frame) {
+        return '${padRight(frame.location, longest)}  ${frame.member}\n';
+      }).join();
+    }).join(_gap);
+  }
 }

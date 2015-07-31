@@ -29,25 +29,28 @@ final _v8Trace = new RegExp(r"\n    ?at ");
 /// though it is possible for the message to match this as well.
 final _v8TraceLine = new RegExp(r"    ?at ");
 
-/// A RegExp to match Safari's stack traces.
+/// A RegExp to match Firefox and Safari's stack traces.
 ///
-/// Prior to version 6, Safari's stack traces were uncapturable. In v6 they were
-/// almost identical to Firefox traces, and so are handled by the Firefox code.
-/// In v6.1+, they have their own format that's similar to Firefox but distinct
-/// enough to warrant handling separately.
-///
-/// Most notably, Safari traces occasionally don't include the initial method
-/// name followed by "@", and they always have both the line and column number
-/// (or just a trailing colon if no column number is available).
-final _safariTrace = new RegExp(r"^([0-9A-Za-z_$]*@)?.*:\d*:\d*$",
-    multiLine: true);
-
-/// A RegExp to match Firefox's stack traces.
+/// Firefox and Safari have very similar stack trace formats, so we use the same
+/// logic for parsing them.
 ///
 /// Firefox's trace frames start with the name of the function in which the
 /// error occurred, possibly including its parameters inside `()`. For example,
 /// `.VW.call$0("arg")@http://pub.dartlang.org/stuff.dart.js:560`.
-final _firefoxTrace = new RegExp(r"^([.0-9A-Za-z_$/<]|\(.*\))*@");
+///
+/// Safari traces occasionally don't include the initial method name followed by
+/// "@", and they always have both the line and column number (or just a
+/// trailing colon if no column number is available). They can also contain
+/// empty lines or lines consisting only of `[native code]`.
+final _firefoxSafariTrace = new RegExp(
+    r"^"
+    r"(" // Member description. Not present in some Safari frames.
+      r"([.0-9A-Za-z_$/<]|\(.*\))*" // Member name and arguments.
+      r"@"
+    r")?"
+    r"[^\s]*" // Frame URL.
+    r":\d*" // Line or column number. Some older frames only have a line number.
+    r"$", multiLine: true);
 
 /// A RegExp to match this package's stack traces.
 final _friendlyTrace = new RegExp(r"^[^\s]+( \d+(:\d+)?)?[ \t]+[^\s]+$",
@@ -112,12 +115,10 @@ class Trace implements StackTrace {
     try {
       if (trace.isEmpty) return new Trace(<Frame>[]);
       if (trace.contains(_v8Trace)) return new Trace.parseV8(trace);
-      // Safari 6.1+ traces could be misinterpreted as Firefox traces, so we
-      // check for them first.
-      if (trace.contains(_safariTrace)) return new Trace.parseSafari6_1(trace);
-      // Safari 6.0 traces are a superset of Firefox traces, so we parse those
-      // two together.
-      if (trace.contains(_firefoxTrace)) return new Trace.parseSafari6_0(trace);
+      if (trace.startsWith("\tat ")) return new Trace.parseJSCore(trace);
+      if (trace.contains(_firefoxSafariTrace)) {
+        return new Trace.parseFirefox(trace);
+      }
       if (trace.contains(_friendlyTrace)) {
         return new Trace.parseFriendly(trace);
       }
@@ -147,6 +148,12 @@ class Trace implements StackTrace {
           .skipWhile((line) => !line.startsWith(_v8TraceLine))
           .map((line) => new Frame.parseV8(line)));
 
+  /// Parses a string representation of a JavaScriptCore stack trace.
+  Trace.parseJSCore(String trace)
+      : this(trace.split("\n")
+            .where((line) => line != "\tat ")
+            .map((line) => new Frame.parseV8(line)));
+
   /// Parses a string representation of an Internet Explorer stack trace.
   ///
   /// IE10+ traces look just like V8 traces. Prior to IE10, stack traces can't
@@ -157,29 +164,20 @@ class Trace implements StackTrace {
   /// Parses a string representation of a Firefox stack trace.
   Trace.parseFirefox(String trace)
       : this(trace.trim().split("\n")
+          .where((line) => line.isNotEmpty && line != '[native code]')
           .map((line) => new Frame.parseFirefox(line)));
 
   /// Parses a string representation of a Safari stack trace.
-  ///
-  /// This will automatically decide between [parseSafari6_0] and
-  /// [parseSafari6_1] based on the contents of [trace].
-  factory Trace.parseSafari(String trace) {
-    if (trace.contains(_safariTrace)) return new Trace.parseSafari6_1(trace);
-    return new Trace.parseSafari6_0(trace);
-  }
+  Trace.parseSafari(String trace)
+      : this.parseFirefox(trace);
 
   /// Parses a string representation of a Safari 6.1+ stack trace.
+  @Deprecated("Use Trace.parseSafari instead.")
   Trace.parseSafari6_1(String trace)
-      : this(trace.trim().split("\n")
-          .where((line) => line.isNotEmpty)
-          .map((line) => new Frame.parseSafari6_1(line)));
+      : this.parseSafari(trace);
 
   /// Parses a string representation of a Safari 6.0 stack trace.
-  ///
-  /// Safari 6.0 stack traces look just like Firefox traces, except that they
-  /// sometimes (e.g. in isolates) have a "[native code]" frame. We just ignore
-  /// this frame to make the stack format more consistent between browsers.
-  /// Prior to Safari 6.0, stack traces can't be retrieved.
+  @Deprecated("Use Trace.parseSafari instead.")
   Trace.parseSafari6_0(String trace)
       : this(trace.trim().split("\n")
           .where((line) => line != '[native code]')
@@ -211,26 +209,45 @@ class Trace implements StackTrace {
   /// This is accomplished by folding together multiple stack frames from the
   /// core library or from this package, as in [foldFrames]. Remaining core
   /// library frames have their libraries, "-patch" suffixes, and line numbers
-  /// removed.
-  Trace get terse {
-    return new Trace(foldFrames((frame) {
-      return frame.isCore || frame.package == 'stack_trace';
-    }).frames.map((frame) {
-      if (!frame.isCore) return frame;
-      var library = frame.library.replaceAll(_terseRegExp, '');
-      return new Frame(Uri.parse(library), null, null, frame.member);
-    }));
-  }
+  /// removed. If the outermost frame of the stack trace is a core library
+  /// frame, it's removed entirely.
+  ///
+  /// For custom folding, see [foldFrames].
+  Trace get terse => foldFrames((_) => false, terse: true);
 
   /// Returns a new [Trace] based on [this] where multiple stack frames matching
-  /// [predicate] are folded together. This means that whenever there are
-  /// multiple frames in a row that match [predicate], only the last one is
-  /// kept.
+  /// [predicate] are folded together.
   ///
-  /// This is useful for limiting the amount of library code that appears in a
-  /// stack trace by only showing user code and code that's called by user code.
-  Trace foldFrames(bool predicate(Frame frame)) {
-    var newFrames = <Frame>[];
+  /// This means that whenever there are multiple frames in a row that match
+  /// [predicate], only the last one is kept. This is useful for limiting the
+  /// amount of library code that appears in a stack trace by only showing user
+  /// code and code that's called by user code.
+  ///
+  /// If [terse] is true, this will also fold together frames from the core
+  /// library or from this package, simplify core library frames, and
+  /// potentially remove the outermost frame as in [Trace.terse].
+  Trace foldFrames(bool predicate(Frame frame), {bool terse: false}) {
+    if (terse) {
+      var oldPredicate = predicate;
+      predicate = (frame) {
+        if (oldPredicate(frame)) return true;
+
+        if (frame.isCore) return true;
+        if (frame.package == 'stack_trace') return true;
+
+        // Ignore async stack frames without any line or column information.
+        // These come from the VM's async/await implementation and represent
+        // internal frames. They only ever show up in stack chains and are
+        // always surrounded by other traces that are actually useful, so we can
+        // just get rid of them.
+        // TODO(nweiz): Get rid of this logic some time after issue 22009 is
+        // fixed.
+        if (!frame.member.contains('<async>')) return false;
+        return frame.line == null;
+      };
+    }
+
+    var newFrames = [];
     for (var frame in frames.reversed) {
       if (!predicate(frame)) {
         newFrames.add(frame);
@@ -238,6 +255,15 @@ class Trace implements StackTrace {
         newFrames.add(new Frame(
             frame.uri, frame.line, frame.column, frame.member));
       }
+    }
+
+    if (terse) {
+      newFrames = newFrames.map((frame) {
+        if (!predicate(frame)) return frame;
+        var library = frame.library.replaceAll(_terseRegExp, '');
+        return new Frame(Uri.parse(library), null, null, frame.member);
+      }).toList();
+      if (newFrames.first.isCore && newFrames.length > 1) newFrames.removeAt(0);
     }
 
     return new Trace(newFrames.reversed);

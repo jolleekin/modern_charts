@@ -10,10 +10,11 @@ library engine.element_handle;
 import 'ast.dart';
 import 'element.dart';
 import 'engine.dart';
-import 'source.dart';
-import 'utilities_dart.dart';
 import 'java_core.dart';
 import 'java_engine.dart';
+import 'resolver.dart';
+import 'source.dart';
+import 'utilities_dart.dart';
 
 /**
  * Instances of the class `ClassElementHandle` implement a handle to a `ClassElement`.
@@ -30,58 +31,16 @@ class ClassElementHandle extends ElementHandle implements ClassElement {
   List<PropertyAccessorElement> get accessors => actualElement.accessors;
 
   @override
+  ClassElement get actualElement => super.actualElement as ClassElement;
+
+  @override
   List<InterfaceType> get allSupertypes => actualElement.allSupertypes;
 
   @override
   List<ConstructorElement> get constructors => actualElement.constructors;
 
   @override
-  FieldElement getField(String fieldName) => actualElement.getField(fieldName);
-
-  @override
   List<FieldElement> get fields => actualElement.fields;
-
-  @override
-  PropertyAccessorElement getGetter(String getterName) => actualElement.getGetter(getterName);
-
-  @override
-  List<InterfaceType> get interfaces => actualElement.interfaces;
-
-  @override
-  ElementKind get kind => ElementKind.CLASS;
-
-  @override
-  MethodElement getMethod(String methodName) => actualElement.getMethod(methodName);
-
-  @override
-  List<MethodElement> get methods => actualElement.methods;
-
-  @override
-  List<InterfaceType> get mixins => actualElement.mixins;
-
-  @override
-  ConstructorElement getNamedConstructor(String name) => actualElement.getNamedConstructor(name);
-
-  @override
-  ClassDeclaration get node => actualElement.node;
-
-  @override
-  PropertyAccessorElement getSetter(String setterName) => actualElement.getSetter(setterName);
-
-  @override
-  InterfaceType get supertype => actualElement.supertype;
-
-  @override
-  List<ToolkitObjectElement> get toolkitObjects => actualElement.toolkitObjects;
-
-  @override
-  InterfaceType get type => actualElement.type;
-
-  @override
-  List<TypeParameterElement> get typeParameters => actualElement.typeParameters;
-
-  @override
-  ConstructorElement get unnamedConstructor => actualElement.unnamedConstructor;
 
   @override
   bool get hasNonFinalField => actualElement.hasNonFinalField;
@@ -91,6 +50,9 @@ class ClassElementHandle extends ElementHandle implements ClassElement {
 
   @override
   bool get hasStaticMember => actualElement.hasStaticMember;
+
+  @override
+  List<InterfaceType> get interfaces => actualElement.interfaces;
 
   @override
   bool get isAbstract => actualElement.isAbstract;
@@ -111,38 +73,95 @@ class ClassElementHandle extends ElementHandle implements ClassElement {
   bool get isValidMixin => actualElement.isValidMixin;
 
   @override
-  MethodElement lookUpConcreteMethod(String methodName, LibraryElement library) => actualElement.lookUpConcreteMethod(methodName, library);
+  ElementKind get kind => ElementKind.CLASS;
 
   @override
-  PropertyAccessorElement lookUpGetter(String getterName, LibraryElement library) => actualElement.lookUpGetter(getterName, library);
+  List<MethodElement> get methods => actualElement.methods;
 
   @override
-  PropertyAccessorElement lookUpInheritedConcreteGetter(String methodName, LibraryElement library) => actualElement.lookUpInheritedConcreteGetter(methodName, library);
+  List<InterfaceType> get mixins => actualElement.mixins;
 
   @override
-  MethodElement lookUpInheritedConcreteMethod(String methodName, LibraryElement library) => actualElement.lookUpInheritedConcreteMethod(methodName, library);
+  InterfaceType get supertype => actualElement.supertype;
 
   @override
-  PropertyAccessorElement lookUpInheritedConcreteSetter(String methodName, LibraryElement library) => actualElement.lookUpInheritedConcreteSetter(methodName, library);
+  InterfaceType get type => actualElement.type;
 
   @override
-  MethodElement lookUpInheritedMethod(String methodName, LibraryElement library) => actualElement.lookUpInheritedMethod(methodName, library);
+  List<TypeParameterElement> get typeParameters => actualElement.typeParameters;
 
   @override
-  MethodElement lookUpMethod(String methodName, LibraryElement library) => actualElement.lookUpMethod(methodName, library);
+  ConstructorElement get unnamedConstructor => actualElement.unnamedConstructor;
 
   @override
-  PropertyAccessorElement lookUpSetter(String setterName, LibraryElement library) => actualElement.lookUpSetter(setterName, library);
+  FieldElement getField(String fieldName) => actualElement.getField(fieldName);
 
   @override
-  ClassElement get actualElement => super.actualElement as ClassElement;
+  PropertyAccessorElement getGetter(String getterName) =>
+      actualElement.getGetter(getterName);
+
+  @override
+  MethodElement getMethod(String methodName) =>
+      actualElement.getMethod(methodName);
+
+  @override
+  ConstructorElement getNamedConstructor(String name) =>
+      actualElement.getNamedConstructor(name);
+
+  @override
+  PropertyAccessorElement getSetter(String setterName) =>
+      actualElement.getSetter(setterName);
+
+  @override
+  bool isSuperConstructorAccessible(ConstructorElement constructor) =>
+      actualElement.isSuperConstructorAccessible(constructor);
+
+  @override
+  MethodElement lookUpConcreteMethod(
+          String methodName, LibraryElement library) =>
+      actualElement.lookUpConcreteMethod(methodName, library);
+
+  @override
+  PropertyAccessorElement lookUpGetter(
+          String getterName, LibraryElement library) =>
+      actualElement.lookUpGetter(getterName, library);
+
+  @override
+  PropertyAccessorElement lookUpInheritedConcreteGetter(
+          String methodName, LibraryElement library) =>
+      actualElement.lookUpInheritedConcreteGetter(methodName, library);
+
+  @override
+  MethodElement lookUpInheritedConcreteMethod(
+          String methodName, LibraryElement library) =>
+      actualElement.lookUpInheritedConcreteMethod(methodName, library);
+
+  @override
+  PropertyAccessorElement lookUpInheritedConcreteSetter(
+          String methodName, LibraryElement library) =>
+      actualElement.lookUpInheritedConcreteSetter(methodName, library);
+
+  @override
+  MethodElement lookUpInheritedMethod(
+          String methodName, LibraryElement library) =>
+      actualElement.lookUpInheritedMethod(methodName, library);
+
+  @override
+  MethodElement lookUpMethod(String methodName, LibraryElement library) =>
+      actualElement.lookUpMethod(methodName, library);
+
+  @override
+  PropertyAccessorElement lookUpSetter(
+          String setterName, LibraryElement library) =>
+      actualElement.lookUpSetter(setterName, library);
 }
 
 /**
  * Instances of the class `CompilationUnitElementHandle` implements a handle to a
  * [CompilationUnitElement].
  */
-class CompilationUnitElementHandle extends ElementHandle implements CompilationUnitElement {
+class CompilationUnitElementHandle extends ElementHandle
+    implements CompilationUnitElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -154,13 +173,12 @@ class CompilationUnitElementHandle extends ElementHandle implements CompilationU
   List<PropertyAccessorElement> get accessors => actualElement.accessors;
 
   @override
-  List<AngularViewElement> get angularViews => actualElement.angularViews;
+  CompilationUnitElement get actualElement =>
+      super.actualElement as CompilationUnitElement;
 
   @override
-  LibraryElement get enclosingElement => super.enclosingElement as LibraryElement;
-
-  @override
-  ClassElement getEnum(String enumName) => actualElement.getEnum(enumName);
+  LibraryElement get enclosingElement =>
+      super.enclosingElement as LibraryElement;
 
   @override
   List<ClassElement> get enums => actualElement.enums;
@@ -169,7 +187,11 @@ class CompilationUnitElementHandle extends ElementHandle implements CompilationU
   List<FunctionElement> get functions => actualElement.functions;
 
   @override
-  List<FunctionTypeAliasElement> get functionTypeAliases => actualElement.functionTypeAliases;
+  List<FunctionTypeAliasElement> get functionTypeAliases =>
+      actualElement.functionTypeAliases;
+
+  @override
+  bool get hasLoadLibraryFunction => actualElement.hasLoadLibraryFunction;
 
   @override
   ElementKind get kind => ElementKind.COMPILATION_UNIT;
@@ -181,10 +203,8 @@ class CompilationUnitElementHandle extends ElementHandle implements CompilationU
   Source get source => actualElement.source;
 
   @override
-  List<TopLevelVariableElement> get topLevelVariables => actualElement.topLevelVariables;
-
-  @override
-  ClassElement getType(String className) => actualElement.getType(className);
+  List<TopLevelVariableElement> get topLevelVariables =>
+      actualElement.topLevelVariables;
 
   @override
   List<ClassElement> get types => actualElement.types;
@@ -199,17 +219,23 @@ class CompilationUnitElementHandle extends ElementHandle implements CompilationU
   int get uriOffset => actualElement.uriOffset;
 
   @override
-  bool get hasLoadLibraryFunction => actualElement.hasLoadLibraryFunction;
+  Element getElementAt(int offset) {
+    return actualElement.getElementAt(offset);
+  }
 
   @override
-  CompilationUnitElement get actualElement => super.actualElement as CompilationUnitElement;
+  ClassElement getEnum(String enumName) => actualElement.getEnum(enumName);
+
+  @override
+  ClassElement getType(String className) => actualElement.getType(className);
 }
 
 /**
  * Instances of the class `ConstructorElementHandle` implement a handle to a
  * `ConstructorElement`.
  */
-class ConstructorElementHandle extends ExecutableElementHandle implements ConstructorElement {
+class ConstructorElementHandle extends ExecutableElementHandle
+    implements ConstructorElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -218,16 +244,11 @@ class ConstructorElementHandle extends ExecutableElementHandle implements Constr
   ConstructorElementHandle(ConstructorElement element) : super(element);
 
   @override
+  ConstructorElement get actualElement =>
+      super.actualElement as ConstructorElement;
+
+  @override
   ClassElement get enclosingElement => actualElement.enclosingElement;
-
-  @override
-  ElementKind get kind => ElementKind.CONSTRUCTOR;
-
-  @override
-  ConstructorDeclaration get node => actualElement.node;
-
-  @override
-  ConstructorElement get redirectedConstructor => actualElement.redirectedConstructor;
 
   @override
   bool get isConst => actualElement.isConst;
@@ -239,7 +260,20 @@ class ConstructorElementHandle extends ExecutableElementHandle implements Constr
   bool get isFactory => actualElement.isFactory;
 
   @override
-  ConstructorElement get actualElement => super.actualElement as ConstructorElement;
+  ElementKind get kind => ElementKind.CONSTRUCTOR;
+
+  @override
+  int get nameEnd => actualElement.nameEnd;
+
+  @override
+  ConstructorDeclaration get node => actualElement.node;
+
+  @override
+  int get periodOffset => actualElement.periodOffset;
+
+  @override
+  ConstructorElement get redirectedConstructor =>
+      actualElement.redirectedConstructor;
 }
 
 /**
@@ -248,75 +282,9 @@ class ConstructorElementHandle extends ExecutableElementHandle implements Constr
  */
 abstract class ElementHandle implements Element {
   /**
-   * Return a handle on the given element. If the element is already a handle, then it will be
-   * returned directly, otherwise a handle of the appropriate class will be constructed.
-   *
-   * @param element the element for which a handle is to be constructed
-   * @return a handle on the given element
+   * The unique integer identifier of this element.
    */
-  static Element forElement(Element element) {
-    if (element is ElementHandle) {
-      return element;
-    }
-    while (true) {
-      if (element.kind == ElementKind.CLASS) {
-        return new ClassElementHandle(element as ClassElement);
-      } else if (element.kind == ElementKind.COMPILATION_UNIT) {
-        return new CompilationUnitElementHandle(element as CompilationUnitElement);
-      } else if (element.kind == ElementKind.CONSTRUCTOR) {
-        return new ConstructorElementHandle(element as ConstructorElement);
-      } else if (element.kind == ElementKind.EXPORT) {
-        return new ExportElementHandle(element as ExportElement);
-      } else if (element.kind == ElementKind.FIELD) {
-        return new FieldElementHandle(element as FieldElement);
-      } else if (element.kind == ElementKind.FUNCTION) {
-        return new FunctionElementHandle(element as FunctionElement);
-      } else if (element.kind == ElementKind.GETTER) {
-        return new PropertyAccessorElementHandle(element as PropertyAccessorElement);
-      } else if (element.kind == ElementKind.IMPORT) {
-        return new ImportElementHandle(element as ImportElement);
-      } else if (element.kind == ElementKind.LABEL) {
-        return new LabelElementHandle(element as LabelElement);
-      } else if (element.kind == ElementKind.LIBRARY) {
-        return new LibraryElementHandle(element as LibraryElement);
-      } else if (element.kind == ElementKind.LOCAL_VARIABLE) {
-        return new LocalVariableElementHandle(element as LocalVariableElement);
-      } else if (element.kind == ElementKind.METHOD) {
-        return new MethodElementHandle(element as MethodElement);
-      } else if (element.kind == ElementKind.PARAMETER) {
-        return new ParameterElementHandle(element as ParameterElement);
-      } else if (element.kind == ElementKind.PREFIX) {
-        return new PrefixElementHandle(element as PrefixElement);
-      } else if (element.kind == ElementKind.SETTER) {
-        return new PropertyAccessorElementHandle(element as PropertyAccessorElement);
-      } else if (element.kind == ElementKind.TOP_LEVEL_VARIABLE) {
-        return new TopLevelVariableElementHandle(element as TopLevelVariableElement);
-      } else if (element.kind == ElementKind.FUNCTION_TYPE_ALIAS) {
-        return new FunctionTypeAliasElementHandle(element as FunctionTypeAliasElement);
-      } else if (element.kind == ElementKind.TYPE_PARAMETER) {
-        return new TypeParameterElementHandle(element as TypeParameterElement);
-      } else {
-        throw new UnsupportedOperationException();
-      }
-      break;
-    }
-  }
-
-  /**
-   * Return an array of the same size as the given array where each element of the returned array is
-   * a handle for the corresponding element of the given array.
-   *
-   * @param elements the elements for which handles are to be created
-   * @return an array of handles to the given elements
-   */
-  static List<Element> forElements(List<Element> elements) {
-    int length = elements.length;
-    List<Element> handles = new List<Element>.from(elements);
-    for (int i = 0; i < length; i++) {
-      handles[i] = forElement(elements[i]);
-    }
-    return handles;
-  }
+  final int id = 0;
 
   /**
    * The context in which the element is defined.
@@ -346,17 +314,20 @@ abstract class ElementHandle implements Element {
     _elementReference = new WeakReference<Element>(element);
   }
 
-  @override
-  accept(ElementVisitor visitor) => actualElement.accept(visitor);
-
-  @override
-  String computeDocumentationComment() => actualElement.computeDocumentationComment();
-
-  @override
-  bool operator ==(Object object) => object is Element && object.location == _location;
-
-  @override
-  Element getAncestor(Predicate<Element> predicate) => actualElement.getAncestor(predicate);
+  /**
+   * Return the element being represented by this handle, reconstituting the element if the
+   * reference has been set to `null`.
+   *
+   * @return the element being represented by this handle
+   */
+  Element get actualElement {
+    Element element = _elementReference.get();
+    if (element == null) {
+      element = _context.getElement(_location);
+      _elementReference = new WeakReference<Element>(element);
+    }
+    return element;
+  }
 
   @override
   AnalysisContext get context => _context;
@@ -368,10 +339,26 @@ abstract class ElementHandle implements Element {
   Element get enclosingElement => actualElement.enclosingElement;
 
   @override
-  String getExtendedDisplayName(String shortName) => actualElement.getExtendedDisplayName(shortName);
+  int get hashCode => _location.hashCode;
 
   @override
-  LibraryElement get library => getAncestor((element) => element is LibraryElement);
+  bool get isDeprecated => actualElement.isDeprecated;
+
+  @override
+  bool get isOverride => actualElement.isOverride;
+
+  @override
+  bool get isPrivate => actualElement.isPrivate;
+
+  @override
+  bool get isPublic => actualElement.isPublic;
+
+  @override
+  bool get isSynthetic => actualElement.isSynthetic;
+
+  @override
+  LibraryElement get library =>
+      getAncestor((element) => element is LibraryElement);
 
   @override
   ElementLocation get location => _location;
@@ -395,25 +382,27 @@ abstract class ElementHandle implements Element {
   CompilationUnit get unit => actualElement.unit;
 
   @override
-  int get hashCode => _location.hashCode;
+  bool operator ==(Object object) =>
+      object is Element && object.location == _location;
 
   @override
-  bool isAccessibleIn(LibraryElement library) => actualElement.isAccessibleIn(library);
+  accept(ElementVisitor visitor) => actualElement.accept(visitor);
 
   @override
-  bool get isDeprecated => actualElement.isDeprecated;
+  String computeDocumentationComment() =>
+      actualElement.computeDocumentationComment();
 
   @override
-  bool get isOverride => actualElement.isOverride;
+  Element getAncestor(Predicate<Element> predicate) =>
+      actualElement.getAncestor(predicate);
 
   @override
-  bool get isPrivate => actualElement.isPrivate;
+  String getExtendedDisplayName(String shortName) =>
+      actualElement.getExtendedDisplayName(shortName);
 
   @override
-  bool get isPublic => actualElement.isPublic;
-
-  @override
-  bool get isSynthetic => actualElement.isSynthetic;
+  bool isAccessibleIn(LibraryElement library) =>
+      actualElement.isAccessibleIn(library);
 
   @override
   void visitChildren(ElementVisitor visitor) {
@@ -421,18 +410,79 @@ abstract class ElementHandle implements Element {
   }
 
   /**
-   * Return the element being represented by this handle, reconstituting the element if the
-   * reference has been set to `null`.
+   * Return a handle on the given element. If the element is already a handle, then it will be
+   * returned directly, otherwise a handle of the appropriate class will be constructed.
    *
-   * @return the element being represented by this handle
+   * @param element the element for which a handle is to be constructed
+   * @return a handle on the given element
    */
-  Element get actualElement {
-    Element element = _elementReference.get();
-    if (element == null) {
-      element = _context.getElement(_location);
-      _elementReference = new WeakReference<Element>(element);
+  static Element forElement(Element element) {
+    if (element is ElementHandle) {
+      return element;
     }
-    return element;
+    while (true) {
+      if (element.kind == ElementKind.CLASS) {
+        return new ClassElementHandle(element as ClassElement);
+      } else if (element.kind == ElementKind.COMPILATION_UNIT) {
+        return new CompilationUnitElementHandle(
+            element as CompilationUnitElement);
+      } else if (element.kind == ElementKind.CONSTRUCTOR) {
+        return new ConstructorElementHandle(element as ConstructorElement);
+      } else if (element.kind == ElementKind.EXPORT) {
+        return new ExportElementHandle(element as ExportElement);
+      } else if (element.kind == ElementKind.FIELD) {
+        return new FieldElementHandle(element as FieldElement);
+      } else if (element.kind == ElementKind.FUNCTION) {
+        return new FunctionElementHandle(element as FunctionElement);
+      } else if (element.kind == ElementKind.GETTER) {
+        return new PropertyAccessorElementHandle(
+            element as PropertyAccessorElement);
+      } else if (element.kind == ElementKind.IMPORT) {
+        return new ImportElementHandle(element as ImportElement);
+      } else if (element.kind == ElementKind.LABEL) {
+        return new LabelElementHandle(element as LabelElement);
+      } else if (element.kind == ElementKind.LIBRARY) {
+        return new LibraryElementHandle(element as LibraryElement);
+      } else if (element.kind == ElementKind.LOCAL_VARIABLE) {
+        return new LocalVariableElementHandle(element as LocalVariableElement);
+      } else if (element.kind == ElementKind.METHOD) {
+        return new MethodElementHandle(element as MethodElement);
+      } else if (element.kind == ElementKind.PARAMETER) {
+        return new ParameterElementHandle(element as ParameterElement);
+      } else if (element.kind == ElementKind.PREFIX) {
+        return new PrefixElementHandle(element as PrefixElement);
+      } else if (element.kind == ElementKind.SETTER) {
+        return new PropertyAccessorElementHandle(
+            element as PropertyAccessorElement);
+      } else if (element.kind == ElementKind.TOP_LEVEL_VARIABLE) {
+        return new TopLevelVariableElementHandle(
+            element as TopLevelVariableElement);
+      } else if (element.kind == ElementKind.FUNCTION_TYPE_ALIAS) {
+        return new FunctionTypeAliasElementHandle(
+            element as FunctionTypeAliasElement);
+      } else if (element.kind == ElementKind.TYPE_PARAMETER) {
+        return new TypeParameterElementHandle(element as TypeParameterElement);
+      } else {
+        throw new UnsupportedOperationException();
+      }
+      break;
+    }
+  }
+
+  /**
+   * Return an array of the same size as the given array where each element of the returned array is
+   * a handle for the corresponding element of the given array.
+   *
+   * @param elements the elements for which handles are to be created
+   * @return an array of handles to the given elements
+   */
+  static List<Element> forElements(List<Element> elements) {
+    int length = elements.length;
+    List<Element> handles = new List<Element>.from(elements);
+    for (int i = 0; i < length; i++) {
+      handles[i] = forElement(elements[i]);
+    }
+    return handles;
   }
 }
 
@@ -440,7 +490,8 @@ abstract class ElementHandle implements Element {
  * The abstract class `ExecutableElementHandle` implements the behavior common to objects that
  * implement a handle to an [ExecutableElement].
  */
-abstract class ExecutableElementHandle extends ElementHandle implements ExecutableElement {
+abstract class ExecutableElementHandle extends ElementHandle
+    implements ExecutableElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -449,22 +500,14 @@ abstract class ExecutableElementHandle extends ElementHandle implements Executab
   ExecutableElementHandle(ExecutableElement element) : super(element);
 
   @override
+  ExecutableElement get actualElement =>
+      super.actualElement as ExecutableElement;
+
+  @override
   List<FunctionElement> get functions => actualElement.functions;
 
   @override
-  List<LabelElement> get labels => actualElement.labels;
-
-  @override
-  List<LocalVariableElement> get localVariables => actualElement.localVariables;
-
-  @override
-  List<ParameterElement> get parameters => actualElement.parameters;
-
-  @override
-  DartType get returnType => actualElement.returnType;
-
-  @override
-  FunctionType get type => actualElement.type;
+  bool get isAbstract => actualElement.isAbstract;
 
   @override
   bool get isAsynchronous => actualElement.isAsynchronous;
@@ -482,7 +525,19 @@ abstract class ExecutableElementHandle extends ElementHandle implements Executab
   bool get isSynchronous => actualElement.isSynchronous;
 
   @override
-  ExecutableElement get actualElement => super.actualElement as ExecutableElement;
+  List<LabelElement> get labels => actualElement.labels;
+
+  @override
+  List<LocalVariableElement> get localVariables => actualElement.localVariables;
+
+  @override
+  List<ParameterElement> get parameters => actualElement.parameters;
+
+  @override
+  DartType get returnType => actualElement.returnType;
+
+  @override
+  FunctionType get type => actualElement.type;
 }
 
 /**
@@ -496,6 +551,9 @@ class ExportElementHandle extends ElementHandle implements ExportElement {
    * @param element the element being represented
    */
   ExportElementHandle(ExportElement element) : super(element);
+
+  @override
+  ExportElement get actualElement => super.actualElement as ExportElement;
 
   @override
   List<NamespaceCombinator> get combinators => actualElement.combinators;
@@ -514,15 +572,13 @@ class ExportElementHandle extends ElementHandle implements ExportElement {
 
   @override
   int get uriOffset => actualElement.uriOffset;
-
-  @override
-  ExportElement get actualElement => super.actualElement as ExportElement;
 }
 
 /**
  * Instances of the class `FieldElementHandle` implement a handle to a `FieldElement`.
  */
-class FieldElementHandle extends PropertyInducingElementHandle implements FieldElement {
+class FieldElementHandle extends PropertyInducingElementHandle
+    implements FieldElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -531,29 +587,42 @@ class FieldElementHandle extends PropertyInducingElementHandle implements FieldE
   FieldElementHandle(FieldElement element) : super(element);
 
   @override
+  FieldElement get actualElement => super.actualElement as FieldElement;
+
+  @override
   ClassElement get enclosingElement => actualElement.enclosingElement;
 
   @override
-  ElementKind get kind => ElementKind.FIELD;
+  bool get isEnumConstant => actualElement.isEnumConstant;
 
   @override
   bool get isStatic => actualElement.isStatic;
 
   @override
-  FieldElement get actualElement => super.actualElement as FieldElement;
+  ElementKind get kind => ElementKind.FIELD;
+
+  @override
+  VariableDeclaration get node => actualElement.node;
 }
 
 /**
  * Instances of the class `FunctionElementHandle` implement a handle to a
  * `FunctionElement`.
  */
-class FunctionElementHandle extends ExecutableElementHandle implements FunctionElement {
+class FunctionElementHandle extends ExecutableElementHandle
+    implements FunctionElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
    * @param element the element being represented
    */
   FunctionElementHandle(FunctionElement element) : super(element);
+
+  @override
+  FunctionElement get actualElement => super.actualElement as FunctionElement;
+
+  @override
+  bool get isEntryPoint => actualElement.isEntryPoint;
 
   @override
   ElementKind get kind => ElementKind.FUNCTION;
@@ -563,25 +632,29 @@ class FunctionElementHandle extends ExecutableElementHandle implements FunctionE
 
   @override
   SourceRange get visibleRange => actualElement.visibleRange;
-
-  @override
-  FunctionElement get actualElement => super.actualElement as FunctionElement;
 }
 
 /**
  * Instances of the class `FunctionTypeAliasElementHandle` implement a handle to a
  * `FunctionTypeAliasElement`.
  */
-class FunctionTypeAliasElementHandle extends ElementHandle implements FunctionTypeAliasElement {
+class FunctionTypeAliasElementHandle extends ElementHandle
+    implements FunctionTypeAliasElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
    * @param element the element being represented
    */
-  FunctionTypeAliasElementHandle(FunctionTypeAliasElement element) : super(element);
+  FunctionTypeAliasElementHandle(FunctionTypeAliasElement element)
+      : super(element);
 
   @override
-  CompilationUnitElement get enclosingElement => super.enclosingElement as CompilationUnitElement;
+  FunctionTypeAliasElement get actualElement =>
+      super.actualElement as FunctionTypeAliasElement;
+
+  @override
+  CompilationUnitElement get enclosingElement =>
+      super.enclosingElement as CompilationUnitElement;
 
   @override
   ElementKind get kind => ElementKind.FUNCTION_TYPE_ALIAS;
@@ -600,9 +673,6 @@ class FunctionTypeAliasElementHandle extends ElementHandle implements FunctionTy
 
   @override
   List<TypeParameterElement> get typeParameters => actualElement.typeParameters;
-
-  @override
-  FunctionTypeAliasElement get actualElement => super.actualElement as FunctionTypeAliasElement;
 }
 
 /**
@@ -618,10 +688,16 @@ class ImportElementHandle extends ElementHandle implements ImportElement {
   ImportElementHandle(ImportElement element) : super(element);
 
   @override
+  ImportElement get actualElement => super.actualElement as ImportElement;
+
+  @override
   List<NamespaceCombinator> get combinators => actualElement.combinators;
 
   @override
   LibraryElement get importedLibrary => actualElement.importedLibrary;
+
+  @override
+  bool get isDeferred => actualElement.isDeferred;
 
   @override
   ElementKind get kind => ElementKind.IMPORT;
@@ -640,12 +716,6 @@ class ImportElementHandle extends ElementHandle implements ImportElement {
 
   @override
   int get uriOffset => actualElement.uriOffset;
-
-  @override
-  bool get isDeferred => actualElement.isDeferred;
-
-  @override
-  ImportElement get actualElement => super.actualElement as ImportElement;
 }
 
 /**
@@ -660,7 +730,8 @@ class LabelElementHandle extends ElementHandle implements LabelElement {
   LabelElementHandle(LabelElement element) : super(element);
 
   @override
-  ExecutableElement get enclosingElement => super.enclosingElement as ExecutableElement;
+  ExecutableElement get enclosingElement =>
+      super.enclosingElement as ExecutableElement;
 
   @override
   ElementKind get kind => ElementKind.LABEL;
@@ -679,7 +750,11 @@ class LibraryElementHandle extends ElementHandle implements LibraryElement {
   LibraryElementHandle(LibraryElement element) : super(element);
 
   @override
-  CompilationUnitElement get definingCompilationUnit => actualElement.definingCompilationUnit;
+  LibraryElement get actualElement => super.actualElement as LibraryElement;
+
+  @override
+  CompilationUnitElement get definingCompilationUnit =>
+      actualElement.definingCompilationUnit;
 
   @override
   FunctionElement get entryPoint => actualElement.entryPoint;
@@ -688,7 +763,16 @@ class LibraryElementHandle extends ElementHandle implements LibraryElement {
   List<LibraryElement> get exportedLibraries => actualElement.exportedLibraries;
 
   @override
+  Namespace get exportNamespace => actualElement.exportNamespace;
+
+  @override
   List<ExportElement> get exports => actualElement.exports;
+
+  @override
+  bool get hasExtUri => actualElement.hasExtUri;
+
+  @override
+  bool get hasLoadLibraryFunction => actualElement.hasLoadLibraryFunction;
 
   @override
   List<LibraryElement> get importedLibraries => actualElement.importedLibraries;
@@ -697,7 +781,13 @@ class LibraryElementHandle extends ElementHandle implements LibraryElement {
   List<ImportElement> get imports => actualElement.imports;
 
   @override
-  List<ImportElement> getImportsWithPrefix(PrefixElement prefixElement) => actualElement.getImportsWithPrefix(prefixElement);
+  bool get isBrowserApplication => actualElement.isBrowserApplication;
+
+  @override
+  bool get isDartCore => actualElement.isDartCore;
+
+  @override
+  bool get isInSdk => actualElement.isInSdk;
 
   @override
   ElementKind get kind => ElementKind.LIBRARY;
@@ -712,7 +802,7 @@ class LibraryElementHandle extends ElementHandle implements LibraryElement {
   List<PrefixElement> get prefixes => actualElement.prefixes;
 
   @override
-  ClassElement getType(String className) => actualElement.getType(className);
+  Namespace get publicNamespace => actualElement.publicNamespace;
 
   @override
   List<CompilationUnitElement> get units => actualElement.units;
@@ -721,35 +811,22 @@ class LibraryElementHandle extends ElementHandle implements LibraryElement {
   List<LibraryElement> get visibleLibraries => actualElement.visibleLibraries;
 
   @override
-  bool get hasExtUri => actualElement.hasExtUri;
+  List<ImportElement> getImportsWithPrefix(PrefixElement prefixElement) =>
+      actualElement.getImportsWithPrefix(prefixElement);
 
   @override
-  bool get hasLoadLibraryFunction => actualElement.hasLoadLibraryFunction;
-
-  @override
-  bool get isAngularHtml => actualElement.isAngularHtml;
-
-  @override
-  bool get isBrowserApplication => actualElement.isBrowserApplication;
-
-  @override
-  bool get isDartCore => actualElement.isDartCore;
-
-  @override
-  bool get isInSdk => actualElement.isInSdk;
+  ClassElement getType(String className) => actualElement.getType(className);
 
   @override
   bool isUpToDate(int timeStamp) => actualElement.isUpToDate(timeStamp);
-
-  @override
-  LibraryElement get actualElement => super.actualElement as LibraryElement;
 }
 
 /**
  * Instances of the class `LocalVariableElementHandle` implement a handle to a
  * `LocalVariableElement`.
  */
-class LocalVariableElementHandle extends VariableElementHandle implements LocalVariableElement {
+class LocalVariableElementHandle extends VariableElementHandle
+    implements LocalVariableElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -758,22 +835,24 @@ class LocalVariableElementHandle extends VariableElementHandle implements LocalV
   LocalVariableElementHandle(LocalVariableElement element) : super(element);
 
   @override
+  LocalVariableElement get actualElement =>
+      super.actualElement as LocalVariableElement;
+
+  @override
   ElementKind get kind => ElementKind.LOCAL_VARIABLE;
 
   @override
-  List<ToolkitObjectElement> get toolkitObjects => actualElement.toolkitObjects;
+  VariableDeclaration get node => actualElement.node;
 
   @override
   SourceRange get visibleRange => actualElement.visibleRange;
-
-  @override
-  LocalVariableElement get actualElement => super.actualElement as LocalVariableElement;
 }
 
 /**
  * Instances of the class `MethodElementHandle` implement a handle to a `MethodElement`.
  */
-class MethodElementHandle extends ExecutableElementHandle implements MethodElement {
+class MethodElementHandle extends ExecutableElementHandle
+    implements MethodElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -782,29 +861,27 @@ class MethodElementHandle extends ExecutableElementHandle implements MethodEleme
   MethodElementHandle(MethodElement element) : super(element);
 
   @override
+  MethodElement get actualElement => super.actualElement as MethodElement;
+
+  @override
   ClassElement get enclosingElement => super.enclosingElement as ClassElement;
+
+  @override
+  bool get isStatic => actualElement.isStatic;
 
   @override
   ElementKind get kind => ElementKind.METHOD;
 
   @override
   MethodDeclaration get node => actualElement.node;
-
-  @override
-  bool get isAbstract => actualElement.isAbstract;
-
-  @override
-  bool get isStatic => actualElement.isStatic;
-
-  @override
-  MethodElement get actualElement => super.actualElement as MethodElement;
 }
 
 /**
  * Instances of the class `ParameterElementHandle` implement a handle to a
  * `ParameterElement`.
  */
-class ParameterElementHandle extends VariableElementHandle implements ParameterElement {
+class ParameterElementHandle extends VariableElementHandle
+    implements ParameterElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -813,7 +890,13 @@ class ParameterElementHandle extends VariableElementHandle implements ParameterE
   ParameterElementHandle(ParameterElement element) : super(element);
 
   @override
-  SourceRange get defaultValueRange => actualElement.defaultValueRange;
+  ParameterElement get actualElement => super.actualElement as ParameterElement;
+
+  @override
+  String get defaultValueCode => actualElement.defaultValueCode;
+
+  @override
+  bool get isInitializingFormal => actualElement.isInitializingFormal;
 
   @override
   ElementKind get kind => ElementKind.PARAMETER;
@@ -826,12 +909,6 @@ class ParameterElementHandle extends VariableElementHandle implements ParameterE
 
   @override
   SourceRange get visibleRange => actualElement.visibleRange;
-
-  @override
-  bool get isInitializingFormal => actualElement.isInitializingFormal;
-
-  @override
-  ParameterElement get actualElement => super.actualElement as ParameterElement;
 }
 
 /**
@@ -846,35 +923,50 @@ class PrefixElementHandle extends ElementHandle implements PrefixElement {
   PrefixElementHandle(PrefixElement element) : super(element);
 
   @override
-  LibraryElement get enclosingElement => super.enclosingElement as LibraryElement;
+  PrefixElement get actualElement => super.actualElement as PrefixElement;
+
+  @override
+  LibraryElement get enclosingElement =>
+      super.enclosingElement as LibraryElement;
 
   @override
   List<LibraryElement> get importedLibraries => actualElement.importedLibraries;
 
   @override
   ElementKind get kind => ElementKind.PREFIX;
-
-  @override
-  PrefixElement get actualElement => super.actualElement as PrefixElement;
 }
 
 /**
  * Instances of the class `PropertyAccessorElementHandle` implement a handle to a
  * `PropertyAccessorElement`.
  */
-class PropertyAccessorElementHandle extends ExecutableElementHandle implements PropertyAccessorElement {
+class PropertyAccessorElementHandle extends ExecutableElementHandle
+    implements PropertyAccessorElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
    * @param element the element being represented
    */
-  PropertyAccessorElementHandle(PropertyAccessorElement element) : super(element);
+  PropertyAccessorElementHandle(PropertyAccessorElement element)
+      : super(element);
 
   @override
-  PropertyAccessorElement get correspondingGetter => actualElement.correspondingGetter;
+  PropertyAccessorElement get actualElement =>
+      super.actualElement as PropertyAccessorElement;
 
   @override
-  PropertyAccessorElement get correspondingSetter => actualElement.correspondingSetter;
+  PropertyAccessorElement get correspondingGetter =>
+      actualElement.correspondingGetter;
+
+  @override
+  PropertyAccessorElement get correspondingSetter =>
+      actualElement.correspondingSetter;
+
+  @override
+  bool get isGetter => actualElement.isGetter;
+
+  @override
+  bool get isSetter => actualElement.isSetter;
 
   @override
   ElementKind get kind {
@@ -887,59 +979,52 @@ class PropertyAccessorElementHandle extends ExecutableElementHandle implements P
 
   @override
   PropertyInducingElement get variable => actualElement.variable;
-
-  @override
-  bool get isAbstract => actualElement.isAbstract;
-
-  @override
-  bool get isGetter => actualElement.isGetter;
-
-  @override
-  bool get isSetter => actualElement.isSetter;
-
-  @override
-  PropertyAccessorElement get actualElement => super.actualElement as PropertyAccessorElement;
 }
 
 /**
  * The abstract class `PropertyInducingElementHandle` implements the behavior common to
  * objects that implement a handle to an `PropertyInducingElement`.
  */
-abstract class PropertyInducingElementHandle extends VariableElementHandle implements PropertyInducingElement {
+abstract class PropertyInducingElementHandle extends VariableElementHandle
+    implements PropertyInducingElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
    * @param element the element being represented
    */
-  PropertyInducingElementHandle(PropertyInducingElement element) : super(element);
+  PropertyInducingElementHandle(PropertyInducingElement element)
+      : super(element);
+
+  @override
+  PropertyInducingElement get actualElement =>
+      super.actualElement as PropertyInducingElement;
 
   @override
   PropertyAccessorElement get getter => actualElement.getter;
+
+  @override
+  bool get isStatic => actualElement.isStatic;
 
   @override
   DartType get propagatedType => actualElement.propagatedType;
 
   @override
   PropertyAccessorElement get setter => actualElement.setter;
-
-  @override
-  bool get isStatic => actualElement.isStatic;
-
-  @override
-  PropertyInducingElement get actualElement => super.actualElement as PropertyInducingElement;
 }
 
 /**
  * Instances of the class `TopLevelVariableElementHandle` implement a handle to a
  * `TopLevelVariableElement`.
  */
-class TopLevelVariableElementHandle extends PropertyInducingElementHandle implements TopLevelVariableElement {
+class TopLevelVariableElementHandle extends PropertyInducingElementHandle
+    implements TopLevelVariableElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
    * @param element the element being represented
    */
-  TopLevelVariableElementHandle(TopLevelVariableElement element) : super(element);
+  TopLevelVariableElementHandle(TopLevelVariableElement element)
+      : super(element);
 
   @override
   ElementKind get kind => ElementKind.TOP_LEVEL_VARIABLE;
@@ -949,13 +1034,18 @@ class TopLevelVariableElementHandle extends PropertyInducingElementHandle implem
  * Instances of the class `TypeParameterElementHandle` implement a handle to a
  * [TypeParameterElement].
  */
-class TypeParameterElementHandle extends ElementHandle implements TypeParameterElement {
+class TypeParameterElementHandle extends ElementHandle
+    implements TypeParameterElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
    * @param element the element being represented
    */
   TypeParameterElementHandle(TypeParameterElement element) : super(element);
+
+  @override
+  TypeParameterElement get actualElement =>
+      super.actualElement as TypeParameterElement;
 
   @override
   DartType get bound => actualElement.bound;
@@ -965,16 +1055,14 @@ class TypeParameterElementHandle extends ElementHandle implements TypeParameterE
 
   @override
   TypeParameterType get type => actualElement.type;
-
-  @override
-  TypeParameterElement get actualElement => super.actualElement as TypeParameterElement;
 }
 
 /**
  * The abstract class `VariableElementHandle` implements the behavior common to objects that
  * implement a handle to an `VariableElement`.
  */
-abstract class VariableElementHandle extends ElementHandle implements VariableElement {
+abstract class VariableElementHandle extends ElementHandle
+    implements VariableElement {
   /**
    * Initialize a newly created element handle to represent the given element.
    *
@@ -983,13 +1071,10 @@ abstract class VariableElementHandle extends ElementHandle implements VariableEl
   VariableElementHandle(VariableElement element) : super(element);
 
   @override
+  VariableElement get actualElement => super.actualElement as VariableElement;
+
+  @override
   FunctionElement get initializer => actualElement.initializer;
-
-  @override
-  VariableDeclaration get node => actualElement.node;
-
-  @override
-  DartType get type => actualElement.type;
 
   @override
   bool get isConst => actualElement.isConst;
@@ -998,7 +1083,15 @@ abstract class VariableElementHandle extends ElementHandle implements VariableEl
   bool get isFinal => actualElement.isFinal;
 
   @override
-  VariableElement get actualElement => super.actualElement as VariableElement;
+  bool get isPotentiallyMutatedInClosure =>
+      actualElement.isPotentiallyMutatedInClosure;
+
+  @override
+  bool get isPotentiallyMutatedInScope =>
+      actualElement.isPotentiallyMutatedInScope;
+
+  @override
+  DartType get type => actualElement.type;
 }
 /**
  * TODO(scheglov) invalid implementation

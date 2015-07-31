@@ -5,10 +5,9 @@ part of petitparser;
  * successful parse result of the delegate.
  */
 class ActionParser extends DelegateParser {
-
   final Function _function;
 
-  ActionParser(parser, this._function): super(parser);
+  ActionParser(parser, this._function) : super(parser);
 
   @override
   Result parseOn(Context context) {
@@ -24,10 +23,10 @@ class ActionParser extends DelegateParser {
   Parser copy() => new ActionParser(_delegate, _function);
 
   @override
-  bool equalProperties(ActionParser other) {
-    return super.equalProperties(other) && _function == other._function;
+  bool hasEqualProperties(Parser other) {
+    return other is ActionParser && super.hasEqualProperties(other)
+        && _function == other._function;
   }
-
 }
 
 /**
@@ -35,16 +34,16 @@ class ActionParser extends DelegateParser {
  * its delegate.
  */
 class TrimmingParser extends DelegateParser {
+  Parser _left;
+  Parser _right;
 
-  Parser _trimmer;
-
-  TrimmingParser(parser, this._trimmer): super(parser);
+  TrimmingParser(parser, this._left, this._right) : super(parser);
 
   @override
   Result parseOn(Context context) {
     var current = context;
     do {
-      current = _trimmer.parseOn(current);
+      current = _left.parseOn(current);
     } while (current.isSuccess);
     var result = _delegate.parseOn(current);
     if (result.isFailure) {
@@ -52,34 +51,35 @@ class TrimmingParser extends DelegateParser {
     }
     current = result;
     do {
-      current = _trimmer.parseOn(current);
+      current = _right.parseOn(current);
     } while (current.isSuccess);
     return current.success(result.value);
   }
 
   @override
-  Parser copy() => new TrimmingParser(_delegate, _trimmer);
+  Parser copy() => new TrimmingParser(_delegate, _left, _right);
 
   @override
-  List<Parser> get children => [_delegate, _trimmer];
+  List<Parser> get children => [_delegate, _left, _right];
 
   @override
   void replace(Parser source, Parser target) {
     super.replace(source, target);
-    if (_trimmer == source) {
-      _trimmer = target;
+    if (_left == source) {
+      _left = target;
+    }
+    if (_right == source) {
+      _right = target;
     }
   }
-
 }
 
 /**
- * A parser that answers a substring or sublist of the range its delegate
+ * A parser that answers a substring or sub-list of the range its delegate
  * parses.
  */
 class FlattenParser extends DelegateParser {
-
-  FlattenParser(parser): super(parser);
+  FlattenParser(parser) : super(parser);
 
   @override
   Result parseOn(Context context) {
@@ -96,21 +96,20 @@ class FlattenParser extends DelegateParser {
 
   @override
   Parser copy() => new FlattenParser(_delegate);
-
 }
 
 /**
  * A parser that answers a token of the result its delegate parses.
  */
 class TokenParser extends DelegateParser {
-
-  TokenParser(parser): super(parser);
+  TokenParser(parser) : super(parser);
 
   @override
   Result parseOn(Context context) {
     var result = _delegate.parseOn(context);
     if (result.isSuccess) {
-      var token = new Token(result.value, context.buffer, context.position, result.position);
+      var token = new Token(
+          result.value, context.buffer, context.position, result.position);
       return result.success(token);
     } else {
       return result;
@@ -119,5 +118,4 @@ class TokenParser extends DelegateParser {
 
   @override
   Parser copy() => new TokenParser(_delegate);
-
 }

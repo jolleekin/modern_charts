@@ -21,10 +21,34 @@ export 'src/generated/ast.dart';
 export 'src/generated/error.dart';
 export 'src/generated/utilities_dart.dart';
 
+/// Parses a string of Dart code into an AST.
+///
+/// If [name] is passed, it's used in error messages as the name of the code
+/// being parsed.
+///
+/// Throws an [AnalyzerErrorGroup] if any errors occurred, unless
+/// [suppressErrors] is `true`, in which case any errors are discarded.
+///
+/// If [parseFunctionBodies] is [false] then only function signatures will be
+/// parsed.
+CompilationUnit parseCompilationUnit(String contents,
+    {String name, bool suppressErrors: false, bool parseFunctionBodies: true}) {
+  if (name == null) name = '<unknown source>';
+  var source = new StringSource(contents, name);
+  return _parseSource(contents, source,
+      suppressErrors: suppressErrors, parseFunctionBodies: parseFunctionBodies);
+}
+
 /// Parses a Dart file into an AST.
-CompilationUnit parseDartFile(String path) {
+///
+/// Throws an [AnalyzerErrorGroup] if any errors occurred, unless
+/// [suppressErrors] is `true`, in which case any errors are discarded.
+///
+/// If [parseFunctionBodies] is [false] then only function signatures will be
+/// parsed.
+CompilationUnit parseDartFile(String path,
+    {bool suppressErrors: false, bool parseFunctionBodies: true}) {
   String contents = new File(path).readAsStringSync();
-  var errorCollector = new _ErrorCollector();
   var sourceFactory = new SourceFactory([new FileUriResolver()]);
 
   var absolutePath = pathos.absolute(path);
@@ -36,36 +60,20 @@ CompilationUnit parseDartFile(String path) {
     throw new ArgumentError("Source $source doesn't exist");
   }
 
-  var reader = new CharSequenceReader(contents);
-  var scanner = new Scanner(source, reader, errorCollector);
-  var token = scanner.tokenize();
-  var parser = new Parser(source, errorCollector);
-  var unit = parser.parseCompilationUnit(token);
-  unit.lineInfo = new LineInfo(scanner.lineStarts);
-
-  if (errorCollector.hasErrors) throw errorCollector.group;
-
-  return unit;
+  return _parseSource(contents, source,
+      suppressErrors: suppressErrors, parseFunctionBodies: parseFunctionBodies);
 }
 
-/// Parses a string of Dart code into an AST.
-///
-/// If [name] is passed, it's used in error messages as the name of the code
-/// being parsed.
-///
-/// Throws an [AnalyzerErrorGroup] if any errors occurred, unless
-/// [suppressErrors] is `true`, in which case any errors are discarded.
-CompilationUnit parseCompilationUnit(String contents,
-    {String name, bool suppressErrors: false}) {
-  if (name == null) name = '<unknown source>';
-  var source = new StringSource(contents, name);
-  var errorCollector = new _ErrorCollector();
+CompilationUnit _parseSource(String contents, Source source,
+    {bool suppressErrors: false, bool parseFunctionBodies: true}) {
   var reader = new CharSequenceReader(contents);
+  var errorCollector = new _ErrorCollector();
   var scanner = new Scanner(source, reader, errorCollector);
   var token = scanner.tokenize();
-  var parser = new Parser(source, errorCollector);
-  var unit = parser.parseCompilationUnit(token);
-  unit.lineInfo = new LineInfo(scanner.lineStarts);
+  var parser = new Parser(source, errorCollector)
+    ..parseFunctionBodies = parseFunctionBodies;
+  var unit = parser.parseCompilationUnit(token)
+    ..lineInfo = new LineInfo(scanner.lineStarts);
 
   if (errorCollector.hasErrors && !suppressErrors) throw errorCollector.group;
 
@@ -108,14 +116,14 @@ String stringLiteralToString(StringLiteral literal) {
 class _ErrorCollector extends AnalysisErrorListener {
   final _errors = <AnalysisError>[];
 
-  /// Whether any errors where collected.
-  bool get hasErrors => !_errors.isEmpty;
+  _ErrorCollector();
 
   /// The group of errors collected.
   AnalyzerErrorGroup get group =>
-    new AnalyzerErrorGroup.fromAnalysisErrors(_errors);
+      new AnalyzerErrorGroup.fromAnalysisErrors(_errors);
 
-  _ErrorCollector();
+  /// Whether any errors where collected.
+  bool get hasErrors => !_errors.isEmpty;
 
   void onError(AnalysisError error) => _errors.add(error);
 }

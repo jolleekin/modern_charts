@@ -26,11 +26,22 @@ class CommandLineOptions {
   /** Whether to display version information */
   final bool displayVersion;
 
-  /** Whether to enable support for the proposed async feature. */
-  final bool enableAsync;
+  /**
+   * Whether to enable null-aware operators (DEP 9).
+   */
+  final bool enableNullAwareOperators;
 
-  /** Whether to enable support for the proposed enum feature. */
-  final bool enableEnum;
+  /**
+   * Whether to strictly follow the specification when generating warnings on
+   * "call" methods (fixes dartbug.com/21938).
+   */
+  final bool enableStrictCallChecks;
+
+  /**
+   * Whether to treat type mismatches found during constant evaluation as
+   * errors.
+   */
+  final bool enableTypeChecks;
 
   /** Whether to ignore unrecognized flags */
   final bool ignoreUnrecognizedFlags;
@@ -65,27 +76,37 @@ class CommandLineOptions {
   /** Whether to treat warnings as fatal */
   final bool warningsAreFatal;
 
+  /** A table mapping library URIs to the file system path where the library
+   *  source is located.
+   */
+  final Map<String, String> customUrlMappings;
+
   /**
    * Initialize options from the given parsed [args].
    */
-  CommandLineOptions._fromArgs(ArgResults args, Map<String, String> definedVariables)
-    : dartSdkPath = args['dart-sdk'],
-      this.definedVariables = definedVariables,
-      disableHints = args['no-hints'],
-      displayVersion = args['version'],
-      enableAsync = args['enable-async'],
-      enableEnum = args['enable-enum'],
-      ignoreUnrecognizedFlags = args['ignore-unrecognized-flags'],
-      log = args['log'],
-      machineFormat = args['machine'] || args['format'] == 'machine',
-      packageRootPath = args['package-root'],
-      perf = args['perf'],
-      shouldBatch = args['batch'],
-      showPackageWarnings = args['show-package-warnings'] || args['package-warnings'],
-      showSdkWarnings = args['show-sdk-warnings'] || args['warnings'],
-      sourceFiles = args.rest,
-      warmPerf = args['warm-perf'],
-      warningsAreFatal = args['fatal-warnings'];
+  CommandLineOptions._fromArgs(ArgResults args,
+      Map<String, String> definedVariables,
+      Map<String, String> customUrlMappings)
+      : dartSdkPath = args['dart-sdk'],
+        this.definedVariables = definedVariables,
+        disableHints = args['no-hints'],
+        displayVersion = args['version'],
+        enableNullAwareOperators = args['enable-null-aware-operators'],
+        enableStrictCallChecks = args['enable-strict-call-checks'],
+        enableTypeChecks = args['enable_type_checks'],
+        ignoreUnrecognizedFlags = args['ignore-unrecognized-flags'],
+        log = args['log'],
+        machineFormat = args['machine'] || args['format'] == 'machine',
+        packageRootPath = args['package-root'],
+        perf = args['perf'],
+        shouldBatch = args['batch'],
+        showPackageWarnings = args['show-package-warnings'] ||
+            args['package-warnings'],
+        showSdkWarnings = args['show-sdk-warnings'] || args['warnings'],
+        sourceFiles = args.rest,
+        warmPerf = args['warm-perf'],
+        warningsAreFatal = args['fatal-warnings'],
+        this.customUrlMappings = customUrlMappings;
 
   /**
    * Parse [args] into [CommandLineOptions] describing the specified
@@ -111,61 +132,123 @@ class CommandLineOptions {
     return options;
   }
 
+  static String _getVersion() {
+    try {
+      // This is relative to bin/snapshot, so ../..
+      String versionPath =
+          Platform.script.resolve('../../version').toFilePath();
+      File versionFile = new File(versionPath);
+      return versionFile.readAsStringSync().trim();
+    } catch (_) {
+      // This happens when the script is not running in the context of an SDK.
+      return "<unknown>";
+    }
+  }
+
   static CommandLineOptions _parse(List<String> args) {
     args = args.expand((String arg) => arg.split('=')).toList();
-    var parser = new _CommandLineParser()
-      ..addFlag('batch', abbr: 'b', help: 'Run in batch mode',
-          defaultsTo: false, negatable: false)
+    var parser = new CommandLineParser()
+      ..addFlag('batch',
+          abbr: 'b',
+          help: 'Run in batch mode',
+          defaultsTo: false,
+          negatable: false)
       ..addOption('dart-sdk', help: 'The path to the Dart SDK')
-      ..addOption('package-root', abbr: 'p',
-          help: 'The path to the package root')
+      ..addOption('package-root',
+          abbr: 'p',
+          help: 'The path to the package root. The flag package-root is deprecated. Remove to use package information computed by pub.')
       ..addOption('format',
           help: 'Specifies the format in which errors are displayed')
       ..addFlag('machine',
           help: 'Print errors in a format suitable for parsing (deprecated)',
-          defaultsTo: false, negatable: false)
-      ..addFlag('version', help: 'Print the analyzer version',
-          defaultsTo: false, negatable: false)
-      ..addFlag('no-hints', help: 'Do not show hint results',
-          defaultsTo: false, negatable: false)
+          defaultsTo: false,
+          negatable: false)
+      ..addFlag('version',
+          help: 'Print the analyzer version',
+          defaultsTo: false,
+          negatable: false)
+      ..addFlag('no-hints',
+          help: 'Do not show hint results', defaultsTo: false, negatable: false)
       ..addFlag('ignore-unrecognized-flags',
           help: 'Ignore unrecognized command line flags',
-          defaultsTo: false, negatable: false)
-      ..addFlag('fatal-warnings', help: 'Treat non-type warnings as fatal',
-          defaultsTo: false, negatable: false)
+          defaultsTo: false,
+          negatable: false)
+      ..addFlag('fatal-warnings',
+          help: 'Treat non-type warnings as fatal',
+          defaultsTo: false,
+          negatable: false)
       ..addFlag('package-warnings',
           help: 'Show warnings from package: imports',
-          defaultsTo: false, negatable: false)
+          defaultsTo: false,
+          negatable: false)
       ..addFlag('show-package-warnings',
           help: 'Show warnings from package: imports (deprecated)',
-          defaultsTo: false, negatable: false)
+          defaultsTo: false,
+          negatable: false)
       ..addFlag('perf',
           help: 'Show performance statistics',
-          defaultsTo: false, negatable: false)
-      ..addFlag('warnings', help: 'Show warnings from SDK imports',
-          defaultsTo: false, negatable: false)
-      ..addFlag('show-sdk-warnings', help: 'Show warnings from SDK imports (deprecated)',
-          defaultsTo: false, negatable: false)
-      ..addFlag('help', abbr: 'h', help: 'Display this help message',
-          defaultsTo: false, negatable: false)
+          defaultsTo: false,
+          negatable: false)
+      ..addFlag('warnings',
+          help: 'Show warnings from SDK imports',
+          defaultsTo: false,
+          negatable: false)
+      ..addFlag('show-sdk-warnings',
+          help: 'Show warnings from SDK imports (deprecated)',
+          defaultsTo: false,
+          negatable: false)
+      ..addFlag('help',
+          abbr: 'h',
+          help: 'Display this help message',
+          defaultsTo: false,
+          negatable: false)
+      ..addOption('url-mapping',
+          help: '--url-mapping=libraryUri,/path/to/library.dart directs the '
+          'analyzer to use "library.dart" as the source for an import ' 'of "libraryUri"',
+          allowMultiple: true)
       //
       // Hidden flags.
       //
       ..addFlag('enable-async',
           help: 'Enable support for the proposed async feature',
-          defaultsTo: false, negatable: false, hide: true)
+          defaultsTo: false,
+          negatable: false,
+          hide: true)
       ..addFlag('enable-enum',
           help: 'Enable support for the proposed enum feature',
-          defaultsTo: false, negatable: false, hide: true)
-      ..addFlag('log', help: 'Log additional messages and exceptions',
-          defaultsTo: false, negatable: false, hide: true)
+          defaultsTo: false,
+          negatable: false,
+          hide: true)
+      ..addFlag('enable-null-aware-operators',
+          help: 'Enable support for null-aware operators (DEP 9)',
+          defaultsTo: false,
+          negatable: false,
+          hide: true)
+      ..addFlag('enable-strict-call-checks',
+          help: 'Fix issue 21938',
+          defaultsTo: false,
+          negatable: false,
+          hide: true)
+      ..addFlag('log',
+          help: 'Log additional messages and exceptions',
+          defaultsTo: false,
+          negatable: false,
+          hide: true)
       ..addFlag('warm-perf',
           help: 'Show both cold and warm performance statistics',
-          defaultsTo: false, negatable: false, hide: true);
+          defaultsTo: false,
+          negatable: false,
+          hide: true)
+      ..addFlag('enable_type_checks',
+          help: 'Check types in constant evaluation',
+          defaultsTo: false,
+          negatable: false,
+          hide: true);
 
     try {
       // TODO(scheglov) https://code.google.com/p/dart/issues/detail?id=11061
-      args = args.map((String arg) => arg == '-batch' ? '--batch' : arg).toList();
+      args =
+          args.map((String arg) => arg == '-batch' ? '--batch' : arg).toList();
       Map<String, String> definedVariables = <String, String>{};
       var results = parser.parse(args, definedVariables);
       // help requests
@@ -189,13 +272,22 @@ class CommandLineOptions {
           exit(15);
         }
       }
-      return new CommandLineOptions._fromArgs(results, definedVariables);
+      Map<String, String> customUrlMappings = <String, String>{};
+      for (String mapping in results['url-mapping']) {
+        List<String> splitMapping = mapping.split(',');
+        if (splitMapping.length != 2) {
+          _showUsage(parser);
+          exit(15);
+        }
+        customUrlMappings[splitMapping[0]] = splitMapping[1];
+      }
+      return new CommandLineOptions._fromArgs(
+          results, definedVariables, customUrlMappings);
     } on FormatException catch (e) {
       print(e.message);
       _showUsage(parser);
       exit(15);
     }
-
   }
 
   static _showUsage(parser) {
@@ -203,19 +295,6 @@ class CommandLineOptions {
     print(parser.getUsage());
     print('');
     print('For more information, see http://www.dartlang.org/tools/analyzer.');
-  }
-
-  static String _getVersion() {
-    try {
-      // This is relative to bin/snapshot, so ../..
-      String versionPath =
-          Platform.script.resolve('../../version').toFilePath();
-      File versionFile = new File(versionPath);
-      return versionFile.readAsStringSync().trim();
-    } catch (_) {
-      // This happens when the script is not running in the context of an SDK.
-      return "<unknown>";
-    }
   }
 }
 
@@ -225,16 +304,18 @@ class CommandLineOptions {
  * TODO(pquitslund): when the args package supports ignoring unrecognized
  * options/flags, this class can be replaced with a simple [ArgParser] instance.
  */
-class _CommandLineParser {
-
+class CommandLineParser {
   final List<String> _knownFlags;
+  final bool _alwaysIgnoreUnrecognized;
   final ArgParser _parser;
 
   /** Creates a new command line parser */
-  _CommandLineParser()
-    : _knownFlags = <String>[],
-      _parser = new ArgParser();
+  CommandLineParser({bool alwaysIgnoreUnrecognized: false})
+      : _knownFlags = <String>[],
+        _alwaysIgnoreUnrecognized = alwaysIgnoreUnrecognized,
+        _parser = new ArgParser(allowTrailingOptions: true);
 
+  ArgParser get parser => _parser;
 
   /**
    * Defines a flag.
@@ -244,8 +325,13 @@ class _CommandLineParser {
   void addFlag(String name, {String abbr, String help, bool defaultsTo: false,
       bool negatable: true, void callback(bool value), bool hide: false}) {
     _knownFlags.add(name);
-    _parser.addFlag(name, abbr: abbr, help: help, defaultsTo: defaultsTo,
-        negatable: negatable, callback: callback, hide: hide);
+    _parser.addFlag(name,
+        abbr: abbr,
+        help: help,
+        defaultsTo: defaultsTo,
+        negatable: negatable,
+        callback: callback,
+        hide: hide);
   }
 
   /**
@@ -254,21 +340,25 @@ class _CommandLineParser {
    * See [ArgParser.addOption()].
    */
   void addOption(String name, {String abbr, String help, List<String> allowed,
-      Map<String, String> allowedHelp, String defaultsTo,
-      void callback(value), bool allowMultiple: false}) {
+      Map<String, String> allowedHelp, String defaultsTo, void callback(value),
+      bool allowMultiple: false}) {
     _knownFlags.add(name);
-    _parser.addOption(name, abbr: abbr, help: help, allowed: allowed,
-        allowedHelp: allowedHelp, defaultsTo: defaultsTo, callback: callback,
+    _parser.addOption(name,
+        abbr: abbr,
+        help: help,
+        allowed: allowed,
+        allowedHelp: allowedHelp,
+        defaultsTo: defaultsTo,
+        callback: callback,
         allowMultiple: allowMultiple);
   }
-
 
   /**
    * Generates a string displaying usage information for the defined options.
    *
-   * See [ArgParser.getUsage()].
+   * See [ArgParser.usage].
    */
-  String getUsage() => _parser.getUsage();
+  String getUsage() => _parser.usage;
 
   /**
    * Parses [args], a list of command-line arguments, matches them against the
@@ -277,9 +367,12 @@ class _CommandLineParser {
    *
    * See [ArgParser].
    */
-  ArgResults parse(List<String> args, Map<String, String> definedVariables) => _parser.parse(_filterUnknowns(parseDefinedVariables(args, definedVariables)));
+  ArgResults parse(
+      List<String> args, Map<String, String> definedVariables) => _parser
+      .parse(_filterUnknowns(parseDefinedVariables(args, definedVariables)));
 
-  List<String> parseDefinedVariables(List<String> args, Map<String, String> definedVariables) {
+  List<String> parseDefinedVariables(
+      List<String> args, Map<String, String> definedVariables) {
     int count = args.length;
     List<String> remainingArgs = <String>[];
     for (int i = 0; i < count; i++) {
@@ -297,39 +390,50 @@ class _CommandLineParser {
     return remainingArgs;
   }
 
-  List<String> _filterUnknowns(args) {
+  List<String> _filterUnknowns(List<String> args) {
 
-    // Only filter args if the ignore flag is specified.
-    if (!args.contains('--ignore-unrecognized-flags')) {
-      return args;
-    }
+    // Only filter args if the ignore flag is specified, or if
+    // _alwaysIgnoreUnrecognized was set to true
+    if (_alwaysIgnoreUnrecognized ||
+        args.contains('--ignore-unrecognized-flags')) {
 
-    //TODO(pquitslund): replace w/ the following once library skew issues are sorted out
-    //return args.where((arg) => !arg.startsWith('--') ||
-    //  _knownFlags.contains(arg.substring(2)));
+      //TODO(pquitslund): replace w/ the following once library skew issues are
+      // sorted out
+      //return args.where((arg) => !arg.startsWith('--') ||
+      //  _knownFlags.contains(arg.substring(2)));
 
-    // Filter all unrecognized flags and options.
-    var filtered = <String>[];
-    for (var i=0; i < args.length; ++i) {
-      var arg = args[i];
-      if (arg.startsWith('--') && arg.length > 2) {
-        if (!_knownFlags.contains(arg.substring(2))) {
-          print('remove: $arg');
-          //"eat" params by advancing to the next flag/option
-          i = _getNextFlagIndex(args, i);
+      // Filter all unrecognized flags and options.
+      List<String> filtered = <String>[];
+      for (int i = 0; i < args.length; ++i) {
+        String arg = args[i];
+        if (arg.startsWith('--') && arg.length > 2) {
+          String option = arg.substring(2);
+          // strip the last '=value'
+          int equalsOffset = option.lastIndexOf('=');
+          if (equalsOffset != -1) {
+            option = option.substring(0, equalsOffset);
+          }
+          // check the option
+          if (!_knownFlags.contains(option)) {
+            //print('remove: $arg');
+            //"eat" params by advancing to the next flag/option
+            i = _getNextFlagIndex(args, i);
+          } else {
+            filtered.add(arg);
+          }
         } else {
           filtered.add(arg);
         }
-      } else {
-        filtered.add(arg);
       }
-    }
 
-    return filtered;
+      return filtered;
+    } else {
+      return args;
+    }
   }
 
   _getNextFlagIndex(args, i) {
-    for ( ; i < args.length; ++i) {
+    for (; i < args.length; ++i) {
       if (args[i].startsWith('--')) {
         return i;
       }

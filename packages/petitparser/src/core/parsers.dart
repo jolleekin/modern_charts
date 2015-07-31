@@ -8,8 +8,10 @@ part of petitparser;
  */
 Parser epsilon([result]) => new EpsilonParser(result);
 
+/**
+ * A parser that consumes nothing and succeeds.
+ */
 class EpsilonParser extends Parser {
-
   final _result;
 
   EpsilonParser(this._result);
@@ -21,10 +23,10 @@ class EpsilonParser extends Parser {
   Parser copy() => new EpsilonParser(_result);
 
   @override
-  bool equalProperties(EpsilonParser other) {
-    return super.equalProperties(other) && _result == other._result;
+  bool hasEqualProperties(Parser other) {
+    return other is EpsilonParser && super.hasEqualProperties(other)
+        && _result == other._result;
   }
-
 }
 
 /**
@@ -36,8 +38,10 @@ Parser failure([String message = 'unable to parse']) {
   return new FailureParser(message);
 }
 
+/**
+ * A parser that consumes nothing and fails.
+ */
 class FailureParser extends Parser {
-
   final String _message;
 
   FailureParser(this._message);
@@ -52,10 +56,11 @@ class FailureParser extends Parser {
   Parser copy() => new FailureParser(_message);
 
   @override
-  bool equalProperties(FailureParser other) {
-    return super.equalProperties(other) && _message == other._message;
+  bool hasEqualProperties(Parser other) {
+    return other is FailureParser
+        && super.hasEqualProperties(other)
+        && _message == other._message;
   }
-
 }
 
 /**
@@ -68,13 +73,16 @@ class FailureParser extends Parser {
  *     var p = undefined();
  *     p.set(char('a').seq(p).or(char('b')));
  */
-SetableParser undefined([String message = 'undefined parser']) {
-  return failure(message).setable();
+SettableParser undefined([String message = 'undefined parser']) {
+  return failure(message).settable();
 }
 
-class SetableParser extends DelegateParser {
-
-  SetableParser(parser): super(parser);
+/**
+ * A parser that is not defined, but that can be set at a later
+ * point in time.
+ */
+class SettableParser extends DelegateParser {
+  SettableParser(parser) : super(parser);
 
   /**
    * Sets the receiver to delegate to [parser].
@@ -82,6 +90,5 @@ class SetableParser extends DelegateParser {
   void set(Parser parser) => replace(children[0], parser);
 
   @override
-  Parser copy() => new SetableParser(_delegate);
-
+  Parser copy() => new SettableParser(_delegate);
 }

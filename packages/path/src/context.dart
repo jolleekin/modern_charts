@@ -40,11 +40,13 @@ class Context {
           "allowed.");
     }
 
-    return new Context._(style, current);
+    return new Context._(style as InternalStyle, current);
   }
 
   /// Create a [Context] to be used internally within path.
-  Context._internal() : style = Style.platform, _current = null;
+  Context._internal()
+      : style = Style.platform as InternalStyle,
+        _current = null;
 
   Context._(this.style, this._current);
 
@@ -70,7 +72,7 @@ class Context {
   ///
   /// If [current] isn't absolute, this won't return an absolute path.
   String absolute(String part1, [String part2, String part3, String part4,
-              String part5, String part6, String part7]) {
+      String part5, String part6, String part7]) {
     return join(current, part1, part2, part3, part4, part5, part6, part7);
   }
 
@@ -94,7 +96,7 @@ class Context {
   ///
   ///     context.basenameWithoutExtension('path/to/foo.dart/'); // -> 'foo'
   String basenameWithoutExtension(String path) =>
-    _parse(path).basenameWithoutExtension;
+      _parse(path).basenameWithoutExtension;
 
   /// Gets the part of [path] before the last separator.
   ///
@@ -148,10 +150,7 @@ class Context {
   ///     context.rootPrefix('path/to/foo'); // -> ''
   ///     context.rootPrefix('http://dartlang.org/path/to/foo');
   ///       // -> 'http://dartlang.org'
-  String rootPrefix(String path) {
-    var root = _parse(path).root;
-    return root == null ? '' : root;
-  }
+  String rootPrefix(String path) => path.substring(0, style.rootLength(path));
 
   /// Returns `true` if [path] is an absolute path and `false` if it is a
   /// relative path.
@@ -165,7 +164,7 @@ class Context {
   /// relative to the root of the current URL. Since root-relative paths are
   /// still absolute in every other sense, [isAbsolute] will return true for
   /// them. They can be detected using [isRootRelative].
-  bool isAbsolute(String path) => _parse(path).isAbsolute;
+  bool isAbsolute(String path) => style.rootLength(path) > 0;
 
   /// Returns `true` if [path] is a relative path and `false` if it is absolute.
   /// On POSIX systems, absolute paths start with a `/` (forward slash). On
@@ -181,7 +180,7 @@ class Context {
   /// them. They can be detected using [isRootRelative].
   ///
   /// No POSIX and Windows paths are root-relative.
-  bool isRootRelative(String path) => _parse(path).isRootRelative;
+  bool isRootRelative(String path) => style.isRootRelative(path);
 
   /// Joins the given path parts into a single path. Example:
   ///
@@ -197,8 +196,17 @@ class Context {
   ///     context.join('path', '/to', 'foo'); // -> '/to/foo'
   ///
   String join(String part1, [String part2, String part3, String part4,
-              String part5, String part6, String part7, String part8]) {
-    var parts = [part1, part2, part3, part4, part5, part6, part7, part8];
+      String part5, String part6, String part7, String part8]) {
+    var parts = <String>[
+      part1,
+      part2,
+      part3,
+      part4,
+      part5,
+      part6,
+      part7,
+      part8
+    ];
     _validateArgList("join", parts);
     return joinAll(parts.where((part) => part != null));
   }
@@ -277,8 +285,7 @@ class Context {
   List<String> split(String path) {
     var parsed = _parse(path);
     // Filter out empty parts that exist due to multiple separators in a row.
-    parsed.parts = parsed.parts.where((part) => !part.isEmpty)
-                               .toList();
+    parsed.parts = parsed.parts.where((part) => !part.isEmpty).toList();
     if (parsed.root != null) parsed.parts.insert(0, parsed.root);
     return parsed.parts;
   }
@@ -326,7 +333,13 @@ class Context {
   /// "/", no path can be determined. In this case, a [PathException] will be
   /// thrown.
   String relative(String path, {String from}) {
-    from = from == null ? current : this.join(current, from);
+    // Avoid calling [current] since it is slow and calling join() when
+    // [from] is absolute does nothing.
+    if (from == null) {
+      from = current;
+    } else if (this.isRelative(from) || this.isRootRelative(from)) {
+      from = this.join(current, from);
+    }
 
     // We can't determine the path from a relative path to an absolute path.
     if (this.isRelative(from) && this.isAbsolute(path)) {
@@ -357,15 +370,16 @@ class Context {
     // one. In Windows, drive letters are case-insenstive and we allow
     // calculation of relative paths, even if a path has not been normalized.
     if (fromParsed.root != pathParsed.root &&
-        ((fromParsed.root ==  null || pathParsed.root == null) ||
-          fromParsed.root.toLowerCase().replaceAll('/', '\\') !=
-          pathParsed.root.toLowerCase().replaceAll('/', '\\'))) {
+        ((fromParsed.root == null || pathParsed.root == null) ||
+            fromParsed.root.toLowerCase().replaceAll('/', '\\') !=
+                pathParsed.root.toLowerCase().replaceAll('/', '\\'))) {
       return pathParsed.toString();
     }
 
     // Strip off their common prefix.
-    while (fromParsed.parts.length > 0 && pathParsed.parts.length > 0 &&
-           fromParsed.parts[0] == pathParsed.parts[0]) {
+    while (fromParsed.parts.length > 0 &&
+        pathParsed.parts.length > 0 &&
+        fromParsed.parts[0] == pathParsed.parts[0]) {
       fromParsed.parts.removeAt(0);
       fromParsed.separators.removeAt(1);
       pathParsed.parts.removeAt(0);
@@ -378,11 +392,11 @@ class Context {
     if (fromParsed.parts.length > 0 && fromParsed.parts[0] == '..') {
       throw new PathException('Unable to find a path to "$path" from "$from".');
     }
-    pathParsed.parts.insertAll(0,
-        new List.filled(fromParsed.parts.length, '..'));
+    pathParsed.parts.insertAll(
+        0, new List.filled(fromParsed.parts.length, '..'));
     pathParsed.separators[0] = '';
-    pathParsed.separators.insertAll(1,
-        new List.filled(fromParsed.parts.length, style.separator));
+    pathParsed.separators.insertAll(
+        1, new List.filled(fromParsed.parts.length, style.separator));
 
     // Corner case: the paths completely collapsed.
     if (pathParsed.parts.length == 0) return '.';
@@ -391,7 +405,10 @@ class Context {
     // Don't add a final '/.' in that case.
     if (pathParsed.parts.length > 1 && pathParsed.parts.last == '.') {
       pathParsed.parts.removeLast();
-      pathParsed.separators..removeLast()..removeLast()..add('');
+      pathParsed.separators
+        ..removeLast()
+        ..removeLast()
+        ..add('');
     }
 
     // Make it relative.
@@ -418,7 +435,8 @@ class Context {
     }
 
     var parts = this.split(relative);
-    return this.isRelative(relative) && parts.first != '..' &&
+    return this.isRelative(relative) &&
+        parts.first != '..' &&
         parts.first != '.';
   }
 
@@ -521,7 +539,6 @@ class Context {
 
     var path = normalize(fromUri(uri));
     var rel = relative(path);
-    var components = split(rel);
 
     // Only return a relative path if it's actually shorter than the absolute
     // path. This avoids ugly things like long "../" chains to get to the root
@@ -547,7 +564,8 @@ _validateArgList(String method, List<String> args) {
     // Show the arguments.
     var message = new StringBuffer();
     message.write("$method(");
-    message.write(args.take(numArgs)
+    message.write(args
+        .take(numArgs)
         .map((arg) => arg == null ? "null" : '"$arg"')
         .join(", "));
     message.write("): part ${i - 1} was null, but part $i was not.");

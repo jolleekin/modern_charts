@@ -7,13 +7,14 @@
 
 library engine.source.io;
 
-import 'source.dart';
-import 'java_core.dart';
-import 'java_io.dart';
-import 'utilities_general.dart';
-import 'instrumentation.dart';
+import 'dart:collection';
+
 import 'engine.dart';
+import 'java_core.dart';
 import 'java_engine.dart';
+import 'java_io.dart';
+import 'source.dart';
+
 export 'source.dart';
 
 /**
@@ -22,37 +23,23 @@ export 'source.dart';
  */
 class DirectoryBasedSourceContainer implements SourceContainer {
   /**
-   * Append the system file separator to the given path unless the path already ends with a
-   * separator.
-   *
-   * @param path the path to which the file separator is to be added
-   * @return a path that ends with the system file separator
-   */
-  static String _appendFileSeparator(String path) {
-    if (path == null || path.length <= 0 || path.codeUnitAt(path.length - 1) == JavaFile.separatorChar) {
-      return path;
-    }
-    return "${path}${JavaFile.separator}";
-  }
-
-  /**
    * The container's path (not `null`).
    */
   String _path;
 
   /**
    * Construct a container representing the specified directory and containing any sources whose
-   * [Source#getFullName] starts with the directory's path. This is a convenience method,
-   * fully equivalent to [DirectoryBasedSourceContainer#DirectoryBasedSourceContainer]
-   * .
+   * [Source.fullName] starts with the directory's path. This is a convenience method,
+   * fully equivalent to [DirectoryBasedSourceContainer.con2].
    *
    * @param directory the directory (not `null`)
    */
-  DirectoryBasedSourceContainer.con1(JavaFile directory) : this.con2(directory.getPath());
+  DirectoryBasedSourceContainer.con1(JavaFile directory)
+      : this.con2(directory.getPath());
 
   /**
    * Construct a container representing the specified path and containing any sources whose
-   * [Source#getFullName] starts with the specified path.
+   * [Source.fullName] starts with the specified path.
    *
    * @param path the path (not `null` and not empty)
    */
@@ -61,10 +48,7 @@ class DirectoryBasedSourceContainer implements SourceContainer {
   }
 
   @override
-  bool contains(Source source) => source.fullName.startsWith(_path);
-
-  @override
-  bool operator ==(Object obj) => (obj is DirectoryBasedSourceContainer) && obj.path == path;
+  int get hashCode => _path.hashCode;
 
   /**
    * Answer the receiver's path, used to determine if a source is contained in the receiver.
@@ -74,25 +58,69 @@ class DirectoryBasedSourceContainer implements SourceContainer {
   String get path => _path;
 
   @override
-  int get hashCode => _path.hashCode;
+  bool operator ==(Object obj) =>
+      (obj is DirectoryBasedSourceContainer) && obj.path == path;
 
   @override
-  String toString() => "SourceContainer[${_path}]";
+  bool contains(Source source) => source.fullName.startsWith(_path);
+
+  @override
+  String toString() => "SourceContainer[$_path]";
+
+  /**
+   * Append the system file separator to the given path unless the path already ends with a
+   * separator.
+   *
+   * @param path the path to which the file separator is to be added
+   * @return a path that ends with the system file separator
+   */
+  static String _appendFileSeparator(String path) {
+    if (path == null ||
+        path.length <= 0 ||
+        path.codeUnitAt(path.length - 1) == JavaFile.separatorChar) {
+      return path;
+    }
+    return "$path${JavaFile.separator}";
+  }
 }
 
 /**
  * Instances of the class `FileBasedSource` implement a source that represents a file.
  */
-class FileBasedSource implements Source {
+class FileBasedSource extends Source {
+  /**
+   * A function that changes the way that files are read off of disk.
+   */
+  static Function fileReadMode = (String s) => s;
+
+  /**
+   * Map from encoded URI/filepath pair to a unique integer identifier.  This
+   * identifier is used for equality tests and hash codes.
+   *
+   * The URI and filepath are joined into a pair by separating them with an '@'
+   * character.
+   */
+  static final Map<String, int> _idTable = new HashMap<String, int>();
+
   /**
    * The URI from which this source was originally derived.
    */
   final Uri uri;
 
   /**
+   * The unique ID associated with this [FileBasedSource].
+   */
+  final int id;
+
+  /**
    * The file represented by this source.
    */
   final JavaFile file;
+
+  /**
+   * The cached absolute path of this source.
+   */
+  String _absolutePath;
 
   /**
    * The cached encoding for this source.
@@ -112,22 +140,33 @@ class FileBasedSource implements Source {
    * @param file the file represented by this source
    * @param uri the URI from which this source was originally derived
    */
-  FileBasedSource.con2(this.uri, this.file);
-
-  @override
-  bool operator ==(Object object) => object != null && object is FileBasedSource && file == object.file;
-
-  @override
-  bool exists() => file.isFile();
+  FileBasedSource.con2(Uri uri, JavaFile file)
+      : uri = uri,
+        file = file,
+        id = _idTable.putIfAbsent(
+            '$uri@${file.getPath()}', () => _idTable.length);
 
   @override
   TimestampedData<String> get contents {
-    TimeCounter_TimeCounterHandle handle = PerformanceStatistics.io.start();
-    try {
+    return PerformanceStatistics.io.makeCurrentWhile(() {
       return contentsFromFile;
-    } finally {
-      _reportIfSlowIO(handle.stop());
-    }
+    });
+  }
+
+  /**
+   * Get the contents and timestamp of the underlying file.
+   *
+   * Clients should consider using the the method [AnalysisContext.getContents]
+   * because contexts can have local overrides of the content of a source that the source is not
+   * aware of.
+   *
+   * @return the contents of the source paired with the modification stamp of the source
+   * @throws Exception if the contents of this source could not be accessed
+   * See [contents].
+   */
+  TimestampedData<String> get contentsFromFile {
+    return new TimestampedData<String>(
+        file.lastModified(), fileReadMode(file.readAsStringSync()));
   }
 
   @override
@@ -139,7 +178,18 @@ class FileBasedSource implements Source {
   }
 
   @override
-  String get fullName => file.getAbsolutePath();
+  String get fullName {
+    if (_absolutePath == null) {
+      _absolutePath = file.getAbsolutePath();
+    }
+    return _absolutePath;
+  }
+
+  @override
+  int get hashCode => id;
+
+  @override
+  bool get isInSystemLibrary => uri.scheme == DartUriResolver.DART_SCHEME;
 
   @override
   int get modificationStamp => file.lastModified();
@@ -161,10 +211,11 @@ class FileBasedSource implements Source {
   }
 
   @override
-  int get hashCode => file.hashCode;
+  bool operator ==(Object object) =>
+      object is FileBasedSource && id == object.id;
 
   @override
-  bool get isInSystemLibrary => uri.scheme == DartUriResolver.DART_SCHEME;
+  bool exists() => file.isFile();
 
   @override
   Uri resolveRelativeUri(Uri containedUri) {
@@ -175,17 +226,20 @@ class FileBasedSource implements Source {
         String scheme = uri.scheme;
         String part = uri.path;
         if (scheme == DartUriResolver.DART_SCHEME && part.indexOf('/') < 0) {
-          part = "${part}/${part}.dart";
+          part = "$part/$part.dart";
         }
-        baseUri = parseUriWithException("${scheme}:/${part}");
+        baseUri = parseUriWithException("$scheme:/$part");
       }
       Uri result = baseUri.resolveUri(containedUri);
       if (isOpaque) {
-        result = parseUriWithException("${result.scheme}:${result.path.substring(1)}");
+        result = parseUriWithException(
+            "${result.scheme}:${result.path.substring(1)}");
       }
       return result;
     } catch (exception, stackTrace) {
-      throw new AnalysisException("Could not resolve URI (${containedUri}) relative to source (${uri})", new CaughtException(exception, stackTrace));
+      throw new AnalysisException(
+          "Could not resolve URI ($containedUri) relative to source ($uri)",
+          new CaughtException(exception, stackTrace));
     }
   }
 
@@ -195,37 +249,6 @@ class FileBasedSource implements Source {
       return "<unknown source>";
     }
     return file.getAbsolutePath();
-  }
-
-  /**
-   * Get the contents and timestamp of the underlying file.
-   *
-   * Clients should consider using the the method [AnalysisContext#getContents]
-   * because contexts can have local overrides of the content of a source that the source is not
-   * aware of.
-   *
-   * @return the contents of the source paired with the modification stamp of the source
-   * @throws Exception if the contents of this source could not be accessed
-   * @see #getContents()
-   */
-  TimestampedData<String> get contentsFromFile {
-    return new TimestampedData<String>(file.lastModified(), file.readAsStringSync());
-  }
-
-  /**
-   * Record the time the IO took if it was slow
-   */
-  void _reportIfSlowIO(int nanos) {
-    //If slower than 10ms
-    if (nanos > 10 * TimeCounter.NANOS_PER_MILLI) {
-      InstrumentationBuilder builder = Instrumentation.builder2("SlowIO");
-      try {
-        builder.data3("fileName", fullName);
-        builder.metric2("IO-Time-Nanos", nanos);
-      } finally {
-        builder.log();
-      }
-    }
   }
 }
 
@@ -238,14 +261,6 @@ class FileUriResolver extends UriResolver {
    */
   static String FILE_SCHEME = "file";
 
-  /**
-   * Return `true` if the given URI is a `file` URI.
-   *
-   * @param uri the URI being tested
-   * @return `true` if the given URI is a `file` URI
-   */
-  static bool isFileUri(Uri uri) => uri.scheme == FILE_SCHEME;
-
   @override
   Source resolveAbsolute(Uri uri) {
     if (!isFileUri(uri)) {
@@ -253,6 +268,14 @@ class FileUriResolver extends UriResolver {
     }
     return new FileBasedSource.con2(uri, new JavaFile.fromUri(uri));
   }
+
+  /**
+   * Return `true` if the given URI is a `file` URI.
+   *
+   * @param uri the URI being tested
+   * @return `true` if the given URI is a `file` URI
+   */
+  static bool isFileUri(Uri uri) => uri.scheme == FILE_SCHEME;
 }
 
 /**
@@ -274,7 +297,8 @@ abstract class LocalSourcePredicate {
    * Instance of [LocalSourcePredicate] that returns `true` for all [Source]s
    * except of SDK.
    */
-  static final LocalSourcePredicate NOT_SDK = new LocalSourcePredicate_NOT_SDK();
+  static final LocalSourcePredicate NOT_SDK =
+      new LocalSourcePredicate_NOT_SDK();
 
   /**
    * Determines if the given [Source] is local.
@@ -310,11 +334,6 @@ class LocalSourcePredicate_TRUE implements LocalSourcePredicate {
  */
 class PackageUriResolver extends UriResolver {
   /**
-   * The package directories that `package` URI's are assumed to be relative to.
-   */
-  final List<JavaFile> _packagesDirectories;
-
-  /**
    * The name of the `package` scheme.
    */
   static String PACKAGE_SCHEME = "package";
@@ -325,12 +344,9 @@ class PackageUriResolver extends UriResolver {
   static bool _CanLogRequiredKeyIoException = true;
 
   /**
-   * Return `true` if the given URI is a `package` URI.
-   *
-   * @param uri the URI being tested
-   * @return `true` if the given URI is a `package` URI
+   * The package directories that `package` URI's are assumed to be relative to.
    */
-  static bool isPackageUri(Uri uri) => PACKAGE_SCHEME == uri.scheme;
+  final List<JavaFile> _packagesDirectories;
 
   /**
    * Initialize a newly created resolver to resolve `package` URI's relative to the given
@@ -341,8 +357,49 @@ class PackageUriResolver extends UriResolver {
    */
   PackageUriResolver(this._packagesDirectories) {
     if (_packagesDirectories.length < 1) {
-      throw new IllegalArgumentException("At least one package directory must be provided");
+      throw new IllegalArgumentException(
+          "At least one package directory must be provided");
     }
+  }
+
+  /**
+   * If the list of package directories contains one element, return it.
+   * Otherwise raise an exception.  Intended for testing.
+   */
+  String get packagesDirectory_forTesting {
+    int length = _packagesDirectories.length;
+    if (length != 1) {
+      throw new Exception('Expected 1 package directory, found $length');
+    }
+    return _packagesDirectories[0].getPath();
+  }
+
+  /**
+   * Answer the canonical file for the specified package.
+   *
+   * @param packagesDirectory the "packages" directory (not `null`)
+   * @param pkgName the package name (not `null`, not empty)
+   * @param relPath the path relative to the package directory (not `null`, no leading slash,
+   *          but may be empty string)
+   * @return the file (not `null`)
+   */
+  JavaFile getCanonicalFile(
+      JavaFile packagesDirectory, String pkgName, String relPath) {
+    JavaFile pkgDir = new JavaFile.relative(packagesDirectory, pkgName);
+    try {
+      pkgDir = pkgDir.getCanonicalFile();
+    } on JavaIOException catch (exception, stackTrace) {
+      if (!exception.toString().contains("Required key not available")) {
+        AnalysisEngine.instance.logger.logError("Canonical failed: $pkgDir",
+            new CaughtException(exception, stackTrace));
+      } else if (_CanLogRequiredKeyIoException) {
+        _CanLogRequiredKeyIoException = false;
+        AnalysisEngine.instance.logger.logError("Canonical failed: $pkgDir",
+            new CaughtException(exception, stackTrace));
+      }
+    }
+    return new JavaFile.relative(pkgDir, relPath.replaceAll(
+        '/', new String.fromCharCode(JavaFile.separatorChar)));
   }
 
   @override
@@ -375,61 +432,37 @@ class PackageUriResolver extends UriResolver {
     for (JavaFile packagesDirectory in _packagesDirectories) {
       JavaFile resolvedFile = new JavaFile.relative(packagesDirectory, path);
       if (resolvedFile.exists()) {
-        JavaFile canonicalFile = getCanonicalFile(packagesDirectory, pkgName, relPath);
+        JavaFile canonicalFile =
+            getCanonicalFile(packagesDirectory, pkgName, relPath);
         if (_isSelfReference(packagesDirectory, canonicalFile)) {
           uri = canonicalFile.toURI();
         }
         return new FileBasedSource.con2(uri, canonicalFile);
       }
     }
-    return new FileBasedSource.con2(uri, getCanonicalFile(_packagesDirectories[0], pkgName, relPath));
+    return new FileBasedSource.con2(
+        uri, getCanonicalFile(_packagesDirectories[0], pkgName, relPath));
   }
 
   @override
   Uri restoreAbsolute(Source source) {
-    if (source is FileBasedSource) {
-      String sourcePath = source.file.getPath();
-      for (JavaFile packagesDirectory in _packagesDirectories) {
-        List<JavaFile> pkgFolders = packagesDirectory.listFiles();
-        if (pkgFolders != null) {
-          for (JavaFile pkgFolder in pkgFolders) {
-            try {
-              String pkgCanonicalPath = pkgFolder.getCanonicalPath();
-              if (sourcePath.startsWith(pkgCanonicalPath)) {
-                String relPath = sourcePath.substring(pkgCanonicalPath.length);
-                return parseUriWithException("${PACKAGE_SCHEME}:${pkgFolder.getName()}${relPath}");
-              }
-            } catch (e) {
+    String sourcePath = source.fullName;
+    for (JavaFile packagesDirectory in _packagesDirectories) {
+      List<JavaFile> pkgFolders = packagesDirectory.listFiles();
+      if (pkgFolders != null) {
+        for (JavaFile pkgFolder in pkgFolders) {
+          try {
+            String pkgCanonicalPath = pkgFolder.getCanonicalPath();
+            if (sourcePath.startsWith(pkgCanonicalPath)) {
+              String relPath = sourcePath.substring(pkgCanonicalPath.length);
+              return parseUriWithException(
+                  "$PACKAGE_SCHEME:${pkgFolder.getName()}$relPath");
             }
-          }
+          } catch (e) {}
         }
       }
     }
     return null;
-  }
-
-  /**
-   * Answer the canonical file for the specified package.
-   *
-   * @param packagesDirectory the "packages" directory (not `null`)
-   * @param pkgName the package name (not `null`, not empty)
-   * @param relPath the path relative to the package directory (not `null`, no leading slash,
-   *          but may be empty string)
-   * @return the file (not `null`)
-   */
-  JavaFile getCanonicalFile(JavaFile packagesDirectory, String pkgName, String relPath) {
-    JavaFile pkgDir = new JavaFile.relative(packagesDirectory, pkgName);
-    try {
-      pkgDir = pkgDir.getCanonicalFile();
-    } on JavaIOException catch (e) {
-      if (!e.toString().contains("Required key not available")) {
-        AnalysisEngine.instance.logger.logError2("Canonical failed: ${pkgDir}", e);
-      } else if (_CanLogRequiredKeyIoException) {
-        _CanLogRequiredKeyIoException = false;
-        AnalysisEngine.instance.logger.logError2("Canonical failed: ${pkgDir}", e);
-      }
-    }
-    return new JavaFile.relative(pkgDir, relPath.replaceAll('/', new String.fromCharCode(JavaFile.separatorChar)));
   }
 
   /**
@@ -443,8 +476,16 @@ class PackageUriResolver extends UriResolver {
     }
     String rootPath = rootDir.getAbsolutePath();
     String filePath = file.getAbsolutePath();
-    return filePath.startsWith("${rootPath}/lib");
+    return filePath.startsWith("$rootPath/lib");
   }
+
+  /**
+   * Return `true` if the given URI is a `package` URI.
+   *
+   * @param uri the URI being tested
+   * @return `true` if the given URI is a `package` URI
+   */
+  static bool isPackageUri(Uri uri) => PACKAGE_SCHEME == uri.scheme;
 }
 
 /**
@@ -455,14 +496,6 @@ class RelativeFileUriResolver extends UriResolver {
    * The name of the `file` scheme.
    */
   static String FILE_SCHEME = "file";
-
-  /**
-   * Return `true` if the given URI is a `file` URI.
-   *
-   * @param uri the URI being tested
-   * @return `true` if the given URI is a `file` URI
-   */
-  static bool isFileUri(Uri uri) => uri.scheme == FILE_SCHEME;
 
   /**
    * The directories for the relatvie URI's
@@ -478,7 +511,8 @@ class RelativeFileUriResolver extends UriResolver {
    * Initialize a newly created resolver to resolve `file` URI's relative to the given root
    * directory.
    */
-  RelativeFileUriResolver(this._rootDirectory, this._relativeDirectories) : super();
+  RelativeFileUriResolver(this._rootDirectory, this._relativeDirectories)
+      : super();
 
   @override
   Source resolveAbsolute(Uri uri) {
@@ -495,4 +529,12 @@ class RelativeFileUriResolver extends UriResolver {
     }
     return null;
   }
+
+  /**
+   * Return `true` if the given URI is a `file` URI.
+   *
+   * @param uri the URI being tested
+   * @return `true` if the given URI is a `file` URI
+   */
+  static bool isFileUri(Uri uri) => uri.scheme == FILE_SCHEME;
 }

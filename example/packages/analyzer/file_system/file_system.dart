@@ -10,17 +10,39 @@ import 'package:analyzer/src/generated/source.dart';
 import 'package:path/path.dart';
 import 'package:watcher/watcher.dart';
 
-
 /**
  * [File]s are leaf [Resource]s which contain data.
  */
 abstract class File extends Resource {
   /**
+   * Return the last-modified stamp of the file.
+   * Throws [FileSystemException] if the file does not exist.
+   */
+  int get modificationStamp;
+
+  /**
    * Create a new [Source] instance that serves this file.
    */
   Source createSource([Uri uri]);
+
+  /**
+   * Synchronously read the entire file contents as a [String].
+   * Throws [FileSystemException] if the file does not exist.
+   */
+  String readAsStringSync();
 }
 
+/**
+ * Base class for all file system exceptions.
+ */
+class FileSystemException implements Exception {
+  final String path;
+  final String message;
+
+  FileSystemException(this.path, this.message);
+
+  String toString() => 'FileSystemException(path=$path; message=$message)';
+}
 
 /**
  * [Folder]s are [Resource]s which may contain files and/or other folders.
@@ -54,12 +76,19 @@ abstract class Folder extends Resource {
   Resource getChild(String relPath);
 
   /**
+   * Return a [Folder] representing a child [Resource] with the given
+   * [relPath].  This call does not check whether a folder with the given name
+   * exists on the filesystem--client must call the [Folder]'s `exists` getter
+   * to determine whether the folder actually exists.
+   */
+  Folder getChildAssumingFolder(String relPath);
+
+  /**
    * Return a list of existing direct children [Resource]s (folders and files)
    * in this folder, in no particular order.
    */
   List<Resource> getChildren();
 }
-
 
 /**
  * The abstract class [Resource] is an abstraction of file or folder.
@@ -94,7 +123,6 @@ abstract class Resource {
   bool isOrContains(String path);
 }
 
-
 /**
  * Instances of the class [ResourceProvider] convert [String] paths into
  * [Resource]s.
@@ -109,8 +137,16 @@ abstract class ResourceProvider {
    * Return the [Resource] that corresponds to the given [path].
    */
   Resource getResource(String path);
-}
 
+  /**
+   * Return the folder in which the plugin with the given [pluginId] can store
+   * state that will persist across sessions. The folder returned for a given id
+   * will not be returned for a different id, ensuring that plugins do not need
+   * to be concerned with file name collisions with other plugins, assuming that
+   * the plugin ids are unique. The plugin ids must be valid folder names.
+   */
+  Folder getStateLocation(String pluginId);
+}
 
 /**
  * A [UriResolver] for [Resource]s.
@@ -130,19 +166,19 @@ class ResourceUriResolver extends UriResolver {
     if (!_isFileUri(uri)) {
       return null;
     }
-    Resource resource = _provider.getResource(_provider.pathContext.fromUri(uri)
-        );
+    Resource resource =
+        _provider.getResource(_provider.pathContext.fromUri(uri));
     if (resource is File) {
       return resource.createSource(uri);
     }
     return null;
   }
 
+  @override
+  Uri restoreAbsolute(Source source) => source.uri;
+
   /**
-   * Return `true` if the given URI is a `file` URI.
-   *
-   * @param uri the URI being tested
-   * @return `true` if the given URI is a `file` URI
+   * Return `true` if the given [uri] is a `file` URI.
    */
   static bool _isFileUri(Uri uri) => uri.scheme == _FILE_SCHEME;
 }

@@ -6,7 +6,6 @@ library path.style.url;
 
 import '../characters.dart' as chars;
 import '../internal_style.dart';
-import '../utils.dart';
 
 /// The style for URL paths.
 class UrlStyle extends InternalStyle {
@@ -19,8 +18,8 @@ class UrlStyle extends InternalStyle {
   // Deprecated properties.
 
   final separatorPattern = new RegExp(r'/');
-  final needsSeparatorPattern = new RegExp(
-      r"(^[a-zA-Z][-+.a-zA-Z\d]*://|[^/])$");
+  final needsSeparatorPattern =
+      new RegExp(r"(^[a-zA-Z][-+.a-zA-Z\d]*://|[^/])$");
   final rootPattern = new RegExp(r"[a-zA-Z][-+.a-zA-Z\d]*://[^/]*");
   final relativeRootPattern = new RegExp(r"^/");
 
@@ -36,53 +35,30 @@ class UrlStyle extends InternalStyle {
 
     // A URI that's just "scheme://" needs an extra separator, despite ending
     // with "/".
-    var root = _getRoot(path);
-    return root != null && root.endsWith('://');
+    return path.endsWith("://") && rootLength(path) == path.length;
   }
 
-  String getRoot(String path) {
-    var root = _getRoot(path);
-    return root == null ? getRelativeRoot(path) : root;
+  int rootLength(String path) {
+    if (path.isEmpty) return 0;
+    if (isSeparator(path.codeUnitAt(0))) return 1;
+    var index = path.indexOf("/");
+    if (index > 0 && path.startsWith('://', index - 1)) {
+      // The root part is up until the next '/', or the full path. Skip
+      // '://' and search for '/' after that.
+      index = path.indexOf('/', index + 2);
+      if (index > 0) return index;
+      return path.length;
+    }
+    return 0;
   }
 
-  String getRelativeRoot(String path) {
-    if (path.isEmpty) return null;
-    return isSeparator(path.codeUnitAt(0)) ? "/" : null;
-  }
+  bool isRootRelative(String path) =>
+      path.isNotEmpty && isSeparator(path.codeUnitAt(0));
+
+  String getRelativeRoot(String path) => isRootRelative(path) ? '/' : null;
 
   String pathFromUri(Uri uri) => uri.toString();
 
   Uri relativePathToUri(String path) => Uri.parse(path);
   Uri absolutePathToUri(String path) => Uri.parse(path);
-
-  // A helper method for [getRoot] that doesn't handle relative roots.
-  String _getRoot(String path) {
-    if (path.isEmpty) return null;
-
-    // We aren't using a RegExp for this because they're slow (issue 19090). If
-    // we could, we'd match against r"[a-zA-Z][-+.a-zA-Z\d]*://[^/]*".
-
-    if (!isAlphabetic(path.codeUnitAt(0))) return null;
-    var start = 1;
-    for (; start < path.length; start++) {
-      var char = path.codeUnitAt(start);
-      if (isAlphabetic(char)) continue;
-      if (isNumeric(char)) continue;
-      if (char == chars.MINUS || char == chars.PLUS || char == chars.PERIOD) {
-        continue;
-      }
-
-      break;
-    }
-
-    if (start + 3 > path.length) return null;
-    if (path.substring(start, start + 3) != '://') return null;
-    start += 3;
-
-    // A URL root can end with a non-"/" prefix.
-    while (start < path.length && !isSeparator(path.codeUnitAt(start))) {
-      start++;
-    }
-    return path.substring(0, start);
-  }
 }

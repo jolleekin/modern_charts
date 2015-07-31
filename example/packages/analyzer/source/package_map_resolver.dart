@@ -6,7 +6,8 @@ library source.package_map_resolver;
 
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/generated/source.dart';
-
+import 'package:analyzer/src/util/asserts.dart' as asserts;
+import 'package:path/path.dart' as pathos;
 
 /**
  * A [UriResolver] implementation for the `package:` scheme that uses a map of
@@ -35,7 +36,10 @@ class PackageMapUriResolver extends UriResolver {
    * [packageMap] is a table mapping package names to the paths of the
    * directories containing the package
    */
-  PackageMapUriResolver(this.resourceProvider, this.packageMap);
+  PackageMapUriResolver(this.resourceProvider, this.packageMap) {
+    asserts.notNull(resourceProvider);
+    asserts.notNull(packageMap);
+  }
 
   @override
   Source resolveAbsolute(Uri uri) {
@@ -45,16 +49,13 @@ class PackageMapUriResolver extends UriResolver {
     // Prepare path.
     String path = uri.path;
     // Prepare path components.
-    String pkgName;
-    String relPath;
     int index = path.indexOf('/');
     if (index == -1 || index == 0) {
       return null;
-    } else {
-      // <pkgName>/<relPath>
-      pkgName = path.substring(0, index);
-      relPath = path.substring(index + 1);
     }
+    // <pkgName>/<relPath>
+    String pkgName = path.substring(0, index);
+    String relPath = path.substring(index + 1);
     // Try to find an existing file.
     List<Folder> packageDirs = packageMap[pkgName];
     if (packageDirs != null) {
@@ -76,17 +77,50 @@ class PackageMapUriResolver extends UriResolver {
   @override
   Uri restoreAbsolute(Source source) {
     String sourcePath = source.fullName;
+    Uri bestMatch;
+    int bestMatchLength = -1;
+    pathos.Context pathContext = resourceProvider.pathContext;
     for (String pkgName in packageMap.keys) {
       List<Folder> pkgFolders = packageMap[pkgName];
-      for (Folder pkgFolder in pkgFolders) {
+      for (int i = 0; i < pkgFolders.length; i++) {
+        Folder pkgFolder = pkgFolders[i];
         String pkgFolderPath = pkgFolder.path;
-        if (sourcePath.startsWith(pkgFolderPath)) {
-          String relPath = sourcePath.substring(pkgFolderPath.length);
-          return new Uri(path: '${PACKAGE_SCHEME}:$pkgName$relPath');
+        if (pkgFolderPath.length > bestMatchLength &&
+            sourcePath.startsWith(pkgFolderPath + pathContext.separator)) {
+          String relPath = sourcePath.substring(pkgFolderPath.length + 1);
+          if (_isReversibleTranslation(pkgFolders, i, relPath)) {
+            List<String> relPathComponents = pathContext.split(relPath);
+            String relUriPath = pathos.posix.joinAll(relPathComponents);
+            bestMatch = Uri.parse('$PACKAGE_SCHEME:$pkgName/$relUriPath');
+            bestMatchLength = pkgFolderPath.length;
+          }
         }
       }
     }
-    return null;
+    return bestMatch;
+  }
+
+  /**
+   * A translation from file path to package URI has just been found for
+   * using the [packageDirIndex]th element of [packageDirs], and appending the
+   * relative path [relPath].  Determine whether the translation is reversible;
+   * that is, whether translating the package URI pack to a file path will
+   * produce the file path we started with.
+   */
+  bool _isReversibleTranslation(
+      List<Folder> packageDirs, int packageDirIndex, String relPath) {
+    // The translation is reversible provided there is no prior element of
+    // [packageDirs] containing a file matching [relPath].
+    for (int i = 0; i < packageDirIndex; i++) {
+      Folder packageDir = packageDirs[i];
+      if (packageDir.exists) {
+        Resource result = packageDir.getChild(relPath);
+        if (result is File && result.exists) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**

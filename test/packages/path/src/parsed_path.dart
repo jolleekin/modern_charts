@@ -41,16 +41,14 @@ class ParsedPath {
   bool get isAbsolute => root != null;
 
   factory ParsedPath.parse(String path, InternalStyle style) {
-    var before = path;
-
     // Remove the root prefix, if any.
     var root = style.getRoot(path);
-    var isRootRelative = style.getRelativeRoot(path) != null;
+    var isRootRelative = style.isRootRelative(path);
     if (root != null) path = path.substring(root.length);
 
     // Split the parts on path separators.
-    var parts = [];
-    var separators = [];
+    var parts = <String>[];
+    var separators = <String>[];
 
     var start = 0;
 
@@ -78,8 +76,8 @@ class ParsedPath {
     return new ParsedPath._(style, root, isRootRelative, parts, separators);
   }
 
-  ParsedPath._(this.style, this.root, this.isRootRelative, this.parts,
-      this.separators);
+  ParsedPath._(
+      this.style, this.root, this.isRootRelative, this.parts, this.separators);
 
   String get basename {
     var copy = this.clone();
@@ -104,7 +102,7 @@ class ParsedPath {
   void normalize() {
     // Handle '.', '..', and empty parts.
     var leadingDoubles = 0;
-    var newParts = [];
+    var newParts = <String>[];
     for (var part in parts) {
       if (part == '.' || part == '') {
         // Do nothing. Ignore it.
@@ -132,11 +130,11 @@ class ParsedPath {
     }
 
     // Canonicalize separators.
-    var newSeparators = new List.generate(
+    var newSeparators = new List<String>.generate(
         newParts.length, (_) => style.separator, growable: true);
-    newSeparators.insert(0,
-        isAbsolute && newParts.length > 0 && style.needsSeparator(root) ?
-            style.separator : '');
+    newSeparators.insert(0, isAbsolute &&
+        newParts.length > 0 &&
+        style.needsSeparator(root) ? style.separator : '');
 
     parts = newParts;
     separators = newSeparators;
@@ -180,8 +178,6 @@ class ParsedPath {
     return [file.substring(0, lastDot), file.substring(lastDot)];
   }
 
-  ParsedPath clone() => new ParsedPath._(
-      style, root, isRootRelative,
+  ParsedPath clone() => new ParsedPath._(style, root, isRootRelative,
       new List.from(parts), new List.from(separators));
 }
-
