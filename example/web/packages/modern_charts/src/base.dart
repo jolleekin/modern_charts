@@ -1143,7 +1143,7 @@ class _TwoAxisChart extends Chart {
     // y-axis labels.
 
     _axesContext
-        ..fillStyle = _options['xAxis']['labels']['style']['color']
+        ..fillStyle = _options['yAxis']['labels']['style']['color']
         ..font = _getFont(_options['yAxis']['labels']['style'])
         ..textAlign = 'right'
         ..textBaseline = 'middle';
