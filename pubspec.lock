@@ -33,3 +33,5 @@ packages:
     description: watcher
     source: hosted
     version: "0.9.5"
+sdks:
+  dart: ">=1.7.0-dev.4.0 <2.0.0"
