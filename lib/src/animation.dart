@@ -123,8 +123,9 @@ double easeInElastic(double t) {
   } else {
     s = p / (2 * math.PI) * math.asin(1 / a);
   }
-  return -(a * math.pow(2, 10 * (t =
-      t - 1)) * math.sin((t - s) * (2 * math.PI) / p));
+  return -(a *
+      math.pow(2, 10 * (t = t - 1)) *
+      math.sin((t - s) * (2 * math.PI) / p));
 }
 
 double easeOutElastic(double t) {
@@ -156,10 +157,16 @@ double easeInOutElastic(double t) {
   } else {
     s = p / (2 * math.PI) * math.asin(1 / a);
   }
-  if (t < 1) return -.5 * (a * math.pow(2, 10 * (t =
-      t - 1)) * math.sin((t - s) * (2 * math.PI) / p));
-  return a * math.pow(2, -10 * (t =
-      t - 1)) * math.sin((t - s) * (2 * math.PI) / p) * .5 + 1;
+  if (t < 1)
+    return -.5 *
+        (a *
+            math.pow(2, 10 * (t = t - 1)) *
+            math.sin((t - s) * (2 * math.PI) / p));
+  return a *
+          math.pow(2, -10 * (t = t - 1)) *
+          math.sin((t - s) * (2 * math.PI) / p) *
+          .5 +
+      1;
 }
 
 double easeInBack(double t) {

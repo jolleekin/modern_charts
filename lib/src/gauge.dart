@@ -55,11 +55,10 @@ class _Gauge extends _Pie {
 
     var y = center.y + .3 * fs1;
     ctx
-        ..font = font1
-        ..fillText(text1, center.x - .5 * w2, y)
-        ..font = font2
-        ..fillText(text2, center.x + .5 * w1, y);
-
+      ..font = font1
+      ..fillText(text1, center.x - .5 * w2, y)
+      ..font = font2
+      ..fillText(text2, center.x + .5 * w1, y);
   }
 }
 
@@ -98,23 +97,22 @@ class GaugeChart extends Chart {
   bool _drawSeries(double percent) {
     var style = _options['gaugeLabels']['style'];
     _seriesContext
-        ..strokeStyle = 'white'
-        ..textAlign = 'center';
+      ..strokeStyle = 'white'
+      ..textAlign = 'center';
     for (_Gauge gauge in _seriesList[0].entities) {
       var highlight = gauge.index == _focusedEntityGroupIndex;
       gauge.draw(_seriesContext, percent, highlight);
 
       var x = gauge.center.x;
-      var y =
-          gauge.center.y +
+      var y = gauge.center.y +
           gauge.outerRadius +
           style['fontSize'] +
           _AXIS_LABEL_MARGIN;
       _seriesContext
-          ..fillStyle = style['color']
-          ..font = _getFont(style)
-          ..textAlign = 'center'
-          ..fillText(gauge.name, x, y);
+        ..fillStyle = style['color']
+        ..font = _getFont(style)
+        ..textAlign = 'center'
+        ..fillText(gauge.name, x, y);
     }
     return false;
   }
@@ -127,20 +125,20 @@ class GaugeChart extends Chart {
     highlightColor = _changeColorAlpha(color, .5);
     var name = _dataTable.rows[entityIndex][0];
     return new _Gauge()
-        ..index = entityIndex
-        ..value = value
-        ..name = name
-        ..color = color
-        ..backgroundColor = _options['gaugeBackgroundColor']
-        ..highlightColor = highlightColor
-        ..oldValue = 0
-        ..oldStartAngle = _START_ANGLE
-        ..oldEndAngle = _START_ANGLE
-        ..center = _getGaugeCenter(entityIndex)
-        ..innerRadius = _gaugeInnerRadius
-        ..outerRadius = _gaugeOuterRadius
-        ..startAngle = _START_ANGLE
-        ..endAngle = _START_ANGLE + _valueToAngle(value);
+      ..index = entityIndex
+      ..value = value
+      ..name = name
+      ..color = color
+      ..backgroundColor = _options['gaugeBackgroundColor']
+      ..highlightColor = highlightColor
+      ..oldValue = 0
+      ..oldStartAngle = _START_ANGLE
+      ..oldEndAngle = _START_ANGLE
+      ..center = _getGaugeCenter(entityIndex)
+      ..innerRadius = _gaugeInnerRadius
+      ..outerRadius = _gaugeOuterRadius
+      ..startAngle = _START_ANGLE
+      ..endAngle = _START_ANGLE + _valueToAngle(value);
   }
 
   @override
@@ -151,14 +149,14 @@ class GaugeChart extends Chart {
       var color = _getColor(i);
       var highlightColor = _changeColorAlpha(color, .5);
       gauge
-          ..index = i
-          ..name = _dataTable.rows[i][0]
-          ..color = color
-          ..highlightColor = highlightColor
-          ..center = _getGaugeCenter(i)
-          ..innerRadius = _gaugeInnerRadius
-          ..outerRadius = _gaugeOuterRadius
-          ..endAngle = _START_ANGLE + _valueToAngle(gauge.value);
+        ..index = i
+        ..name = _dataTable.rows[i][0]
+        ..color = color
+        ..highlightColor = highlightColor
+        ..center = _getGaugeCenter(i)
+        ..innerRadius = _gaugeInnerRadius
+        ..outerRadius = _gaugeOuterRadius
+        ..endAngle = _START_ANGLE + _valueToAngle(gauge.value);
     }
   }
 
@@ -166,8 +164,8 @@ class GaugeChart extends Chart {
   void _updateTooltipContent() {
     var gauge = _seriesList[0].entities[_focusedEntityGroupIndex] as _Gauge;
     _tooltip.style
-        ..borderColor = gauge.color
-        ..padding = '3px 10px';
+      ..borderColor = gauge.color
+      ..padding = '3px 10px';
     var value = gauge.value.toString();
     if (_tooltipValueFormatter != null) {
       value = _tooltipValueFormatter(gauge.value);
@@ -188,7 +186,8 @@ class GaugeChart extends Chart {
   Point _getTooltipPosition() {
     var gauge = _seriesList[0].entities[_focusedEntityGroupIndex] as _Gauge;
     var x = gauge.center.x - _tooltip.offsetWidth ~/ 2;
-    var y = gauge.center.y - 1.05 * gauge.outerRadius - _tooltip.offsetHeight - 5;
+    var y =
+        gauge.center.y - 1.05 * gauge.outerRadius - _tooltip.offsetHeight - 5;
     return new Point(x, y);
   }
 
@@ -196,5 +195,4 @@ class GaugeChart extends Chart {
     _defaultOptions = utils.extendMap(globalOptions, _gaugeChartDefaultOptions);
     _defaultOptions['legend']['position'] = 'none';
   }
-
 }

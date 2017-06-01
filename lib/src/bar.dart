@@ -186,7 +186,8 @@ class BarChart extends _TwoAxisChart {
   num _barGroupWidth;
 
   num _getBarLeft(int seriesIndex, int barIndex) {
-    return _xLabelX(barIndex) - .5 * _barGroupWidth +
+    return _xLabelX(barIndex) -
+        .5 * _barGroupWidth +
         _countVisibleSeries(seriesIndex) * (_barWidth + _barSpacing);
   }
 
@@ -240,8 +241,7 @@ class BarChart extends _TwoAxisChart {
 
   @override
   bool _drawSeries(double percent) {
-    for (var i = 0,
-        n = _seriesList.length; i < n; i++) {
+    for (var i = 0, n = _seriesList.length; i < n; i++) {
       if (percent == 1.0 && !_seriesVisible[i]) continue;
 
       var series = _seriesList[i];
@@ -258,10 +258,10 @@ class BarChart extends _TwoAxisChart {
         var opt = _options['series']['labels'];
         if (!opt['enabled']) continue;
         _seriesContext
-            ..fillStyle = opt['style']['color']
-            ..font = _getFont(opt['style'])
-            ..textAlign = 'center'
-            ..textBaseline = 'alphabetic';
+          ..fillStyle = opt['style']['color']
+          ..font = _getFont(opt['style'])
+          ..textAlign = 'center'
+          ..textBaseline = 'alphabetic';
         for (_Bar bar in series.entities) {
           if (bar.value == null) continue;
           var x = bar.left + .5 * bar.width;
@@ -279,26 +279,38 @@ class BarChart extends _TwoAxisChart {
       String highlightColor) {
     var left = _getBarLeft(seriesIndex, entityIndex);
     var oldLeft = left;
-    if (seriesIndex > 0 && _seriesList != null) {
-      var leftAdjacentBar =
-          _seriesList[seriesIndex - 1].entities[entityIndex] as _Bar;
-      oldLeft = leftAdjacentBar.right;
-    }
+//    if (seriesIndex > 0 && _seriesList != null) {
+//      var leftAdjacentBar =
+//          _seriesList[seriesIndex - 1].entities[entityIndex] as _Bar;
+//      oldLeft = leftAdjacentBar.right;
+//    }
     var height = _valueToBarHeight(value);
+
+    // Animate width.
+    var oldHeight = height;
+    var oldWidth = 0;
+
+    if (_seriesList == null) {
+      // Data table changed. Animate height.
+      oldHeight = 0;
+      oldWidth = _barWidth;
+    }
+
     return new _Bar()
-        ..index = entityIndex
-        ..value = value
-        ..color = color
-        ..highlightColor = highlightColor
-        ..bottom = _xAxisTop
-        ..oldLeft = oldLeft
-        ..left = left
-        ..oldHeight = height
-        ..height = height
-        ..oldWidth = 0
-        ..width = _barWidth;
+      ..index = entityIndex
+      ..value = value
+      ..color = color
+      ..highlightColor = highlightColor
+      ..bottom = _xAxisTop
+      ..oldLeft = oldLeft
+      ..left = left
+      ..oldHeight = oldHeight
+      ..height = height
+      ..oldWidth = oldWidth
+      ..width = _barWidth;
   }
 
+  @override
   void _updateSeries([int index]) {
     var entityCount = _dataTable.rows.length;
     for (var i = 0; i < _seriesList.length; i++) {

@@ -17,8 +17,7 @@ double log10(double value) => math.log(value) / math.LN10;
 /// end value [end], and the interpolation factor [s].
 ///
 /// [start] and [end] can be of any type which defines three operators +, - , *.
-lerp(start, end, double s) =>
-    start + (end - start) * s;
+lerp(start, end, double s) => start + (end - start) * s;
 
 bool isInRange(num value, num min, num max) => value >= min && value <= max;
 
@@ -68,7 +67,7 @@ String hyphenate(String s) {
 
 /// Returns the maximum value in a [DataTable].
 double findMaxValue(DataTable table) {
-  var maxValue = -double.MAX_FINITE;
+  var maxValue = double.NEGATIVE_INFINITY;
   for (var row in table.rows) {
     for (var col in table.columns) {
       var value = row[col.index];
@@ -80,7 +79,7 @@ double findMaxValue(DataTable table) {
 
 /// Returns the minimum value of a 2D list of numbers.
 double findMinValue(DataTable table) {
-  var minValue = double.MAX_FINITE;
+  var minValue = double.INFINITY;
   for (var row in table.rows) {
     for (var col in table.columns) {
       var value = row[col.index];
@@ -105,8 +104,8 @@ double calculateInterval(double range, int targetSteps) {
   return msd * magPow;
 }
 
-double calculateMaxTextWidth(CanvasRenderingContext2D context, String font,
-    List<String> texts) {
+double calculateMaxTextWidth(
+    CanvasRenderingContext2D context, String font, List<String> texts) {
   var result = 0.0;
   context.font = font;
   for (var text in texts) {
@@ -183,9 +182,9 @@ Map cloneMap(Map src) {
 }
 
 Map extendMap(Map src, Map ext) {
- var result = cloneMap(src);
- ext.forEach((k, v) {
-   result[k] = v;
- });
- return result;
+  var result = cloneMap(src);
+  ext.forEach((k, v) {
+    result[k] = v;
+  });
+  return result;
 }

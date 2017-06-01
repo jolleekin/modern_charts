@@ -54,7 +54,7 @@ final _lineChartDefaultOptions = {
     // String - The color of the axis itself.
     'lineColor': '#c0c0c0',
 
-    // String - The width of the axis itself.
+    // num - The width of the axis itself.
     'lineWidth': 1,
 
     // Map - An object that controls the axis labels.
@@ -264,24 +264,23 @@ class LineChart extends _TwoAxisChart {
       var cp1 = (p.cp1 != null) ? utils.lerp(p.oldCp1, p.cp1, percent) : null;
       var cp2 = (p.cp2 != null) ? utils.lerp(p.oldCp2, p.cp2, percent) : null;
       return new _Point()
-          ..index = p.index
-          ..value = p.value
-          ..color = p.color
-          ..highlightColor = p.highlightColor
-          ..oldPointRadius = p.oldPointRadius
-          ..oldX = p.oldX
-          ..oldY = p.oldY
-          ..pointRadius = p.pointRadius
-          ..x = x
-          ..y = y
-          ..cp1 = cp1
-          ..cp2 = cp2;
+        ..index = p.index
+        ..value = p.value
+        ..color = p.color
+        ..highlightColor = p.highlightColor
+        ..oldPointRadius = p.oldPointRadius
+        ..oldX = p.oldX
+        ..oldY = p.oldY
+        ..pointRadius = p.pointRadius
+        ..x = x
+        ..y = y
+        ..cp1 = cp1
+        ..cp2 = cp2;
     }).toList();
   }
 
   @override
   bool _drawSeries(double percent) {
-
     void curveTo(Point cp1, Point cp2, _Point p) {
       if (cp2 == null && cp1 == null) {
         _seriesContext.lineTo(p.x, p.y);
@@ -326,9 +325,9 @@ class LineChart extends _TwoAxisChart {
           // fill the area between them and the x-axis.
           var point = points[j];
           _seriesContext
-              ..beginPath()
-              ..moveTo(point.x, _xAxisTop)
-              ..lineTo(point.x, point.y);
+            ..beginPath()
+            ..moveTo(point.x, _xAxisTop)
+            ..lineTo(point.x, point.y);
           var lastPoint = point;
           var count = 1;
           while (++j < entityCount && points[j].value != null) {
@@ -339,9 +338,9 @@ class LineChart extends _TwoAxisChart {
           }
           if (count >= 2) {
             _seriesContext
-                ..lineTo(lastPoint.x, _xAxisTop)
-                ..closePath()
-                ..fill();
+              ..lineTo(lastPoint.x, _xAxisTop)
+              ..closePath()
+              ..fill();
           }
         }
       }
@@ -351,9 +350,9 @@ class LineChart extends _TwoAxisChart {
       if (seriesLineWidth > 0) {
         var lastPoint = new _Point();
         _seriesContext
-            ..lineWidth = scale * seriesLineWidth
-            ..strokeStyle = series.color
-            ..beginPath();
+          ..lineWidth = scale * seriesLineWidth
+          ..strokeStyle = series.color
+          ..beginPath();
         for (var point in points) {
           if (point.value != null) {
             if (lastPoint.value != null) {
@@ -376,15 +375,13 @@ class LineChart extends _TwoAxisChart {
         if (strokeColor == null) strokeColor = series.color;
         var highlightColor = _getHighlightColor(fillColor);
         _seriesContext
-            ..fillStyle = fillColor
-            ..lineWidth = scale * markerOptions['lineWidth']
-            ..strokeStyle = strokeColor;
+          ..fillStyle = fillColor
+          ..lineWidth = scale * markerOptions['lineWidth']
+          ..strokeStyle = strokeColor;
         for (var point in points) {
           if (point.value != null) {
             point.draw(
-                _seriesContext,
-                1.0,
-                point.index == _focusedEntityGroupIndex);
+                _seriesContext, 1.0, point.index == _focusedEntityGroupIndex);
           }
         }
       }
@@ -395,19 +392,17 @@ class LineChart extends _TwoAxisChart {
     var labelOptions = _options['series']['labels'];
     if (percent == 1.0 && labelOptions['enabled']) {
       _seriesContext
-          ..fillStyle = labelOptions['style']['color']
-          ..font = _getFont(labelOptions['style'])
-          ..textAlign = 'center'
-          ..textBaseline = 'alphabetic';
+        ..fillStyle = labelOptions['style']['color']
+        ..font = _getFont(labelOptions['style'])
+        ..textAlign = 'center'
+        ..textBaseline = 'alphabetic';
       for (var i = 0; i < seriesCount; i++) {
         if (!_seriesVisible[i]) continue;
 
         var points = _seriesList[i].entities as List<_Point>;
         for (var point in points) {
           if (point.value != null) {
-            _seriesContext.fillText(
-                _yLabelFormatter(point.value),
-                point.x,
+            _seriesContext.fillText(_yLabelFormatter(point.value), point.x,
                 point.y - markerSize - 5);
           }
         }
@@ -424,16 +419,16 @@ class LineChart extends _TwoAxisChart {
     var oldY = _xAxisTop;
     // oldCp1 and oldCp2 are calculated in [_updateSeries].
     return new _Point()
-        ..index = entityIndex
-        ..value = value
-        ..color = color
-        ..highlightColor = highlightColor
-        ..oldX = x
-        ..oldY = oldY
-        ..oldPointRadius = 09
-        ..x = x
-        ..y = _valueToY(value)
-        ..pointRadius = _options['series']['markers']['size'];
+      ..index = entityIndex
+      ..value = value
+      ..color = color
+      ..highlightColor = highlightColor
+      ..oldX = x
+      ..oldY = oldY
+      ..oldPointRadius = 09
+      ..x = x
+      ..y = _valueToY(value)
+      ..pointRadius = _options['series']['markers']['size'];
   }
 
   @override

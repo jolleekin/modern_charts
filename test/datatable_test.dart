@@ -25,10 +25,11 @@ void onChange(record) {
 
 void main() {
   var dt = new DataTable([
-      ['Browser', 'Share'],
-      ['Chrome', 35],
-      ['IE', 30],
-      ['Firefox', 20]]);
+    ['Browser', 'Share'],
+    ['Chrome', 35],
+    ['IE', 30],
+    ['Firefox', 20]
+  ]);
   dt.onCellChange.listen(onChange);
   dt.onColumnsChange.listen(onChange);
   dt.onRowsChange.listen(onChange);
@@ -46,6 +47,9 @@ void main() {
   dt.rows[0]['Latest Version'] = 38;
   printTable(dt);
 
-  dt.rows.insertAll(1, [['Safari', null, 4], ['Other', null, 3]]);
+  dt.rows.insertAll(1, [
+    ['Safari', null, 4],
+    ['Other', null, 3]
+  ]);
   printTable(dt);
 }

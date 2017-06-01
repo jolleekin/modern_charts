@@ -209,8 +209,8 @@ class RadarChart extends Chart {
     if (_yLabelFormatter == null) {
       var decimalPlaces = utils.getDecimalPlaces(yInterval);
       var numberFormat = new NumberFormat.decimalPattern()
-          ..maximumFractionDigits = decimalPlaces
-          ..minimumFractionDigits = decimalPlaces;
+        ..maximumFractionDigits = decimalPlaces
+        ..minimumFractionDigits = decimalPlaces;
       _yLabelFormatter = (value) => numberFormat.format(value);
     }
 
@@ -234,9 +234,9 @@ class RadarChart extends Chart {
     var lineWidth = _options['xAxis']['gridLineWidth'];
     if (lineWidth > 0) {
       _axesContext
-          ..lineWidth = lineWidth
-          ..strokeStyle = _options['xAxis']['gridLineColor']
-          ..beginPath();
+        ..lineWidth = lineWidth
+        ..strokeStyle = _options['xAxis']['gridLineColor']
+        ..beginPath();
       var radius = _radius;
       for (var i = yLabelCount - 1; i >= 1; i--) {
         var angle = -_PI_2 + _angleInterval;
@@ -256,15 +256,15 @@ class RadarChart extends Chart {
     lineWidth = _options['yAxis']['gridLineWidth'];
     if (lineWidth > 0) {
       _axesContext
-          ..lineWidth = lineWidth
-          ..strokeStyle = _options['yAxis']['gridLineColor']
-          ..beginPath();
+        ..lineWidth = lineWidth
+        ..strokeStyle = _options['yAxis']['gridLineColor']
+        ..beginPath();
       var angle = -_PI_2;
       for (var i = 0; i < xLabelCount; i++) {
         var point = utils.polarToCartesian(_center, _radius, angle);
         _axesContext
-            ..moveTo(_center.x, _center.y)
-            ..lineTo(point.x, point.y);
+          ..moveTo(_center.x, _center.y)
+          ..lineTo(point.x, point.y);
         angle += _angleInterval;
       }
       _axesContext.stroke();
@@ -276,10 +276,10 @@ class RadarChart extends Chart {
     var x = _center.x - _AXIS_LABEL_MARGIN;
     var y = _center.y - _yLabelHop;
     _axesContext
-        ..fillStyle = style['color']
-        ..font = _getFont(style)
-        ..textAlign = 'right'
-        ..textBaseline = 'middle';
+      ..fillStyle = style['color']
+      ..font = _getFont(style)
+      ..textAlign = 'right'
+      ..textBaseline = 'middle';
     for (var i = 1; i <= yLabelCount - 2; i++) {
       _axesContext.fillText(_yLabels[i], x, y);
       y -= _yLabelHop;
@@ -289,10 +289,10 @@ class RadarChart extends Chart {
 
     style = _options['xAxis']['labels']['style'];
     _axesContext
-        ..fillStyle = style['color']
-        ..font = _getFont(style)
-        ..textAlign = 'center'
-        ..textBaseline = 'middle';
+      ..fillStyle = style['color']
+      ..font = _getFont(style)
+      ..textAlign = 'center'
+      ..textBaseline = 'middle';
     var fontSize = style['fontSize'];
     var angle = -_PI_2;
     var radius = _radius + _AXIS_LABEL_MARGIN;
@@ -327,9 +327,9 @@ class RadarChart extends Chart {
       // Draw the polygon.
 
       _seriesContext
-          ..lineWidth = scale * seriesLineWidth
-          ..strokeStyle = series.color
-          ..beginPath();
+        ..lineWidth = scale * seriesLineWidth
+        ..strokeStyle = series.color
+        ..beginPath();
       for (var j = 0; j < pointCount; j++) {
         var point = series.entities[j] as _PolarPoint;
         // TODO: Optimize.
@@ -361,9 +361,9 @@ class RadarChart extends Chart {
         if (strokeColor == null) strokeColor = series.color;
         var highlightColor = _getHighlightColor(fillColor);
         _seriesContext
-            ..fillStyle = fillColor
-            ..lineWidth = scale * markerOptions['lineWidth']
-            ..strokeStyle = strokeColor;
+          ..fillStyle = fillColor
+          ..lineWidth = scale * markerOptions['lineWidth']
+          ..strokeStyle = strokeColor;
         for (var p in series.entities) {
           p.draw(_seriesContext, percent, p.index == _focusedEntityGroupIndex);
         }
@@ -393,8 +393,8 @@ class RadarChart extends Chart {
     var offset = _options['series']['markers']['size'] * 2 + 5;
     var x = box.right + offset;
     var y = box.top + (box.height - _tooltip.offsetHeight) ~/ 2;
-    if (x + _tooltip.offsetWidth > _width) x =
-        box.left - _tooltip.offsetWidth - offset;
+    if (x + _tooltip.offsetWidth > _width)
+      x = box.left - _tooltip.offsetWidth - offset;
     return new Point(x, y);
   }
 
@@ -403,17 +403,17 @@ class RadarChart extends Chart {
       String highlightColor) {
     var angle = _getAngle(entityIndex);
     return new _PolarPoint()
-        ..index = entityIndex
-        ..value = value
-        ..color = color
-        ..highlightColor = highlightColor
-        ..center = _center
-        ..oldRadius = 0
-        ..oldAngle = angle
-        ..oldPointRadius = 0
-        ..radius = _valueToRadius(value)
-        ..angle = angle
-        ..pointRadius = _options['series']['markers']['size'];
+      ..index = entityIndex
+      ..value = value
+      ..color = color
+      ..highlightColor = highlightColor
+      ..center = _center
+      ..oldRadius = 0
+      ..oldAngle = angle
+      ..oldPointRadius = 0
+      ..radius = _valueToRadius(value)
+      ..angle = angle
+      ..pointRadius = _options['series']['markers']['size'];
   }
 
   @override

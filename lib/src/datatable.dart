@@ -8,8 +8,8 @@ class DataCellChangeRecord {
   final int columnIndex;
   final dynamic oldValue;
   final dynamic newValue;
-  DataCellChangeRecord(this.rowIndex, this.columnIndex, this.oldValue,
-      this.newValue);
+  DataCellChangeRecord(
+      this.rowIndex, this.columnIndex, this.oldValue, this.newValue);
   String toString() =>
       'DataCellChangeRecord { rowIndex: $rowIndex, colIndex; $columnIndex, $oldValue, $newValue }';
 }
@@ -44,7 +44,7 @@ class DataRow extends _TableEntity {
 
   /// Creates a new [DataRow] from a list of values.
   ///
-  ///  Each value in [values] coreesponds to a column. If [values] is too short,
+  ///  Each value in [values] corresponds to a column. If [values] is too short,
   /// the remaining columns are filled with `null`.
   DataRow._internal(DataTable table, List values) {
     _table = table;
@@ -126,8 +126,8 @@ class DataCollectionBase<E extends _TableEntity> extends IterableBase<E> {
     var len = length;
     while (start < len) {
       _base[start]
-          .._table = _table
-          .._index = start++;
+        .._table = _table
+        .._index = start++;
     }
   }
 
@@ -278,21 +278,21 @@ class DataTable {
     }
   }
 
-  void _onRowsOrColumnsInserted(DataCollectionBase source, int index,
-      int count) {
+  void _onRowsOrColumnsInserted(
+      DataCollectionBase source, int index, int count) {
     var record = new DataCollectionChangeRecord(index, count, 0);
     if (source == _columns) {
       _insertColumns(index, count);
       _updateColumnIndexes(index);
-      if (_columnsChangeController !=
-          null) _columnsChangeController.add(record);
+      if (_columnsChangeController != null)
+        _columnsChangeController.add(record);
     } else {
       if (_rowsChangeController != null) _rowsChangeController.add(record);
     }
   }
 
-  void _onRowsOrColumnsRemoved(DataCollectionBase source, int index,
-      int count) {
+  void _onRowsOrColumnsRemoved(
+      DataCollectionBase source, int index, int count) {
     var record = new DataCollectionChangeRecord(index, 0, count);
     if (source == _columns) {
       _removeColumns(index, count);
@@ -363,30 +363,33 @@ class DataTable {
 
   Stream<DataCellChangeRecord> get onCellChange {
     if (_cellChangeController == null) {
-      _cellChangeController =
-          new StreamController.broadcast(sync: true, onCancel: () {
-        _cellChangeController = null;
-      });
+      _cellChangeController = new StreamController.broadcast(
+          sync: true,
+          onCancel: () {
+            _cellChangeController = null;
+          });
     }
     return _cellChangeController.stream;
   }
 
   Stream<DataCollectionChangeRecord> get onColumnsChange {
     if (_columnsChangeController == null) {
-      _columnsChangeController =
-          new StreamController.broadcast(sync: true, onCancel: () {
-        _columnsChangeController = null;
-      });
+      _columnsChangeController = new StreamController.broadcast(
+          sync: true,
+          onCancel: () {
+            _columnsChangeController = null;
+          });
     }
     return _columnsChangeController.stream;
   }
 
   Stream<DataCollectionChangeRecord> get onRowsChange {
     if (_rowsChangeController == null) {
-      _rowsChangeController =
-          new StreamController.broadcast(sync: true, onCancel: () {
-        _rowsChangeController = null;
-      });
+      _rowsChangeController = new StreamController.broadcast(
+          sync: true,
+          onCancel: () {
+            _rowsChangeController = null;
+          });
     }
     return _rowsChangeController.stream;
   }

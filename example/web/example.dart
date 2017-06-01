@@ -18,35 +18,35 @@ void main() {
 
 Element createContainer() {
   var e = new DivElement()
-      ..style.height = '400px'
-      ..style.width = '800px'
-      ..style.maxWidth = '100%'
-      ..style.marginBottom = '50px';
+    ..style.height = '400px'
+    ..style.width = '800px'
+    ..style.maxWidth = '100%'
+    ..style.marginBottom = '50px';
   document.body.append(e);
   return e;
 }
 
 void createBarChart() {
-  var table = new DataTable(
-      [
-          ['Categories', 'Series 1', 'Series 2', 'Series 3'],
-          ['Monday', 1, 3, 5],
-          ['Tuesday', 3, 4, 6],
-          ['Wednesday', 4, 3, 1],
-          ['Thursday', null, 5, 1],
-          ['Friday', 3, 4, 2],
-          ['Saturday', 5, 10, 4],
-          ['Sunday', 4, 12, 8]]);
+  var table = new DataTable([
+    ['Categories', 'Series 1', 'Series 2', 'Series 3'],
+    ['Monday', 1, 3, 5],
+    ['Tuesday', 3, 4, 6],
+    ['Wednesday', 4, 3, 1],
+    ['Thursday', null, 5, 1],
+    ['Friday', 3, 4, 2],
+    ['Saturday', 5, 10, 4],
+    ['Sunday', 4, 12, 8]
+  ]);
 
   var changeDataButton = new ButtonElement()..text = 'Change data';
   document.body.append(changeDataButton);
 
-  var insertRemoveColumnButton =
-      new ButtonElement()..text = 'Insert/remove data column';
+  var insertRemoveColumnButton = new ButtonElement()
+    ..text = 'Insert/remove data column';
   document.body.append(insertRemoveColumnButton);
 
-  var insertRemoveRowButton =
-      new ButtonElement()..text = 'Insert/remove data row';
+  var insertRemoveRowButton = new ButtonElement()
+    ..text = 'Insert/remove data row';
   document.body.append(insertRemoveRowButton);
 
   var container = createContainer();
@@ -60,9 +60,10 @@ void createBarChart() {
       }
     },
     'series': {
-      'labels': {
-        'enabled': true
-      }
+      'labels': {'enabled': true}
+    },
+    'title': {
+      'text': 'Bar Chart Demo'
     }
   };
 
@@ -118,26 +119,26 @@ void createBarChart() {
 }
 
 void createLineChart() {
-  var table = new DataTable(
-      [
-          ['Categories', 'Series 1', 'Series 2', 'Series 3'],
-          ['Monday', 1, 3, 5],
-          ['Tuesday', 3, 4, 6],
-          ['Wednesday', 4, 3, 1],
-          ['Thursday', null, 5, 1],
-          ['Friday', 3, 4, 2],
-          ['Saturday', 5, 10, 4],
-          ['Sunday', 4, 12, 8]]);
+  var table = new DataTable([
+    ['Categories', 'Series 1', 'Series 2', 'Series 3'],
+    ['Monday', 1, 3, 5],
+    ['Tuesday', 3, 4, 6],
+    ['Wednesday', 4, 3, 1],
+    ['Thursday', null, 5, 1],
+    ['Friday', 3, 4, 2],
+    ['Saturday', 5, 10, 4],
+    ['Sunday', 4, 12, 8]
+  ]);
 
   var changeDataButton = new ButtonElement()..text = 'Change data';
   document.body.append(changeDataButton);
 
-  var insertRemoveColumnButton =
-      new ButtonElement()..text = 'Insert/remove data column';
+  var insertRemoveColumnButton = new ButtonElement()
+    ..text = 'Insert/remove data column';
   document.body.append(insertRemoveColumnButton);
 
-  var insertRemoveRowButton =
-      new ButtonElement()..text = 'Insert/remove data row';
+  var insertRemoveRowButton = new ButtonElement()
+    ..text = 'Insert/remove data row';
   document.body.append(insertRemoveRowButton);
 
   var container = createContainer();
@@ -149,6 +150,9 @@ void createLineChart() {
         insertRemoveColumnButton.disabled = false;
         insertRemoveRowButton.disabled = false;
       }
+    },
+    'title': {
+      'text': 'Line Chart Demo'
     }
   };
 
@@ -207,20 +211,20 @@ void createPieChart() {
   var changeDataButton = new ButtonElement()..text = 'Change data';
   document.body.append(changeDataButton);
 
-  var insertRemoveRowButton =
-      new ButtonElement()..text = 'Insert/remove data row';
+  var insertRemoveRowButton = new ButtonElement()
+    ..text = 'Insert/remove data row';
   document.body.append(insertRemoveRowButton);
 
   var container = createContainer();
-  var table = new DataTable(
-      [
-          ['Browser', 'Share'],
-          ['Chrome', 35],
-          ['Firefox', 20],
-          ['IE', 30],
-          ['Opera', 5],
-          ['Safari', 8],
-          ['Other', 2]]);
+  var table = new DataTable([
+    ['Browser', 'Share'],
+    ['Chrome', 35],
+    ['Firefox', 20],
+    ['IE', 30],
+    ['Opera', 5],
+    ['Safari', 8],
+    ['Other', 2]
+  ]);
   var chart = new PieChart(container);
   chart.draw(table, {
     'animation': {
@@ -230,9 +234,10 @@ void createPieChart() {
       }
     },
     'series': {
-      'labels': {
-        'enabled': true
-      }
+      'labels': {'enabled': true}
+    },
+    'title': {
+      'text': 'Pie Chart Demo'
     }
   });
 
@@ -263,30 +268,29 @@ void createPieChart() {
     insertRow = !insertRow;
     chart.update();
   });
-
 }
 
 void createRadarChart() {
-  var table = new DataTable(
-      [
-          ['Categories', 'Series 1'],
-          ['Monday', 8],
-          ['Tuesday', 17],
-          ['Wednesday', 7],
-          ['Thursday', 16],
-          ['Friday', 12],
-          ['Saturday', 5],
-          ['Sunday', 14]]);
+  var table = new DataTable([
+    ['Categories', 'Series 1'],
+    ['Monday', 8],
+    ['Tuesday', 17],
+    ['Wednesday', 7],
+    ['Thursday', 16],
+    ['Friday', 12],
+    ['Saturday', 5],
+    ['Sunday', 14]
+  ]);
 
   var changeDataButton = new ButtonElement()..text = 'Change data';
   document.body.append(changeDataButton);
 
-  var insertRemoveColumnButton =
-      new ButtonElement()..text = 'Insert/remove data column';
+  var insertRemoveColumnButton = new ButtonElement()
+    ..text = 'Insert/remove data column';
   document.body.append(insertRemoveColumnButton);
 
-  var insertRemoveRowButton =
-      new ButtonElement()..text = 'Insert/remove data row';
+  var insertRemoveRowButton = new ButtonElement()
+    ..text = 'Insert/remove data row';
   document.body.append(insertRemoveRowButton);
 
   var container = createContainer();
@@ -300,9 +304,10 @@ void createRadarChart() {
       }
     },
     'series': {
-      'labels': {
-        'enabled': true
-      }
+      'labels': {'enabled': true}
+    },
+    'title': {
+      'text': 'Radar Chart Demo'
     }
   };
 
@@ -361,17 +366,17 @@ void createGaugeChart() {
   var changeDataButton = new ButtonElement()..text = 'Change data';
   document.body.append(changeDataButton);
 
-  var insertRemoveRowButton =
-      new ButtonElement()..text = 'Insert/remove data row';
+  var insertRemoveRowButton = new ButtonElement()
+    ..text = 'Insert/remove data row';
   document.body.append(insertRemoveRowButton);
 
   var container = createContainer();
-  var table = new DataTable(
-      [
-          ['Browser', 'Share'],
-          ['Memory', 25],
-          ['CPU', 75],
-          ['Disk', 40]]);
+  var table = new DataTable([
+    ['Browser', 'Share'],
+    ['Memory', 25],
+    ['CPU', 75],
+    ['Disk', 40]
+  ]);
   var chart = new GaugeChart(container);
   chart.draw(table, {
     'animation': {
@@ -381,9 +386,10 @@ void createGaugeChart() {
       }
     },
     'series': {
-      'labels': {
-        'enabled': true
-      }
+      'labels': {'enabled': true}
+    },
+    'title': {
+      'text': 'Gauge Chart Demo'
     }
   });
 
@@ -414,5 +420,4 @@ void createGaugeChart() {
     insertRow = !insertRow;
     chart.update();
   });
-
 }

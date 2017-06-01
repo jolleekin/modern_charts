@@ -7,7 +7,6 @@ final _pieChartDefaultOptions = {
 
   // Map - An object that controls the series.
   'series': {
-
     // Map - An object that controls the series labels.
     'labels': {
       // bool - Whether to show the labels.
@@ -114,15 +113,14 @@ class PieChart extends Chart {
   @override
   bool _drawSeries(double percent) {
     _seriesContext
-        ..lineWidth = 2
-        ..strokeStyle = '#fff'
-        ..textAlign = 'center'
-        ..textBaseline = 'middle';
+      ..lineWidth = 2
+      ..strokeStyle = '#fff'
+      ..textAlign = 'center'
+      ..textBaseline = 'middle';
     var pies = _seriesList.first.entities as List<_Pie>;
     for (var pie in pies) {
       if (pie.isEmpty && percent == 1.0) continue;
-      var highlight =
-          pie.index == _focusedSeriesIndex ||
+      var highlight = pie.index == _focusedSeriesIndex ||
           pie.index == _focusedEntityGroupIndex;
       pie.draw(_seriesContext, percent, highlight);
     }
@@ -131,15 +129,13 @@ class PieChart extends Chart {
       var opt = _options['series']['labels'];
       if (opt['enabled']) {
         _seriesContext
-            ..fillStyle = opt['style']['color']
-            ..font = _getFont(opt['style']);
+          ..fillStyle = opt['style']['color']
+          ..font = _getFont(opt['style']);
         for (var pie in pies) {
           if (pie.isEmpty) continue;
           var angle = .5 * (pie.startAngle + pie.endAngle);
           var p = utils.polarToCartesian(
-              _center,
-              .25 * _innerRadius + .75 * _outerRadius,
-              angle);
+              _center, .25 * _innerRadius + .75 * _outerRadius, angle);
           _seriesContext.fillText(_labelFormatter(pie.value), p.x, p.y);
         }
       }
@@ -189,18 +185,18 @@ class PieChart extends Chart {
       startAngle = prevPie.endAngle;
     }
     return new _Pie()
-        ..index = entityIndex
-        ..value = value
-        ..name = name
-        ..color = color
-        ..highlightColor = highlightColor
-        ..oldStartAngle = startAngle
-        ..oldEndAngle = startAngle
-        ..center = _center
-        ..innerRadius = _innerRadius
-        ..outerRadius = _outerRadius
-        ..startAngle = startAngle
-        ..endAngle = startAngle; // To be updated in [_updateSeries].
+      ..index = entityIndex
+      ..value = value
+      ..name = name
+      ..color = color
+      ..highlightColor = highlightColor
+      ..oldStartAngle = startAngle
+      ..oldEndAngle = startAngle
+      ..center = _center
+      ..innerRadius = _innerRadius
+      ..outerRadius = _outerRadius
+      ..startAngle = startAngle
+      ..endAngle = startAngle; // To be updated in [_updateSeries].
   }
 
   void _updateSeries([int index]) {
@@ -250,8 +246,8 @@ class PieChart extends Chart {
   void _updateTooltipContent() {
     var pie = _seriesList[0].entities[_focusedEntityGroupIndex] as _Pie;
     _tooltip.style
-        ..borderColor = pie.color
-        ..padding = '3px 10px';
+      ..borderColor = pie.color
+      ..padding = '3px 10px';
     var value = pie.value.toString();
     if (_tooltipValueFormatter != null) {
       value = _tooltipValueFormatter(pie.value);
