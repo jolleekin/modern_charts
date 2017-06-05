@@ -48,7 +48,7 @@ final _lineChartDefaultOptions = {
     // String - The color of the horizontal grid lines.
     'gridLineColor': '#c0c0c0',
 
-    // String - The width of the horizontal grid lines.
+    // num - The width of the horizontal grid lines.
     'gridLineWidth': 1,
 
     // String - The color of the axis itself.
@@ -74,7 +74,7 @@ final _lineChartDefaultOptions = {
       }
     },
 
-    // String - The positon of the axis relative to the chart area.
+    // String - The position of the axis relative to the chart area.
     // Supported values: 'bottom'.
     'position': 'bottom',
 
@@ -102,29 +102,21 @@ final _lineChartDefaultOptions = {
 
   // Map - An object that controls the y-axis.
   'yAxis': {
-    // String - The color of the vertial grid lines.
+    // String - The color of the vertical grid lines.
     'gridLineColor': '#c0c0c0',
 
-    // String - The width of the vertial grid lines.
+    // num - The width of the vertical grid lines.
     'gridLineWidth': 0,
 
     // String - The color of the axis itself.
     'lineColor': '#c0c0c0',
 
-    // String - The width of the axis itself.
+    // num - The width of the axis itself.
     'lineWidth': 0,
 
     // num - The interval of the tick marks in axis unit. If `null`, this value
     // is automatically calculated.
     'interval': null,
-
-    // num - The maximum value on the axis. If `null`, this value is
-    // automatically calculated.
-    'maxValue': null,
-
-    // num - The minimum value on the axis. If `null`, this value is
-    // automatically calculated.
-    'minValue': null,
 
     // Map - An object that controls the axis labels.
     'labels': {
@@ -147,7 +139,19 @@ final _lineChartDefaultOptions = {
       }
     },
 
-    // String - The positon of the axis relative to the chart area.
+    // num - The maximum value on the axis. If `null`, this value is
+    // automatically calculated.
+    'maxValue': null,
+
+    // num - The minimum interval. If `null`, this value is automatically
+    // calculated.
+    'minInterval': null,
+
+    // num - The minimum value on the axis. If `null`, this value is
+    // automatically calculated.
+    'minValue': null,
+
+    // String - The position of the axis relative to the chart area.
     // Supported values: 'left'.
     'position': 'left',
 
@@ -196,9 +200,9 @@ class _Point extends _Entity {
 
   @override
   void draw(CanvasRenderingContext2D ctx, double percent, bool highlight) {
-    var cx = utils.lerp(oldX, x, percent);
-    var cy = utils.lerp(oldY, y, percent);
-    var pr = utils.lerp(oldPointRadius, pointRadius, percent);
+    var cx = lerp(oldX, x, percent);
+    var cy = lerp(oldY, y, percent);
+    var pr = lerp(oldPointRadius, pointRadius, percent);
     if (highlight) {
       ctx.fillStyle = highlightColor;
       ctx.beginPath();
@@ -230,10 +234,10 @@ class LineChart extends _TwoAxisChart {
     if (!_options['tooltip']['enabled']) return;
 
     var entityCount = _dataTable.rows.length;
-    var start = index == null ? 0 : index;
+    var start = index ?? 0;
     var end = index == null ? entityCount : index + 1;
 
-    if (_averageYValues == null) _averageYValues = <int>[];
+    _averageYValues ??= <int>[];
     _averageYValues.length = entityCount;
 
     for (var i = start; i < end; i++) {
@@ -259,10 +263,10 @@ class LineChart extends _TwoAxisChart {
 
   List<_Point> _lerpPoints(List<_Point> points, double percent) {
     return points.map((p) {
-      var x = utils.lerp(p.oldX, p.x, percent);
-      var y = utils.lerp(p.oldY, p.y, percent);
-      var cp1 = (p.cp1 != null) ? utils.lerp(p.oldCp1, p.cp1, percent) : null;
-      var cp2 = (p.cp2 != null) ? utils.lerp(p.oldCp2, p.cp2, percent) : null;
+      var x = lerp(p.oldX, p.x, percent);
+      var y = lerp(p.oldY, p.y, percent);
+      var cp1 = (p.cp1 != null) ? lerp(p.oldCp1, p.cp1, percent) : null;
+      var cp2 = (p.cp2 != null) ? lerp(p.oldCp2, p.cp2, percent) : null;
       return new _Point()
         ..index = p.index
         ..value = p.value
@@ -369,11 +373,8 @@ class LineChart extends _TwoAxisChart {
       // Draw markers.
 
       if (markerSize > 0) {
-        var fillColor = markerOptions['fillColor'];
-        var strokeColor = markerOptions['strokeColor'];
-        if (fillColor == null) fillColor = series.color;
-        if (strokeColor == null) strokeColor = series.color;
-        var highlightColor = _getHighlightColor(fillColor);
+        var fillColor = markerOptions['fillColor'] ?? series.color;
+        var strokeColor = markerOptions['strokeColor'] ?? series.color;
         _seriesContext
           ..fillStyle = fillColor
           ..lineWidth = scale * markerOptions['lineWidth']
@@ -438,7 +439,7 @@ class LineChart extends _TwoAxisChart {
     var curveTension = _options['series']['curveTension'];
     var curve = curveTension > 0 && entityCount > 2;
 
-    var start = (index == null) ? 0 : index;
+    var start = index ?? 0;
     var end = (index == null) ? _seriesList.length : index + 1;
     for (var i = start; i < end; i++) {
       var visible = _seriesVisible[i];
@@ -471,12 +472,12 @@ class LineChart extends _TwoAxisChart {
         if (e1.value == null) continue;
         if (e2.value == null) continue;
         if (e3.value == null) continue;
-        var list = utils.calculateControlPoints(
+        var list = calculateControlPoints(
             e1.asPoint, e2.asPoint, e3.asPoint, curveTension);
         e2.cp1 = list[0];
         e2.cp2 = list[1];
-        if (e2.oldCp1 == null) e2.oldCp1 = new Point(e2.cp1.x, _xAxisTop);
-        if (e2.oldCp2 == null) e2.oldCp2 = new Point(e2.cp2.x, _xAxisTop);
+        e2.oldCp1 ??= new Point(e2.cp1.x, _xAxisTop);
+        e2.oldCp2 ??= new Point(e2.cp2.x, _xAxisTop);
       }
     }
   }
@@ -488,6 +489,6 @@ class LineChart extends _TwoAxisChart {
   }
 
   LineChart(Element container) : super(container) {
-    _defaultOptions = utils.extendMap(globalOptions, _lineChartDefaultOptions);
+    _defaultOptions = extendMap(globalOptions, _lineChartDefaultOptions);
   }
 }

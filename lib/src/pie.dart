@@ -48,15 +48,15 @@ class _Pie extends _Entity {
     p = p - center;
     var mag = p.magnitude;
     if (mag >= outerRadius || mag <= innerRadius) return false;
-    var angle = math.atan2(p.y, p.x);
+    var angle = atan2(p.y, p.x);
     if (angle < _START_ANGLE) angle += _2PI;
     return angle > startAngle && angle < endAngle;
   }
 
   @override
   void draw(CanvasRenderingContext2D ctx, double percent, bool highlight) {
-    var a1 = utils.lerp(oldStartAngle, startAngle, percent);
-    var a2 = utils.lerp(oldEndAngle, endAngle, percent);
+    var a1 = lerp(oldStartAngle, startAngle, percent);
+    var a2 = lerp(oldEndAngle, endAngle, percent);
     if (highlight) {
       ctx.fillStyle = highlightColor;
       ctx.beginPath();
@@ -93,14 +93,14 @@ class PieChart extends Chart {
     var halfW = rect.width >> 1;
     var halfH = rect.height >> 1;
     _center = new Point(rect.left + halfW, rect.top + halfH);
-    _outerRadius = math.min(halfW, halfH) / 1.05;
+    _outerRadius = min(halfW, halfH) / 1.05;
     var pieHole = _options['pieHole'];
     if (pieHole > 1) pieHole = 0;
     if (pieHole < 0) pieHole = 0;
     _innerRadius = pieHole * _outerRadius;
 
-    _labelFormatter = _options['series']['labels']['formatter'];
-    if (_labelFormatter == null) _labelFormatter = (num value) => '$value';
+    _labelFormatter =
+        _options['series']['labels']['formatter'] ?? (num value) => '$value';
   }
 
   @override
@@ -134,7 +134,7 @@ class PieChart extends Chart {
         for (var pie in pies) {
           if (pie.isEmpty) continue;
           var angle = .5 * (pie.startAngle + pie.endAngle);
-          var p = utils.polarToCartesian(
+          var p = polarToCartesian(
               _center, .25 * _innerRadius + .75 * _outerRadius, angle);
           _seriesContext.fillText(_labelFormatter(pie.value), p.x, p.y);
         }
@@ -149,7 +149,7 @@ class PieChart extends Chart {
     var p = new Point(x - _center.x, y - _center.y);
     var mag = p.magnitude;
     if (mag >= _outerRadius || mag <= _innerRadius) return -1;
-    var angle = math.atan2(p.y, p.x);
+    var angle = atan2(p.y, p.x);
     if (angle < _START_ANGLE) angle += _2PI;
     var pies = _seriesList.first.entities;
     for (var i = pies.length - 1; i >= 0; i--) {
@@ -166,7 +166,7 @@ class PieChart extends Chart {
   Point _getTooltipPosition() {
     var pie = _seriesList.first.entities[_focusedEntityGroupIndex] as _Pie;
     var angle = .5 * (pie.startAngle + pie.endAngle);
-    var point = utils.polarToCartesian(_center, .5 * _outerRadius, angle);
+    var point = polarToCartesian(_center, .5 * _outerRadius, angle);
     var x = point.x - .5 * _tooltip.offsetWidth;
     var y = point.y - _tooltip.offsetHeight;
     return new Point(x, y);
@@ -256,6 +256,6 @@ class PieChart extends Chart {
   }
 
   PieChart(Element container) : super(container) {
-    _defaultOptions = utils.extendMap(globalOptions, _pieChartDefaultOptions);
+    _defaultOptions = extendMap(globalOptions, _pieChartDefaultOptions);
   }
 }

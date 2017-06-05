@@ -21,13 +21,13 @@ final _barChartDefaultOptions = {
     // String - The color of the horizontal grid lines.
     'gridLineColor': '#c0c0c0',
 
-    // String - The width of the horizontal grid lines.
+    // num - The width of the horizontal grid lines.
     'gridLineWidth': 1,
 
     // String - The color of the axis itself.
     'lineColor': '#c0c0c0',
 
-    // String - The width of the axis itself.
+    // num - The width of the axis itself.
     'lineWidth': 1,
 
     // Map - An object that controls the axis labels.
@@ -39,7 +39,7 @@ final _barChartDefaultOptions = {
         // String - The labels' font family.
         'fontFamily': _GLOBAL_FONT_FAMILY,
 
-        // String - The labels' font size.
+        // num - The labels' font size.
         'fontSize': 13,
 
         // String - The labels' font style.
@@ -47,7 +47,7 @@ final _barChartDefaultOptions = {
       }
     },
 
-    // String - The positon of the axis relative to the chart area.
+    // String - The position of the axis relative to the chart area.
     // Supported values: 'bottom'.
     'position': 'bottom',
 
@@ -61,7 +61,7 @@ final _barChartDefaultOptions = {
         // String - The title's font family.
         'fontFamily': _GLOBAL_FONT_FAMILY,
 
-        // String - The title's font size.
+        // num - The title's font size.
         'fontSize': 15,
 
         // String - The title's font style.
@@ -75,29 +75,21 @@ final _barChartDefaultOptions = {
 
   // Map - An object that controls the y-axis.
   'yAxis': const {
-    // String - The color of the vertial grid lines.
+    // String - The color of the vertical grid lines.
     'gridLineColor': '#c0c0c0',
 
-    // String - The width of the vertial grid lines.
+    // num - The width of the vertical grid lines.
     'gridLineWidth': 0,
 
     // String - The color of the axis itself.
     'lineColor': '#c0c0c0',
 
-    // String - The width of the axis itself.
+    // num - The width of the axis itself.
     'lineWidth': 0,
 
     // num - The interval of the tick marks in axis unit. If `null`, this value
     // is automatically calculated.
     'interval': null,
-
-    // num - The maximum value on the axis. If `null`, this value is
-    // automatically calculated.
-    'maxValue': null,
-
-    // num - The minimum value on the axis. If `null`, this value is
-    // automatically calculated.
-    'minValue': null,
 
     // Map - An object that controls the axis labels.
     'labels': const {
@@ -112,15 +104,27 @@ final _barChartDefaultOptions = {
         // String - The labels' font family.
         'fontFamily': _GLOBAL_FONT_FAMILY,
 
-        // String - The labels' font size.
+        // num - The labels' font size.
         'fontSize': 13,
 
         // String - The labels' font style.
         'fontStyle': 'normal'
-      }
+      },
     },
 
-    // String - The positon of the axis relative to the chart area.
+    // num - The maximum value on the axis. If `null`, this value is
+    // automatically calculated.
+    'maxValue': null,
+
+    // num - The minimum interval. If `null`, this value is automatically
+    // calculated.
+    'minInterval': null,
+
+    // num - The minimum value on the axis. If `null`, this value is
+    // automatically calculated.
+    'minValue': null,
+
+    // String - The position of the axis relative to the chart area.
     // Supported values: 'left'.
     'position': 'left',
 
@@ -134,7 +138,7 @@ final _barChartDefaultOptions = {
         // String - The title's font family.
         'fontFamily': _GLOBAL_FONT_FAMILY,
 
-        // String - The title's font size.
+        // num - The title's font size.
         'fontSize': 15,
 
         // String - The title's font style.
@@ -160,9 +164,9 @@ class _Bar extends _Entity {
 
   @override
   void draw(CanvasRenderingContext2D ctx, double percent, bool highlight) {
-    var x = utils.lerp(oldLeft, left, percent);
-    var h = utils.lerp(oldHeight, height, percent);
-    var w = utils.lerp(oldWidth, width, percent);
+    var x = lerp(oldLeft, left, percent);
+    var h = lerp(oldHeight, height, percent);
+    var w = lerp(oldWidth, width, percent);
     ctx.fillStyle = color;
     ctx.fillRect(x, bottom - h, w, h);
     if (highlight) {
@@ -210,10 +214,10 @@ class BarChart extends _TwoAxisChart {
     if (!_options['tooltip']['enabled']) return;
 
     var entityCount = _seriesList.first.entities.length;
-    var start = index == null ? 0 : index;
+    var start = index ?? 0;
     var end = index == null ? entityCount : index + 1;
 
-    if (_averageYValues == null) _averageYValues = <int>[];
+    _averageYValues ??= <int>[];
     _averageYValues.length = entityCount;
 
     for (var i = start; i < end; i++) {
@@ -343,6 +347,6 @@ class BarChart extends _TwoAxisChart {
   }
 
   BarChart(Element container) : super(container) {
-    _defaultOptions = utils.extendMap(globalOptions, _barChartDefaultOptions);
+    _defaultOptions = extendMap(globalOptions, _barChartDefaultOptions);
   }
 }

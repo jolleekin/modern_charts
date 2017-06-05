@@ -2,11 +2,11 @@ library modern_charts;
 
 import 'dart:async';
 import 'dart:html';
-import 'dart:math' as math;
+import 'dart:math';
 import 'package:intl/intl.dart';
-import 'src/animation.dart' as animation;
+import 'src/animation.dart';
 import 'src/datatable.dart';
-import 'src/utils.dart' as utils;
+import 'src/utils.dart';
 
 export 'src/datatable.dart';
 

@@ -73,7 +73,7 @@ final globalOptions = {
       // String - The title's font family.
       'fontFamily': _GLOBAL_FONT_FAMILY,
 
-      // String - The title's font size in pixels.
+      // num - The title's font size in pixels.
       'fontSize': 20,
 
       // String - The title's font style.
@@ -106,10 +106,10 @@ final globalOptions = {
 };
 
 /// The 2*PI constant.
-const double _2PI = 2 * math.PI;
+const double _2PI = 2 * PI;
 
 /// The PI/2 constant.
-const double _PI_2 = math.PI / 2;
+const double _PI_2 = PI / 2;
 
 const _GLOBAL_FONT_FAMILY = '"Segoe UI", "Open Sans", Verdana, Arial';
 
@@ -203,6 +203,8 @@ class Chart {
   /// The tooltip element. To position the tooltip, change its transform CSS.
   Element _tooltip;
 
+  StreamSubscription _mouseMoveSub;
+
   /// The function used to format series data to display in the tooltip.
   ValueFormatter _tooltipValueFormatter;
 
@@ -210,7 +212,7 @@ class Chart {
   Rectangle<int> _titleBox;
 
   /// Bounding box of the series and axes.
-  math.MutableRectangle<int> _seriesAndAxesBox;
+  MutableRectangle<int> _seriesAndAxesBox;
 
   /// The main rendering context.
   CanvasRenderingContext2D _context;
@@ -238,7 +240,7 @@ class Chart {
       color = _context.fillStyle;
 
       if (color[0] == '#') {
-        result = utils.hexToRgba(color, alpha);
+        result = hexToRgba(color, alpha);
       } else {
         var list = color.split(',');
         list[list.length - 1] = '$alpha)';
@@ -292,7 +294,7 @@ class Chart {
     if (title['position'] != 'none' && title['text'] != null) {
       titleH = title['style']['fontSize'] + 2 * _GLOBAL_TITLE_PADDING;
     }
-    _seriesAndAxesBox = new math.MutableRectangle(
+    _seriesAndAxesBox = new MutableRectangle(
         _GLOBAL_CHART_PADDING,
         _GLOBAL_CHART_PADDING,
         _width - 2 * _GLOBAL_CHART_PADDING,
@@ -479,11 +481,11 @@ class Chart {
   void _drawFrame(double time) {
     var percent = 1.0;
     var duration = _options['animation']['duration'];
-    if (_animationStartTime == null) _animationStartTime = time;
+    _animationStartTime ??= time;
     if (duration > 0 && time != null)
       percent = (time - _animationStartTime) / duration;
     if (percent > 1.0) percent = 1.0;
-    percent = animation.getEaseValue(_options['animation']['easing'], percent);
+    percent = getEaseValue(_options['animation']['easing'], percent);
 
     _context.fillStyle = _options['backgroundColor'];
     _context.fillRect(0, 0, _width, _height);
@@ -632,26 +634,18 @@ class Chart {
 
   /// Handles `mousemove` or `touchstart` events to highlight appropriate
   /// points/bars/pies/... as well as update the tooltip.
-  void _mouseMove(e) {
-    if (animating) return;
-
-    num x;
-    num y;
-    Point client;
+  void _mouseMove(MouseEvent e) {
+    if (animating || e.buttons != 0) return;
 
     var rect = _context.canvas.getBoundingClientRect();
-    if (e is MouseEvent) {
-      client = e.client;
-    } else {
-      client = (e as TouchEvent).touches.first.client;
-    }
-    x = client.x - rect.left;
-    y = client.y - rect.top;
+    var x = e.client.x - rect.left;
+    var y = e.client.y - rect.top;
     var index = _getEntityGroupIndex(x, y);
+
     if (index != _focusedEntityGroupIndex) {
       _focusedEntityGroupIndex = index;
       _drawFrame(null);
-      if (index > -1) {
+      if (index >= 0) {
         _updateTooltipContent();
         _tooltip.hidden = false;
         var p = _getTooltipPosition();
@@ -680,8 +674,8 @@ class Chart {
       ..style.transition = 'transform .4s cubic-bezier(.4,1,.4,1)';
     container.append(_tooltip);
 
-    // TODO: Cancel old subscriptions to prevent memory leaks.
-    window..onMouseMove.listen(_mouseMove)..onTouchStart.listen(_mouseMove);
+    _mouseMoveSub?.cancel();
+    _mouseMoveSub = window.onMouseMove.listen(_mouseMove);
   }
 
   /// Returns the position of the tooltip based on [_focusedEntityGroupIndex].
@@ -795,22 +789,23 @@ class Chart {
     _dataColumnsChangeSub =
         dataTable.onColumnsChange.listen(_dataColumnsChanged);
     _dataRowsChangeSub = dataTable.onRowsChange.listen(_dataRowsChanged);
-    _options = utils.mergeMap(options, _defaultOptions);
+    _options = mergeMap(options, _defaultOptions);
     _initializeLegend();
     _initializeTooltip();
-    resize();
+    resize(true);
   }
 
   /// Resizes the chart to fit the new size of the container.
   ///
   /// This method is automatically called when the browser window is resized.
-  void resize() {
+  void resize([bool forceRedraw = false]) {
     var w = container.clientWidth;
     var h = container.clientHeight;
 
     if (w != _width || h != _height) {
       _width = w;
       _height = h;
+      forceRedraw = true;
 
       var dpr = window.devicePixelRatio;
       var scaledW = (w * dpr).round();
@@ -832,10 +827,12 @@ class Chart {
       setCanvasSize(_seriesContext);
     }
 
-    _stopAnimation();
-    _dataTableChanged();
-    _positionLegend();
-    update();
+    if (forceRedraw) {
+      _stopAnimation();
+      _dataTableChanged();
+      _positionLegend();
+      update();
+    }
   }
 
   /// Updates the chart.
@@ -875,7 +872,7 @@ class _TwoAxisChart extends Chart {
   num _yMinValue;
   num _yRange;
 
-  /// The horizontal offset of the tooltip with respect to the vertial line
+  /// The horizontal offset of the tooltip with respect to the vertical line
   /// passing through an x-axis label.
   num _tooltipOffset;
 
@@ -910,11 +907,14 @@ class _TwoAxisChart extends Chart {
     _yMaxValue = _options['yAxis']['maxValue'];
     _yMinValue = _options['yAxis']['minValue'];
     _yInterval = _options['yAxis']['interval'];
+    var minInterval = _options['yAxis']['minInterval'];
     if (_yMaxValue == null || _yMinValue == null || _yInterval == null) {
-      _yMaxValue = utils.findMaxValue(_dataTable);
-      _yMinValue = utils.findMinValue(_dataTable);
-      if (_yMaxValue == double.NEGATIVE_INFINITY) _yMaxValue = 0.0;
-      if (_yMinValue == double.INFINITY) _yMinValue = 0.0;
+      _yMaxValue = findMaxValue(_dataTable);
+      _yMinValue = findMinValue(_dataTable);
+      if (_yMinValue == double.INFINITY) {
+        _yMaxValue = 0.0;
+        _yMinValue = 0.0;
+      }
       if (_yMinValue == _yMaxValue) {
         if (_yMinValue == 0.0) {
           _yMaxValue = 1.0;
@@ -927,11 +927,14 @@ class _TwoAxisChart extends Chart {
           _yMinValue -= _yInterval;
           _yMaxValue += _yInterval;
         }
+        if (minInterval != null) {
+          _yInterval = max(_yInterval, minInterval);
+        }
       } else {
-        _yInterval = utils.calculateInterval(_yMaxValue - _yMinValue, 5);
-        _yMinValue = (_yMinValue / _yInterval).floorToDouble() * _yInterval;
-        _yMaxValue = (_yMaxValue / _yInterval).ceilToDouble() * _yInterval;
+        _yInterval = calculateInterval(_yMaxValue - _yMinValue, 5, minInterval);
       }
+      _yMinValue = (_yMinValue / _yInterval).floorToDouble() * _yInterval;
+      _yMaxValue = (_yMaxValue / _yInterval).ceilToDouble() * _yInterval;
     }
     _yRange = _yMaxValue - _yMinValue;
 
@@ -940,8 +943,8 @@ class _TwoAxisChart extends Chart {
     _yLabels = <String>[];
     _yLabelFormatter = _options['yAxis']['labels']['formatter'];
     if (_yLabelFormatter == null) {
-      var maxDecimalPlaces = math.max(utils.getDecimalPlaces(_yInterval),
-          utils.getDecimalPlaces(_yMinValue));
+      var maxDecimalPlaces =
+          max(getDecimalPlaces(_yInterval), getDecimalPlaces(_yMinValue));
       var numberFormat = new NumberFormat.decimalPattern()
         ..maximumFractionDigits = maxDecimalPlaces
         ..minimumFractionDigits = maxDecimalPlaces;
@@ -952,16 +955,13 @@ class _TwoAxisChart extends Chart {
       _yLabels.add(_yLabelFormatter(value));
       value += _yInterval;
     }
-    _yLabelMaxWidth = utils
-        .calculateMaxTextWidth(
+    _yLabelMaxWidth = calculateMaxTextWidth(
             _context, _getFont(_options['yAxis']['labels']['style']), _yLabels)
         .round();
 
-    // Tooltip value formatter.
+    // Tooltip.
 
-    if (_tooltipValueFormatter == null) {
-      _tooltipValueFormatter = _yLabelFormatter;
-    }
+    _tooltipValueFormatter ??= _yLabelFormatter;
 
     // x-axis title.
 
@@ -1017,8 +1017,7 @@ class _TwoAxisChart extends Chart {
     for (var i = 0; i < _dataTable.rows.length; i++) {
       _xLabels.add(_dataTable.rows[i][0].toString());
     }
-    _xLabelMaxWidth = utils
-        .calculateMaxTextWidth(
+    _xLabelMaxWidth = calculateMaxTextWidth(
             _context, _getFont(_options['xAxis']['labels']['style']), _xLabels)
         .round();
     _xLabelHop = _xAxisLength / _xLabels.length;
@@ -1028,8 +1027,8 @@ class _TwoAxisChart extends Chart {
       _xAxisTop -= _options['xAxis']['labels']['style']['fontSize'];
     } else {
       _xLabelRotation = 45;
-      if (_xLabelMaxWidth * math.cos(_xLabelRotation) <= availableWidth) {
-        _xAxisTop -= (_xLabelMaxWidth * math.sin(_xLabelRotation)).round();
+      if (_xLabelMaxWidth * cos(_xLabelRotation) <= availableWidth) {
+        _xAxisTop -= (_xLabelMaxWidth * sin(_xLabelRotation)).round();
       } else {
         _xLabelRotation = 90;
         _xAxisTop -= _xLabelMaxWidth;
@@ -1124,7 +1123,7 @@ class _TwoAxisChart extends Chart {
       }
     } else {
       _axesContext.textAlign = 'right';
-      var angle = utils.radian(-_xLabelRotation);
+      var angle = radian(-_xLabelRotation);
       for (var label in _xLabels) {
         _axesContext
           ..save()

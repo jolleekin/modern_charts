@@ -62,9 +62,8 @@ void createBarChart() {
     'series': {
       'labels': {'enabled': true}
     },
-    'title': {
-      'text': 'Bar Chart Demo'
-    }
+    'yAxis': {'minInterval': 5},
+    'title': {'text': 'Bar Chart Demo'}
   };
 
   var chart = new BarChart(container);
@@ -151,9 +150,7 @@ void createLineChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
-    'title': {
-      'text': 'Line Chart Demo'
-    }
+    'title': {'text': 'Line Chart Demo'}
   };
 
   var chart = new LineChart(container);
@@ -236,9 +233,7 @@ void createPieChart() {
     'series': {
       'labels': {'enabled': true}
     },
-    'title': {
-      'text': 'Pie Chart Demo'
-    }
+    'title': {'text': 'Pie Chart Demo'}
   });
 
   void disableAllButtons() {
@@ -306,9 +301,7 @@ void createRadarChart() {
     'series': {
       'labels': {'enabled': true}
     },
-    'title': {
-      'text': 'Radar Chart Demo'
-    }
+    'title': {'text': 'Radar Chart Demo'}
   };
 
   var chart = new RadarChart(container);
@@ -385,12 +378,8 @@ void createGaugeChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
-    'series': {
-      'labels': {'enabled': true}
-    },
-    'title': {
-      'text': 'Gauge Chart Demo'
-    }
+//    'gaugeLabels': {'enabled': false},
+    'title': {'text': 'Gauge Chart Demo'}
   });
 
   void disableAllButtons() {

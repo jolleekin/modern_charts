@@ -1,17 +1,17 @@
 library chart.src.utils;
 
 import 'dart:html';
-import 'dart:math' as math;
+import 'dart:math';
 
 import 'datatable.dart';
 
-double degree(num angle) => angle * 180 / math.PI;
+double degree(num angle) => angle * 180 / PI;
 
 /// Converts [angle] to radian.
-double radian(num angle) => angle * math.PI / 180;
+double radian(num angle) => angle * PI / 180;
 
 /// Returns the base-10 logarithm of [value].
-double log10(double value) => math.log(value) / math.LN10;
+double log10(double value) => log(value) / LN10;
 
 /// Returns a linear interpolated value based on the start value [start], the
 /// end value [end], and the interpolation factor [s].
@@ -22,14 +22,14 @@ lerp(start, end, double s) => start + (end - start) * s;
 bool isInRange(num value, num min, num max) => value >= min && value <= max;
 
 Point<double> polarToCartesian(Point center, num radius, num angle) {
-  var x = center.x + radius * math.cos(angle);
-  var y = center.y + radius * math.sin(angle);
+  var x = center.x + radius * cos(angle);
+  var y = center.y + radius * sin(angle);
   return new Point<double>(x, y);
 }
 
 /// Rounds [value] to [places] decimal places.
 double roundToPlaces(double value, int places) {
-  var p = math.pow(10, places);
+  var p = pow(10, places);
   value = value * p;
   return value.round() / p;
 }
@@ -37,7 +37,7 @@ double roundToPlaces(double value, int places) {
 /// Returns the order of magnitude of [value].
 int calculateOrderOfMagnitude(num value) {
   if (value != 0) {
-    return math.max((math.log(value) / math.LN10).floor(), 0);
+    return max((log(value) / LN10).floor(), 0);
   }
   return 1;
 }
@@ -89,17 +89,24 @@ double findMinValue(DataTable table) {
   return minValue;
 }
 
-/// Calculates a nice axis interval given the axis range [range] and the desired
-/// number of steps [targetSteps].
-double calculateInterval(double range, int targetSteps) {
+/// Calculates a nice axis interval given
+/// - the axis range [range]
+/// - the desired number of steps [targetSteps]
+/// - and the minimum interval [minInterval]
+num calculateInterval(num range, int targetSteps, [num minInterval]) {
   var interval = range / targetSteps;
   var mag = log10(interval).floor();
-  var magPow = math.pow(10, mag).toDouble();
+  var magPow = pow(10, mag).toDouble();
+  if (minInterval != null) {
+    magPow = max(magPow, minInterval);
+  }
   var msd = (interval / magPow).round();
   if (msd > 5) {
     msd = 10;
   } else if (msd > 2) {
     msd = 5;
+  } else if (msd == 0) {
+    msd = 1;
   }
   return msd * magPow;
 }
@@ -147,7 +154,7 @@ int getDecimalPlaces(num value) {
 ///
 /// Returns [dst].
 Map mergeMap(Map dst, Map src) {
-  if (dst == null) dst = {};
+  dst ??= {};
   for (var k in dst.keys.toList()) {
     if (!src.containsKey(k)) dst.remove(k);
   }

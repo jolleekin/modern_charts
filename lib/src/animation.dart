@@ -6,7 +6,7 @@
  */
 library chart.src.animation;
 
-import 'dart:math' as math;
+import 'dart:math';
 
 //Easing functions adapted from Robert Penner's easing equations
 //http://www.robertpenner.com/easing/
@@ -70,44 +70,44 @@ double easeInOutQuint(double t) {
 }
 
 double easeInSine(double t) {
-  return -math.cos(t * math.PI / 2) + 1;
+  return -cos(t * PI / 2) + 1;
 }
 
 double easeOutSine(double t) {
-  return math.sin(t * math.PI / 2);
+  return sin(t * PI / 2);
 }
 
 double easeInOutSine(double t) {
-  return -.5 * (math.cos(math.PI * t) - 1);
+  return -.5 * (cos(PI * t) - 1);
 }
 
 double easeInExpo(double t) {
-  return (t == 0) ? 1 : math.pow(2, 10 * (t - 1));
+  return (t == 0) ? 1 : pow(2, 10 * (t - 1));
 }
 
 double easeOutExpo(double t) {
-  return (t == 1) ? 1 : (1 - math.pow(2, -10 * t));
+  return (t == 1) ? 1 : (1 - pow(2, -10 * t));
 }
 
 double easeInOutExpo(double t) {
   if (t == 0.0) return 0.0;
   if (t == 1.0) return 1.0;
-  if ((t *= 2) < 1) return 1 / 2 * math.pow(2, 10 * (t - 1));
-  return .5 * (-math.pow(2, -10 * --t) + 2);
+  if ((t *= 2) < 1) return 1 / 2 * pow(2, 10 * (t - 1));
+  return .5 * (-pow(2, -10 * --t) + 2);
 }
 
 double easeInCirc(double t) {
   if (t >= 1) return t;
-  return 1 - math.sqrt(1 - t * t);
+  return 1 - sqrt(1 - t * t);
 }
 
 double easeOutCirc(double t) {
-  return math.sqrt(1 - (t = t - 1) * t);
+  return sqrt(1 - (t = t - 1) * t);
 }
 
 double easeInOutCirc(double t) {
-  if ((t *= 2) < 1) return -.5 * (math.sqrt(1 - t * t) - 1);
-  return .5 * (math.sqrt(1 - (t = t - 2) * t) + 1);
+  if ((t *= 2) < 1) return -.5 * (sqrt(1 - t * t) - 1);
+  return .5 * (sqrt(1 - (t = t - 2) * t) + 1);
 }
 
 double easeInElastic(double t) {
@@ -119,13 +119,11 @@ double easeInElastic(double t) {
   if (p == 0) p = 0.3;
   if (a < 1) {
     a = 1.0;
-    var s = p / 4;
+    s = p / 4;
   } else {
-    s = p / (2 * math.PI) * math.asin(1 / a);
+    s = p / (2 * PI) * asin(1 / a);
   }
-  return -(a *
-      math.pow(2, 10 * (t = t - 1)) *
-      math.sin((t - s) * (2 * math.PI) / p));
+  return -(a * pow(2, 10 * (t = t - 1)) * sin((t - s) * (2 * PI) / p));
 }
 
 double easeOutElastic(double t) {
@@ -137,11 +135,11 @@ double easeOutElastic(double t) {
   if (p == 0) p = 0.3;
   if (a < 1) {
     a = 1.0;
-    var s = p / 4;
+    s = p / 4;
   } else {
-    s = p / (2 * math.PI) * math.asin(1 / a);
+    s = p / (2 * PI) * asin(1 / a);
   }
-  return a * math.pow(2, -10 * t) * math.sin((t - s) * (2 * math.PI) / p) + 1;
+  return a * pow(2, -10 * t) * sin((t - s) * (2 * PI) / p) + 1;
 }
 
 double easeInOutElastic(double t) {
@@ -153,20 +151,13 @@ double easeInOutElastic(double t) {
   if (p == 0.0) p = 1 * (.3 * 1.5);
   if (a < 1) {
     a = 1.0;
-    var s = p / 4;
+    s = p / 4;
   } else {
-    s = p / (2 * math.PI) * math.asin(1 / a);
+    s = p / (2 * PI) * asin(1 / a);
   }
   if (t < 1)
-    return -.5 *
-        (a *
-            math.pow(2, 10 * (t = t - 1)) *
-            math.sin((t - s) * (2 * math.PI) / p));
-  return a *
-          math.pow(2, -10 * (t = t - 1)) *
-          math.sin((t - s) * (2 * math.PI) / p) *
-          .5 +
-      1;
+    return -.5 * (a * pow(2, 10 * (t = t - 1)) * sin((t - s) * (2 * PI) / p));
+  return a * pow(2, -10 * (t = t - 1)) * sin((t - s) * (2 * PI) / p) * .5 + 1;
 }
 
 double easeInBack(double t) {

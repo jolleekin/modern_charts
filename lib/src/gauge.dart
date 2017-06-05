@@ -43,7 +43,7 @@ class _Gauge extends _Pie {
 
     var fs1 = .75 * innerRadius;
     var font1 = '${fs1}px "Segoe UI"';
-    var text1 = utils.lerp(oldValue, value, percent).round().toString();
+    var text1 = lerp(oldValue, value, percent).round().toString();
     ctx.font = font1;
     var w1 = ctx.measureText(text1).width;
 
@@ -89,19 +89,22 @@ class GaugeChart extends Chart {
 
     var availW = .618 * _gaugeHop; // Golden ratio.
     var availH = _seriesAndAxesBox.height - 2 * labelTotalHeight;
-    _gaugeOuterRadius = .5 * math.min(availW, availH);
+    _gaugeOuterRadius = .5 * min(availW, availH);
     _gaugeInnerRadius = .5 * _gaugeOuterRadius;
   }
 
   @override
   bool _drawSeries(double percent) {
     var style = _options['gaugeLabels']['style'];
+    var labelsEnabled = _options['gaugeLabels']['enabled'];
     _seriesContext
       ..strokeStyle = 'white'
       ..textAlign = 'center';
     for (_Gauge gauge in _seriesList[0].entities) {
       var highlight = gauge.index == _focusedEntityGroupIndex;
       gauge.draw(_seriesContext, percent, highlight);
+
+      if (!labelsEnabled) continue;
 
       var x = gauge.center.x;
       var y = gauge.center.y +
@@ -165,7 +168,7 @@ class GaugeChart extends Chart {
     var gauge = _seriesList[0].entities[_focusedEntityGroupIndex] as _Gauge;
     _tooltip.style
       ..borderColor = gauge.color
-      ..padding = '3px 10px';
+      ..padding = '4px 12px';
     var value = gauge.value.toString();
     if (_tooltipValueFormatter != null) {
       value = _tooltipValueFormatter(gauge.value);
@@ -192,7 +195,7 @@ class GaugeChart extends Chart {
   }
 
   GaugeChart(Element container) : super(container) {
-    _defaultOptions = utils.extendMap(globalOptions, _gaugeChartDefaultOptions);
+    _defaultOptions = extendMap(globalOptions, _gaugeChartDefaultOptions);
     _defaultOptions['legend']['position'] = 'none';
   }
 }
