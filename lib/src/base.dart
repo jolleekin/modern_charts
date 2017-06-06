@@ -1,11 +1,18 @@
 part of modern_charts;
 
-Set<Chart> _instances;
 
-void _resizeCharts(_) {
+Set<Chart> _instances;
+Timer _timer;
+
+void _resizeAll() {
   for (var chart in _instances) {
     chart.resize();
   }
+}
+
+void _windowResize(_) {
+  _timer?.cancel();
+  _timer = new Timer(const Duration(milliseconds: 500), _resizeAll);
 }
 
 /// The global drawing options.
@@ -762,7 +769,7 @@ class Chart {
 
     if (_instances == null) {
       _instances = new Set<Chart>();
-      window.onResize.listen(_resizeCharts);
+      window.onResize.listen(_windowResize);
     }
     _instances.add(this);
   }

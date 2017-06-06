@@ -84,12 +84,12 @@ class GaugeChart extends Chart {
           _AXIS_LABEL_MARGIN + _options['gaugeLabels']['style']['fontSize'];
     }
 
-    _gaugeCenterY = .5 * _height;
+    _gaugeCenterY = _seriesAndAxesBox.top + .5 * _seriesAndAxesBox.height;
     _gaugeHop = _seriesAndAxesBox.width / gaugeCount;
 
     var availW = .618 * _gaugeHop; // Golden ratio.
     var availH = _seriesAndAxesBox.height - 2 * labelTotalHeight;
-    _gaugeOuterRadius = .5 * min(availW, availH);
+    _gaugeOuterRadius = .5 * min(availW, availH) / _highlightOuterRadiusFactor;
     _gaugeInnerRadius = .5 * _gaugeOuterRadius;
   }
 
@@ -189,8 +189,10 @@ class GaugeChart extends Chart {
   Point _getTooltipPosition() {
     var gauge = _seriesList[0].entities[_focusedEntityGroupIndex] as _Gauge;
     var x = gauge.center.x - _tooltip.offsetWidth ~/ 2;
-    var y =
-        gauge.center.y - 1.05 * gauge.outerRadius - _tooltip.offsetHeight - 5;
+    var y = gauge.center.y -
+        _highlightOuterRadiusFactor * gauge.outerRadius -
+        _tooltip.offsetHeight -
+        5;
     return new Point(x, y);
   }
 

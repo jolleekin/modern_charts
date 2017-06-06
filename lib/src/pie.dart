@@ -28,6 +28,8 @@ final _pieChartDefaultOptions = {
 /// 12 o'clock.
 const _START_ANGLE = -_PI_2;
 
+const _highlightOuterRadiusFactor = 1.05;
+
 /// A pie in a pie chart.
 class _Pie extends _Entity {
   num oldStartAngle;
@@ -60,7 +62,8 @@ class _Pie extends _Entity {
     if (highlight) {
       ctx.fillStyle = highlightColor;
       ctx.beginPath();
-      ctx.arc(center.x, center.y, 1.05 * outerRadius, a1, a2);
+      ctx.arc(center.x, center.y, _highlightOuterRadiusFactor * outerRadius, a1,
+          a2);
       ctx.arc(center.x, center.y, innerRadius, a2, a1, true);
       ctx.fill();
     }
@@ -93,7 +96,7 @@ class PieChart extends Chart {
     var halfW = rect.width >> 1;
     var halfH = rect.height >> 1;
     _center = new Point(rect.left + halfW, rect.top + halfH);
-    _outerRadius = min(halfW, halfH) / 1.05;
+    _outerRadius = min(halfW, halfH) / _highlightOuterRadiusFactor;
     var pieHole = _options['pieHole'];
     if (pieHole > 1) pieHole = 0;
     if (pieHole < 0) pieHole = 0;

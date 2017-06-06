@@ -150,6 +150,7 @@ void createLineChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
+    'yAxis': {'minInterval': 5},
     'title': {'text': 'Line Chart Demo'}
   };
 
@@ -367,8 +368,8 @@ void createGaugeChart() {
   var table = new DataTable([
     ['Browser', 'Share'],
     ['Memory', 25],
-    ['CPU', 75],
-    ['Disk', 40]
+//    ['CPU', 75],
+//    ['Disk', 40]
   ]);
   var chart = new GaugeChart(container);
   chart.draw(table, {
@@ -378,7 +379,7 @@ void createGaugeChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
-//    'gaugeLabels': {'enabled': false},
+    'gaugeLabels': {'enabled': false},
     'title': {'text': 'Gauge Chart Demo'}
   });
 
