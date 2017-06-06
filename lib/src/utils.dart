@@ -1,5 +1,6 @@
 library chart.src.utils;
 
+import 'dart:async';
 import 'dart:html';
 import 'dart:math';
 
@@ -194,4 +195,19 @@ Map extendMap(Map src, Map ext) {
     result[k] = v;
   });
   return result;
+}
+
+class StreamSubscriptionTracker {
+  List<StreamSubscription> _subs = <StreamSubscription>[];
+
+  void add(Stream stream, void listener(event)) {
+    _subs.add(stream.listen(listener));
+  }
+
+  void clear() {
+    for (var sub in _subs) {
+      sub.cancel();
+    }
+    _subs.clear();
+  }
 }

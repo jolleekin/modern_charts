@@ -1,6 +1,5 @@
 part of modern_charts;
 
-
 Set<Chart> _instances;
 Timer _timer;
 
@@ -50,6 +49,9 @@ final globalOptions = {
 
   // Map - An object that controls the legend.
   'legend': {
+    // (String label) -> String - A function that format the labels.
+    'labelFormatter': null,
+
     // String - The position of the legend relative to the chart area.
     // Supported values: 'left', 'top', 'bottom', 'right', 'none'.
     'position': 'right',
@@ -95,6 +97,9 @@ final globalOptions = {
   'tooltip': {
     // bool - Whether to show the tooltip.
     'enabled': true,
+
+    // (String label) -> String - A function that format the labels.
+    'labelFormatter': null,
 
     // Map - An object that controls the styling of the tooltip.
     'style': {
@@ -206,6 +211,10 @@ class Chart {
 
   /// The legend element.
   Element _legend;
+
+  /// The subscription tracker for legend items' events.
+  StreamSubscriptionTracker _legendItemSubscriptionTracker =
+      new StreamSubscriptionTracker();
 
   /// The tooltip element. To position the tooltip, change its transform CSS.
   Element _tooltip;
@@ -581,14 +590,16 @@ class Chart {
 
   void _updateLegendContent() {
     var labels = _getLegendLabels();
+    _legendItemSubscriptionTracker.clear();
     _legend.innerHtml = '';
     for (var i = 0; i < labels.length; i++) {
       var e = _createTooltipOrLegendItem(_getColor(i), labels[i]);
       e.style.cursor = 'pointer';
       e.style.userSelect = 'none';
-      e.onClick.listen(_legendItemClick);
-      e.onMouseOver.listen(_legendItemMouseOver);
-      e.onMouseOut.listen(_legendItemMouseOut);
+      _legendItemSubscriptionTracker
+        ..add(e.onClick, _legendItemClick)
+        ..add(e.onMouseOver, _legendItemMouseOver)
+        ..add(e.onMouseOut, _legendItemMouseOut);
       if (!_seriesVisible[i]) e.style.opacity = '.5';
       // Display the items in one row if the legend's position is 'top' or
       // 'bottom'.
@@ -599,7 +610,10 @@ class Chart {
   }
 
   List<String> _getLegendLabels() {
-    return _dataTable.columns.skip(1).map((e) => e.name).toList();
+    var labels = _dataTable.columns.skip(1).map((e) => e.name);
+    var formatter = _options['legend']['labelFormatter'];
+    if (formatter != null) labels = labels.map(formatter);
+    return labels.toList();
   }
 
   void _legendItemClick(MouseEvent e) {
@@ -706,11 +720,15 @@ class Chart {
       var series = _seriesList[i - 1];
       var value = row[i];
       if (value == null) continue;
-      if (_tooltipValueFormatter != null) {
-        value = _tooltipValueFormatter(value);
-      }
+
+      var formatter = _options['tooltip']['valueFormatter'];
+      if (formatter != null) value = formatter(value);
+
+      formatter = _options['tooltip']['labelFormatter'];
+      var label = formatter == null ? series.name : formatter(series.name);
+
       var e = _createTooltipOrLegendItem(
-          series.color, '${series.name}: <strong>$value</strong>');
+          series.color, '$label: <strong>$value</strong>');
       _tooltip.append(e);
     }
   }
@@ -911,17 +929,18 @@ class _TwoAxisChart extends Chart {
 
     // y-axis min-max.
 
-    _yMaxValue = _options['yAxis']['maxValue'];
-    _yMinValue = _options['yAxis']['minValue'];
+    _yMaxValue = _options['yAxis']['maxValue'] ?? double.NEGATIVE_INFINITY;
+    _yMaxValue = max(_yMaxValue, findMaxValue(_dataTable));
+    if (_yMaxValue == double.NEGATIVE_INFINITY) _yMaxValue = 0.0;
+
+    _yMinValue = _options['yAxis']['minValue'] ?? double.INFINITY;
+    _yMinValue = min(_yMinValue, findMinValue(_dataTable));
+    if (_yMinValue == double.INFINITY) _yMinValue = 0.0;
+
     _yInterval = _options['yAxis']['interval'];
     var minInterval = _options['yAxis']['minInterval'];
-    if (_yMaxValue == null || _yMinValue == null || _yInterval == null) {
-      _yMaxValue = findMaxValue(_dataTable);
-      _yMinValue = findMinValue(_dataTable);
-      if (_yMinValue == double.INFINITY) {
-        _yMaxValue = 0.0;
-        _yMinValue = 0.0;
-      }
+
+    if (_yInterval == null) {
       if (_yMinValue == _yMaxValue) {
         if (_yMinValue == 0.0) {
           _yMaxValue = 1.0;
@@ -940,9 +959,10 @@ class _TwoAxisChart extends Chart {
       } else {
         _yInterval = calculateInterval(_yMaxValue - _yMinValue, 5, minInterval);
       }
-      _yMinValue = (_yMinValue / _yInterval).floorToDouble() * _yInterval;
-      _yMaxValue = (_yMaxValue / _yInterval).ceilToDouble() * _yInterval;
     }
+
+    _yMinValue = (_yMinValue / _yInterval).floorToDouble() * _yInterval;
+    _yMaxValue = (_yMaxValue / _yInterval).ceilToDouble() * _yInterval;
     _yRange = _yMaxValue - _yMinValue;
 
     // y-axis labels.

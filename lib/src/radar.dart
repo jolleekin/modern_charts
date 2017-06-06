@@ -153,7 +153,7 @@ class RadarChart extends Chart {
   num _yLabelHop;
   ValueFormatter _yLabelFormatter;
 
-  /// Each element is the bouding box of each entity group.
+  /// Each element is the bounding box of each entity group.
   List<Rectangle> _boundingBoxes;
 
   num _getAngle(int entityIndex) => entityIndex * _angleInterval - _PI_2;

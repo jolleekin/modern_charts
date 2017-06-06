@@ -1,3 +1,7 @@
+#### 0.1.5
+- Change the semantics of `yAxis:minValue` and `yAxis:maxValue`
+- Add `tooltip:labelFormatter` and `legend:labelFormatter`
+
 #### 0.1.4
 - Add a 500ms delay before resizing all charts
 - Correct gauge center and outer radius

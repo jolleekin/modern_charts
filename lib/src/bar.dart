@@ -112,16 +112,16 @@ final _barChartDefaultOptions = {
       },
     },
 
-    // num - The maximum value on the axis. If `null`, this value is
-    // automatically calculated.
+    // num - The desired maximum value on the axis. If set, the calculated value
+    // is guaranteed to be >= this value.
     'maxValue': null,
 
     // num - The minimum interval. If `null`, this value is automatically
     // calculated.
     'minInterval': null,
 
-    // num - The minimum value on the axis. If `null`, this value is
-    // automatically calculated.
+    // num - The desired minimum value on the axis. If set, the calculated value
+    // is guaranteed to be <= this value.
     'minValue': null,
 
     // String - The position of the axis relative to the chart area.

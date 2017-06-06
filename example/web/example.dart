@@ -28,7 +28,7 @@ Element createContainer() {
 
 void createBarChart() {
   var table = new DataTable([
-    ['Categories', 'Series 1', 'Series 2', 'Series 3'],
+    ['Categories', 'Long series name', 'Series 2', 'Series 3'],
     ['Monday', 1, 3, 5],
     ['Tuesday', 3, 4, 6],
     ['Wednesday', 4, 3, 1],
@@ -59,11 +59,23 @@ void createBarChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
+    'legend': {
+      'labelFormatter': (String label) {
+        if (label.length <= 10) return label;
+        return label.substring(0, 7) + '...';
+      }
+    },
     'series': {
       'labels': {'enabled': true}
     },
-    'yAxis': {'minInterval': 5},
-    'title': {'text': 'Bar Chart Demo'}
+    'yAxis': {'maxValue': 30, 'minInterval': 5},
+    'title': {'text': 'Bar Chart Demo'},
+    'tooltip': {
+      'labelFormatter': (String label) {
+        if (label.length <= 10) return label;
+        return label.substring(0, 7) + '...';
+      }
+    }
   };
 
   var chart = new BarChart(container);
