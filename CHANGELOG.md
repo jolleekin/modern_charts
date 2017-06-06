@@ -1,3 +1,7 @@
+#### 0.1.4
+- Add a 500ms delay before resizing all charts
+- Correct gauge center and outer radius
+
 #### 0.1.3
 - Fix [#7]([https://github.com/jolleekin/modern_charts/issues/7)
 - Fix [#8]([https://github.com/jolleekin/modern_charts/issues/8)
