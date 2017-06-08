@@ -19,7 +19,7 @@ final _lineChartDefaultOptions = {
       'enabled': false,
       'style': {
         'color': '#212121',
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
         'fontSize': 13,
         'fontStyle': 'normal'
       }
@@ -64,7 +64,7 @@ final _lineChartDefaultOptions = {
         'color': '#212121',
 
         // String - The labels' font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // String - The labels' font size.
         'fontSize': 13,
@@ -86,7 +86,7 @@ final _lineChartDefaultOptions = {
         'color': '#212121',
 
         // String - The title's font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // String - The title's font size.
         'fontSize': 15,
@@ -129,7 +129,7 @@ final _lineChartDefaultOptions = {
         'color': '#212121',
 
         // String - The labels' font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // String - The labels' font size.
         'fontSize': 13,
@@ -163,7 +163,7 @@ final _lineChartDefaultOptions = {
         'color': '#212121',
 
         // String - The title's font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // String - The title's font size.
         'fontSize': 15,
@@ -244,7 +244,7 @@ class LineChart extends _TwoAxisChart {
       var sum = 0.0;
       var count = 0;
       for (var j = _seriesList.length - 1; j >= 0; j--) {
-        if (!_seriesVisible[j]) continue;
+        if (_seriesStates[j].index <= _VisibilityState.hiding.index) continue;
         var point = _seriesList[j].entities[i] as _Point;
         if (point.value != null) {
           sum += point.y;
@@ -305,7 +305,7 @@ class LineChart extends _TwoAxisChart {
     var markerSize = markerOptions['size'];
 
     for (var i = 0; i < seriesCount; i++) {
-      if (!_seriesVisible[i] && percent == 1.0) continue;
+      if (_seriesStates[i] == _VisibilityState.hidden) continue;
 
       var series = _seriesList[i];
       var points = _lerpPoints(series.entities, percent);
@@ -398,13 +398,13 @@ class LineChart extends _TwoAxisChart {
         ..textAlign = 'center'
         ..textBaseline = 'alphabetic';
       for (var i = 0; i < seriesCount; i++) {
-        if (!_seriesVisible[i]) continue;
+        if (_seriesStates[i] != _VisibilityState.showing) continue;
 
         var points = _seriesList[i].entities as List<_Point>;
         for (var point in points) {
           if (point.value != null) {
-            _seriesContext.fillText(_yLabelFormatter(point.value), point.x,
-                point.y - markerSize - 5);
+            var y = point.y - markerSize - 5;
+            _seriesContext.fillText(point.formattedValue, point.x, y);
           }
         }
       }
@@ -422,6 +422,7 @@ class LineChart extends _TwoAxisChart {
     return new _Point()
       ..index = entityIndex
       ..value = value
+      ..formattedValue = value != null ? _entityValueFormatter(value) : null
       ..color = color
       ..highlightColor = highlightColor
       ..oldX = x
@@ -442,9 +443,9 @@ class LineChart extends _TwoAxisChart {
     var start = index ?? 0;
     var end = (index == null) ? _seriesList.length : index + 1;
     for (var i = start; i < end; i++) {
-      var visible = _seriesVisible[i];
+      var visible = _seriesStates[i].index >= _VisibilityState.showing.index;
       var series = _seriesList[i];
-      var entities = series.entities as List<_Point>;
+      var entities = series.entities;
       var color = _getColor(i);
       var highlightColor = _getHighlightColor(color);
       series.color = color;
@@ -463,8 +464,8 @@ class LineChart extends _TwoAxisChart {
       if (!curve) continue;
 
       var e1;
-      var e2 = entities[0];
-      var e3 = entities[1];
+      var e2 = entities[0] as _Point;
+      var e3 = entities[1] as _Point;
       for (var j = 2; j < entityCount; j++) {
         e1 = e2;
         e2 = e3;

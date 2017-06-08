@@ -12,7 +12,7 @@ final _gaugeChartDefaultOptions = {
     // Map - An object that controls the styling of the gauge labels.
     'style': {
       'color': '#212121',
-      'fontFamily': _GLOBAL_FONT_FAMILY,
+      'fontFamily': _fontFamily,
       'fontSize': 13,
       'fontStyle': 'normal'
     }
@@ -42,13 +42,13 @@ class _Gauge extends _Pie {
     // Draw the percent.
 
     var fs1 = .75 * innerRadius;
-    var font1 = '${fs1}px "Segoe UI"';
+    var font1 = '${fs1}px $_fontFamily';
     var text1 = lerp(oldValue, value, percent).round().toString();
     ctx.font = font1;
     var w1 = ctx.measureText(text1).width;
 
     var fs2 = .6 * fs1;
-    var font2 = '${fs2}px "Segoe UI"';
+    var font2 = '${fs2}px $_fontFamily';
     var text2 = '%';
     ctx.font = font2;
     var w2 = ctx.measureText(text2).width;
@@ -61,6 +61,8 @@ class _Gauge extends _Pie {
       ..fillText(text2, center.x + .5 * w1, y);
   }
 }
+
+const _gaugeStartAngle = -_PI_2;
 
 class GaugeChart extends Chart {
   num _gaugeHop;
@@ -81,7 +83,7 @@ class GaugeChart extends Chart {
     var labelTotalHeight = 0;
     if (_options['gaugeLabels']['enabled']) {
       labelTotalHeight =
-          _AXIS_LABEL_MARGIN + _options['gaugeLabels']['style']['fontSize'];
+          _axisLabelMargin + _options['gaugeLabels']['style']['fontSize'];
     }
 
     _gaugeCenterY = _seriesAndAxesBox.top + .5 * _seriesAndAxesBox.height;
@@ -110,7 +112,7 @@ class GaugeChart extends Chart {
       var y = gauge.center.y +
           gauge.outerRadius +
           style['fontSize'] +
-          _AXIS_LABEL_MARGIN;
+          _axisLabelMargin;
       _seriesContext
         ..fillStyle = style['color']
         ..font = _getFont(style)
@@ -126,6 +128,7 @@ class GaugeChart extends Chart {
     // Override the colors.
     color = _getColor(entityIndex);
     highlightColor = _changeColorAlpha(color, .5);
+
     var name = _dataTable.rows[entityIndex][0];
     return new _Gauge()
       ..index = entityIndex
@@ -135,13 +138,13 @@ class GaugeChart extends Chart {
       ..backgroundColor = _options['gaugeBackgroundColor']
       ..highlightColor = highlightColor
       ..oldValue = 0
-      ..oldStartAngle = _START_ANGLE
-      ..oldEndAngle = _START_ANGLE
+      ..oldStartAngle = _gaugeStartAngle
+      ..oldEndAngle = _gaugeStartAngle
       ..center = _getGaugeCenter(entityIndex)
       ..innerRadius = _gaugeInnerRadius
       ..outerRadius = _gaugeOuterRadius
-      ..startAngle = _START_ANGLE
-      ..endAngle = _START_ANGLE + _valueToAngle(value);
+      ..startAngle = _gaugeStartAngle
+      ..endAngle = _gaugeStartAngle + _valueToAngle(value);
   }
 
   @override
@@ -159,7 +162,7 @@ class GaugeChart extends Chart {
         ..center = _getGaugeCenter(i)
         ..innerRadius = _gaugeInnerRadius
         ..outerRadius = _gaugeOuterRadius
-        ..endAngle = _START_ANGLE + _valueToAngle(gauge.value);
+        ..endAngle = _gaugeStartAngle + _valueToAngle(gauge.value);
     }
   }
 

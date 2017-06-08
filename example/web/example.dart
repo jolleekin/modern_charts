@@ -116,7 +116,7 @@ void createBarChart() {
   insertRemoveRowButton.onClick.listen((_) {
     disableAllButtons();
     if (insertRow) {
-      var values = ['New'];
+      var values = <dynamic>['New'];
       for (var i = 1; i < table.columns.length; i++) {
         values.add(rand(2, 20));
       }
@@ -162,6 +162,9 @@ void createLineChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
+    'series': {
+      'fillOpacity': 0.25,
+    },
     'yAxis': {'minInterval': 5},
     'title': {'text': 'Line Chart Demo'}
   };
@@ -204,7 +207,7 @@ void createLineChart() {
   insertRemoveRowButton.onClick.listen((_) {
     disableAllButtons();
     if (insertRow) {
-      var values = ['New'];
+      var values = <Object>['New'];
       for (var i = 1; i < table.columns.length; i++) {
         values.add(rand(2, 20));
       }
@@ -243,8 +246,11 @@ void createPieChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
+    'pieHole': .5,
     'series': {
-      'labels': {'enabled': true}
+//      'counterclockwise': true,
+      'labels': {'enabled': true},
+      'startAngle': 90 + 10 * 360,
     },
     'title': {'text': 'Pie Chart Demo'}
   });
@@ -355,7 +361,7 @@ void createRadarChart() {
   insertRemoveRowButton.onClick.listen((_) {
     disableAllButtons();
     if (insertRow) {
-      var values = ['New'];
+      var values = <Object>['New'];
       for (var i = 1; i < table.columns.length; i++) {
         values.add(rand(5, 20));
       }
@@ -386,6 +392,10 @@ void createGaugeChart() {
   var chart = new GaugeChart(container);
   chart.draw(table, {
     'animation': {
+      'easing': (double t) {
+        t = 4 * t - 2;
+        return (t * t * t - t) / 12 + .5;
+      },
       'onEnd': () {
         changeDataButton.disabled = false;
         insertRemoveRowButton.disabled = false;
@@ -415,9 +425,9 @@ void createGaugeChart() {
     insertRemoveRowButton.disabled = true;
     if (insertRow) {
       var values = ['New', rand(0, 101)];
-      table.rows.insert(2, values);
+      table.rows.insert(1, values);
     } else {
-      table.rows.removeAt(2);
+      table.rows.removeAt(1);
     }
     insertRow = !insertRow;
     chart.update();

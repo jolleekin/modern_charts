@@ -9,7 +9,7 @@ final _barChartDefaultOptions = {
       'enabled': false,
       'style': {
         'color': '#212121',
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
         'fontSize': 13,
         'fontStyle': 'normal'
       }
@@ -37,7 +37,7 @@ final _barChartDefaultOptions = {
         'color': '#212121',
 
         // String - The labels' font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // num - The labels' font size.
         'fontSize': 13,
@@ -59,7 +59,7 @@ final _barChartDefaultOptions = {
         'color': '#212121',
 
         // String - The title's font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // num - The title's font size.
         'fontSize': 15,
@@ -102,7 +102,7 @@ final _barChartDefaultOptions = {
         'color': '#212121',
 
         // String - The labels' font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // num - The labels' font size.
         'fontSize': 13,
@@ -136,7 +136,7 @@ final _barChartDefaultOptions = {
         'color': '#212121',
 
         // String - The title's font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // num - The title's font size.
         'fontSize': 15,
@@ -170,7 +170,7 @@ class _Bar extends _Entity {
     ctx.fillStyle = color;
     ctx.fillRect(x, bottom - h, w, h);
     if (highlight) {
-      ctx.fillStyle = 'rgba(255, 255, 255, .5)';
+      ctx.fillStyle = 'rgba(255, 255, 255, .2)';
       ctx.fillRect(x, bottom - h, w, h);
     }
   }
@@ -224,7 +224,10 @@ class BarChart extends _TwoAxisChart {
       var sum = 0.0;
       var count = 0;
       for (var j = _seriesList.length - 1; j >= 0; j--) {
-        if (!_seriesVisible[j]) continue;
+        var state = _seriesStates[j];
+        if (state == _VisibilityState.hidden) continue;
+        if (state == _VisibilityState.hiding) continue;
+
         var bar = _seriesList[j].entities[i] as _Bar;
         if (bar.value != null) {
           sum += bar.height;
@@ -246,7 +249,7 @@ class BarChart extends _TwoAxisChart {
   @override
   bool _drawSeries(double percent) {
     for (var i = 0, n = _seriesList.length; i < n; i++) {
-      if (percent == 1.0 && !_seriesVisible[i]) continue;
+      if (_seriesStates[i] == _VisibilityState.hidden) continue;
 
       var series = _seriesList[i];
 
@@ -256,6 +259,13 @@ class BarChart extends _TwoAxisChart {
         var highlight = bar.index == _focusedEntityGroupIndex;
         bar.draw(_seriesContext, percent, highlight);
       }
+
+//      if (_focusedEntityGroupIndex >= 0) {
+//        _seriesContext
+//          ..fillStyle = 'rgba(0,0,0,.05)'
+//          ..fillRect(_yAxisLeft + _xLabelHop * _focusedEntityGroupIndex,
+//              _xAxisTop - _yAxisLength, _xLabelHop, _yAxisLength);
+//      }
 
       // Draw the labels.
       if (percent == 1.0) {
@@ -270,7 +280,7 @@ class BarChart extends _TwoAxisChart {
           if (bar.value == null) continue;
           var x = bar.left + .5 * bar.width;
           var y = _xAxisTop - bar.height - 5;
-          _seriesContext.fillText(_yLabelFormatter(bar.value), x, y);
+          _seriesContext.fillText(bar.formattedValue, x, y);
         }
       }
     }
@@ -303,6 +313,7 @@ class BarChart extends _TwoAxisChart {
     return new _Bar()
       ..index = entityIndex
       ..value = value
+      ..formattedValue = value != null ? _entityValueFormatter(value) : null
       ..color = color
       ..highlightColor = highlightColor
       ..bottom = _xAxisTop
@@ -320,7 +331,10 @@ class BarChart extends _TwoAxisChart {
     for (var i = 0; i < _seriesList.length; i++) {
       var series = _seriesList[i];
       var left = _getBarLeft(i, 0);
-      var barWidth = _seriesVisible[i] ? _barWidth : 0.0;
+      var barWidth = 0.0;
+      if (_seriesStates[i].index >= _VisibilityState.showing.index) {
+        barWidth = _barWidth;
+      }
       var color = _getColor(i);
       var highlightColor = _getHighlightColor(color);
       series.color = color;

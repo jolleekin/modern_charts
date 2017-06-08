@@ -1,16 +1,17 @@
 
 body {
-  font: 11pt/15pt 'Segoe UI', 'Open Sans', Verdana, Arial;
-  margin: 20px;
-  padding: 0;
+    font: 15px/20px 'Segoe UI', 'Open Sans', Verdana, Arial;
+    margin: 0;
+    padding: 24px;
 }
 
 button {
-  padding: 6px;
-  margin-bottom: 20px;
-  margin-right: 10px;
+    font: inherit;
+    margin-bottom: 20px;
+    margin-right: 10px;
+    padding: 4px 8px;
 }
 
 canvas {
-  border: 1px solid;
+    border: 1px solid;
 }

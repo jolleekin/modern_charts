@@ -68,6 +68,9 @@ class DataRow extends _TableEntity {
     _cells[columnIndex] = value;
     _table._onCellChanged(_index, columnIndex, oldValue, value);
   }
+
+  /// Creates a [List] containing all cells in this [DataRow].
+  List toList({bool growable: true}) => _cells.toList(growable: growable);
 }
 
 class DataColumn extends _TableEntity {
@@ -111,7 +114,7 @@ class DataCollectionIterator<E extends _TableEntity> implements Iterator<E> {
   }
 }
 
-class DataCollectionBase<E extends _TableEntity> extends IterableBase<E> {
+class DataCollectionBase<E extends _TableEntity> extends ListBase<E> {
   List<E> _base;
   DataTable _table;
 
@@ -151,11 +154,19 @@ class DataCollectionBase<E extends _TableEntity> extends IterableBase<E> {
   int get length => _base.length;
 
   @override
-  E elementAt(int index) => _base[index];
+  void set length(int value) {
+    // TODO: implement.
+    throw new UnimplementedError();
+  }
 
-  // List interface.
-
+  @override
   E operator [](int index) => _base[index];
+
+  @override
+  operator []=(int index, E value) {
+    // TODO: implement.
+    throw new UnimplementedError();
+  }
 
   void add(E value) {
     var index = length;
@@ -163,6 +174,16 @@ class DataCollectionBase<E extends _TableEntity> extends IterableBase<E> {
     _updateItems(index);
     _table._onRowsOrColumnsInserted(this, index, 1);
   }
+
+  void addAll(Iterable<E> iterable) {
+    var index = length;
+    _base.addAll(iterable);
+    _updateItems(index);
+    _table._onRowsOrColumnsInserted(this, index, iterable.length);
+  }
+
+  @override
+  E elementAt(int index) => _base[index];
 
   void insert(int index, E value) {
     _base.insert(index, value);
@@ -176,14 +197,7 @@ class DataCollectionBase<E extends _TableEntity> extends IterableBase<E> {
     _table._onRowsOrColumnsInserted(this, index, iterable.length);
   }
 
-  void addAll(Iterable<E> iterable) {
-    var index = length;
-    _base.addAll(iterable);
-    _updateItems(index);
-    _table._onRowsOrColumnsInserted(this, index, iterable.length);
-  }
-
-  bool remove(E element) {
+  bool remove(Object element) {
     var index = _base.indexOf(element);
     if (index == -1) return false;
     removeAt(index);
@@ -222,31 +236,38 @@ class DataCollectionBase<E extends _TableEntity> extends IterableBase<E> {
 }
 
 class DataRowCollection extends DataCollectionBase<DataRow> {
-  DataRow _toDataRow(value) {
-    if (value is DataRow) return value;
-    return new DataRow._internal(_table, value);
-  }
+  DataRow _toDataRow(value) =>
+      value is DataRow ? value : new DataRow._internal(_table, value);
 
   DataRowCollection(DataTable table) : super(table);
 
-  /// Adds a new row to this collection.
+  /// Adds [value] to this collection.
   ///
-  /// [value] can be an instance of [DataRow] or a [List].
+  /// [value] can be a [DataRow] or a [List].
   @override
-  void add(value) {
+  void add(Object value) {
     super.add(_toDataRow(value));
   }
 
+  /// Adds all elements of [iterable] to this collection.
+  ///
+  /// Each element in [iterable] can be a [DataRow] or a [List].
   @override
   void addAll(Iterable iterable) {
     super.addAll(iterable.map(_toDataRow));
   }
 
+  /// Inserts [value] at position [index] in this collection.
+  ///
+  /// [value] can be a [DataRow] or a [List].
   @override
-  void insert(int index, value) {
+  void insert(int index, Object value) {
     super.insert(index, _toDataRow(value));
   }
 
+  /// Inserts all elements of [iterable] at position [index] in this collection.
+  ///
+  /// Each element in [iterable] can be a [DataRow] or a [List].
   @override
   void insertAll(int index, Iterable iterable) {
     super.insertAll(index, iterable.map(_toDataRow));
@@ -256,6 +277,7 @@ class DataRowCollection extends DataCollectionBase<DataRow> {
 class DataColumnCollection extends DataCollectionBase<DataColumn> {
   DataColumnCollection(DataTable table) : super(table);
 
+  /// Adds a new column given its [name] and [type].
   void add2(String name, Type type) {
     add(new DataColumn(name, type));
   }
@@ -284,10 +306,9 @@ class DataTable {
     if (source == _columns) {
       _insertColumns(index, count);
       _updateColumnIndexes(index);
-      if (_columnsChangeController != null)
-        _columnsChangeController.add(record);
+      _columnsChangeController?.add(record);
     } else {
-      if (_rowsChangeController != null) _rowsChangeController.add(record);
+      _rowsChangeController?.add(record);
     }
   }
 
@@ -297,9 +318,9 @@ class DataTable {
     if (source == _columns) {
       _removeColumns(index, count);
       _updateColumnIndexes(index);
-      _columnsChangeController.add(record);
+      _columnsChangeController?.add(record);
     } else {
-      _rowsChangeController.add(record);
+      _rowsChangeController?.add(record);
     }
   }
 
@@ -357,48 +378,51 @@ class DataTable {
     _rows.addAll(data.getRange(1, rowCount));
   }
 
+  /// The columns in this [DataTable].
   DataColumnCollection get columns => _columns;
 
+  /// The rows (without the header row) in this [DataTable].
   DataRowCollection get rows => _rows;
 
+  /// Fired when a cell is changed.
   Stream<DataCellChangeRecord> get onCellChange {
-    if (_cellChangeController == null) {
-      _cellChangeController = new StreamController.broadcast(
-          sync: true,
-          onCancel: () {
-            _cellChangeController = null;
-          });
-    }
+    _cellChangeController ??= new StreamController.broadcast(
+        sync: true,
+        onCancel: () {
+          _cellChangeController = null;
+        });
     return _cellChangeController.stream;
   }
 
+  /// Fired when [columns] are changed.
   Stream<DataCollectionChangeRecord> get onColumnsChange {
-    if (_columnsChangeController == null) {
-      _columnsChangeController = new StreamController.broadcast(
-          sync: true,
-          onCancel: () {
-            _columnsChangeController = null;
-          });
-    }
+    _columnsChangeController ??= new StreamController.broadcast(
+        sync: true,
+        onCancel: () {
+          _columnsChangeController = null;
+        });
     return _columnsChangeController.stream;
   }
 
+  /// Fired when [rows] are changed.
   Stream<DataCollectionChangeRecord> get onRowsChange {
-    if (_rowsChangeController == null) {
-      _rowsChangeController = new StreamController.broadcast(
-          sync: true,
-          onCancel: () {
-            _rowsChangeController = null;
-          });
-    }
+    _rowsChangeController ??= new StreamController.broadcast(
+        sync: true,
+        onCancel: () {
+          _rowsChangeController = null;
+        });
     return _rowsChangeController.stream;
   }
 
+  /// Gets the index of the column specified by [name].
   int getColumnIndexByName(String name) {
-    if (_columnIndexByName.containsKey(name)) return _columnIndexByName[name];
+    if (_columnIndexByName.containsKey(name)) {
+      return _columnIndexByName[name];
+    }
     return -1;
   }
 
+  /// Gets the values of the column specified by [columnIndex].
   List getColumnValues(int columnIndex) {
     var list = [];
     for (var row in _rows) {

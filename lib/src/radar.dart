@@ -15,7 +15,7 @@ final _radarChartDefaultOptions = {
       'enabled': false,
       'style': {
         'color': '#212121',
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
         'fontSize': 13,
         'fontStyle': 'normal'
       }
@@ -54,7 +54,7 @@ final _radarChartDefaultOptions = {
         'color': '#212121',
 
         // String - The labels' font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // String - The labels' font size.
         'fontSize': 13,
@@ -88,7 +88,7 @@ final _radarChartDefaultOptions = {
         'color': '#212121',
 
         // String - The labels' font family.
-        'fontFamily': _GLOBAL_FONT_FAMILY,
+        'fontFamily': _fontFamily,
 
         // String - The labels' font size.
         'fontSize': 13,
@@ -197,7 +197,7 @@ class RadarChart extends Chart {
     // [_radius]*factor equals the height of the largest polygon.
     var factor = 1 + sin((_xLabels.length >> 1) * _angleInterval - _PI_2);
     _radius = min(rect.width, rect.height) / factor -
-        factor * (xLabelFontSize + _AXIS_LABEL_MARGIN);
+        factor * (xLabelFontSize + _axisLabelMargin);
     _center =
         new Point(rect.left + rect.width / 2, rect.top + rect.height / factor);
 
@@ -216,8 +216,9 @@ class RadarChart extends Chart {
       var numberFormat = new NumberFormat.decimalPattern()
         ..maximumFractionDigits = decimalPlaces
         ..minimumFractionDigits = decimalPlaces;
-      _yLabelFormatter = (value) => numberFormat.format(value);
+      _yLabelFormatter = numberFormat.format;
     }
+    _entityValueFormatter = _yLabelFormatter;
 
     _yLabels = <String>[];
     var value = 0.0;
@@ -278,7 +279,7 @@ class RadarChart extends Chart {
     // y-axis labels - don't draw the first (at center) and the last ones.
 
     var style = _options['yAxis']['labels']['style'];
-    var x = _center.x - _AXIS_LABEL_MARGIN;
+    var x = _center.x - _axisLabelMargin;
     var y = _center.y - _yLabelHop;
     _axesContext
       ..fillStyle = style['color']
@@ -300,7 +301,7 @@ class RadarChart extends Chart {
       ..textBaseline = 'middle';
     var fontSize = style['fontSize'];
     var angle = -_PI_2;
-    var radius = _radius + _AXIS_LABEL_MARGIN;
+    var radius = _radius + _axisLabelMargin;
     for (var i = 0; i < xLabelCount; i++) {
       _drawText(_axesContext, _xLabels[i], radius, angle, fontSize);
       angle += _angleInterval;
@@ -324,7 +325,7 @@ class RadarChart extends Chart {
     var pointCount = _xLabels.length;
 
     for (var i = 0; i < _seriesList.length; i++) {
-      if (percent == 1.0 && !_seriesVisible[i]) continue;
+      if (_seriesStates[i] == _VisibilityState.hidden) continue;
 
       var series = _seriesList[i];
       var scale = (i != _focusedSeriesIndex) ? 1 : 2;
@@ -341,10 +342,10 @@ class RadarChart extends Chart {
         var radius = lerp(point.oldRadius, point.radius, percent);
         var angle = lerp(point.oldAngle, point.angle, percent);
         var p = polarToCartesian(_center, radius, angle);
-        if (j == 0) {
-          _seriesContext.moveTo(p.x, p.y);
-        } else {
+        if (j > 0) {
           _seriesContext.lineTo(p.x, p.y);
+        } else {
+          _seriesContext.moveTo(p.x, p.y);
         }
       }
       _seriesContext.closePath();
@@ -425,7 +426,7 @@ class RadarChart extends Chart {
       var series = _seriesList[i];
       var color = _getColor(i);
       var highlightColor = _getHighlightColor(color);
-      var visible = _seriesVisible[i];
+      var visible = _seriesStates[i].index >= _VisibilityState.showing.index;
       series.color = color;
       series.highlightColor = highlightColor;
       for (var j = 0; j < entityCount; j++) {
@@ -442,11 +443,16 @@ class RadarChart extends Chart {
 
   @override
   void _seriesVisibilityChanged(int index) {
-    var visible = _seriesVisible[index];
+    var visible = _seriesStates[index].index >= _VisibilityState.showing.index;
     var markerSize = _options['series']['markers']['size'];
     for (_PolarPoint p in _seriesList[index].entities) {
-      p.radius = visible ? _valueToRadius(p.value) : 0.0;
-      p.pointRadius = visible ? markerSize : 0;
+      if (visible) {
+        p.radius = _valueToRadius(p.value);
+        p.pointRadius = markerSize;
+      } else {
+        p.radius = 0.0;
+        p.pointRadius = 0;
+      }
     }
 
     _calculateBoundingBoxes();

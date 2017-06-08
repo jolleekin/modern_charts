@@ -6,20 +6,22 @@ import 'dart:math';
 
 import 'datatable.dart';
 
-double degree(num angle) => angle * 180 / PI;
+/// Converts [angle] in radians to degrees.
+double rad2deg(num angle) => angle * 180 / PI;
 
-/// Converts [angle] to radian.
-double radian(num angle) => angle * PI / 180;
+/// Converts [angle] in degrees to radians.
+double deg2rad(num angle) => angle * PI / 180;
 
 /// Returns the base-10 logarithm of [value].
-double log10(double value) => log(value) / LN10;
+double log10(num value) => log(value) / LN10;
 
 /// Returns a linear interpolated value based on the start value [start], the
-/// end value [end], and the interpolation factor [s].
+/// end value [end], and the interpolation factor [f].
 ///
 /// [start] and [end] can be of any type which defines three operators +, - , *.
-lerp(start, end, double s) => start + (end - start) * s;
+lerp(start, end, double f) => start + (end - start) * f;
 
+/// Tests if [value] is in range [min]..[max], inclusively.
 bool isInRange(num value, num min, num max) => value >= min && value <= max;
 
 Point<double> polarToCartesian(Point center, num radius, num angle) {
@@ -33,14 +35,6 @@ double roundToPlaces(double value, int places) {
   var p = pow(10, places);
   value = value * p;
   return value.round() / p;
-}
-
-/// Returns the order of magnitude of [value].
-int calculateOrderOfMagnitude(num value) {
-  if (value != 0) {
-    return max((log(value) / LN10).floor(), 0);
-  }
-  return 1;
 }
 
 /// Converts [hexColor] and [alpha] to an RGBA color string.
@@ -67,24 +61,24 @@ String hyphenate(String s) {
 }
 
 /// Returns the maximum value in a [DataTable].
-double findMaxValue(DataTable table) {
+num findMaxValue(DataTable table) {
   var maxValue = double.NEGATIVE_INFINITY;
   for (var row in table.rows) {
     for (var col in table.columns) {
       var value = row[col.index];
-      if (value is num && maxValue < value) maxValue = value.toDouble();
+      if (value is num && value > maxValue) maxValue = value;
     }
   }
   return maxValue;
 }
 
-/// Returns the minimum value of a 2D list of numbers.
-double findMinValue(DataTable table) {
+/// Returns the minimum value in a [DataTable].
+num findMinValue(DataTable table) {
   var minValue = double.INFINITY;
   for (var row in table.rows) {
     for (var col in table.columns) {
       var value = row[col.index];
-      if (value is num && minValue > value) minValue = value.toDouble();
+      if (value is num && value < minValue) minValue = value;
     }
   }
   return minValue;
@@ -127,6 +121,7 @@ double calculateMaxTextWidth(
 /// point [p3], and the curve tension [t];
 ///
 /// Returns a list that contains two control points for [p2].
+///
 /// Credit: Rob Spencer (http://scaledinnovation.com/analytics/splines/aboutSplines.html)
 List<Point> calculateControlPoints(Point p1, Point p2, Point p3, num t) {
   var d21 = p2.distanceTo(p1);
@@ -175,6 +170,7 @@ Map mergeMap(Map dst, Map src) {
   return dst;
 }
 
+/// Creates a copy of [src].
 Map cloneMap(Map src) {
   var result = {};
   src.forEach((k, v) {
@@ -189,6 +185,7 @@ Map cloneMap(Map src) {
   return result;
 }
 
+/// Creates a new map by cloning [src] and extending that copy with [ext].
 Map extendMap(Map src, Map ext) {
   var result = cloneMap(src);
   ext.forEach((k, v) {
