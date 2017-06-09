@@ -170,7 +170,7 @@ class _Bar extends _Entity {
     ctx.fillStyle = color;
     ctx.fillRect(x, bottom - h, w, h);
     if (highlight) {
-      ctx.fillStyle = 'rgba(255, 255, 255, .2)';
+      ctx.fillStyle = 'rgba(255, 255, 255, .25)';
       ctx.fillRect(x, bottom - h, w, h);
     }
   }
@@ -256,7 +256,7 @@ class BarChart extends _TwoAxisChart {
       // Draw the bars.
       for (_Bar bar in series.entities) {
         if (bar.value == null) continue;
-        var highlight = bar.index == _focusedEntityGroupIndex;
+        var highlight = bar.index == _focusedEntityIndex;
         bar.draw(_seriesContext, percent, highlight);
       }
 

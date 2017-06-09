@@ -228,6 +228,11 @@ class RadarChart extends Chart {
     }
 
     _yLabelHop = _radius / (_yLabels.length - 1);
+
+    // Tooltip.
+
+    _tooltipValueFormatter =
+        _options['tooltip']['valueFormatter'] ?? _yLabelFormatter;
   }
 
   @override
@@ -368,7 +373,7 @@ class RadarChart extends Chart {
           ..lineWidth = scale * markerOptions['lineWidth']
           ..strokeStyle = strokeColor;
         for (var p in series.entities) {
-          p.draw(_seriesContext, percent, p.index == _focusedEntityGroupIndex);
+          p.draw(_seriesContext, percent, p.index == _focusedEntityIndex);
         }
       }
     }
@@ -392,7 +397,7 @@ class RadarChart extends Chart {
 
   @override
   Point _getTooltipPosition() {
-    var box = _boundingBoxes[_focusedEntityGroupIndex];
+    var box = _boundingBoxes[_focusedEntityIndex];
     var offset = _options['series']['markers']['size'] * 2 + 5;
     var x = box.right + offset;
     var y = box.top + (box.height - _tooltip.offsetHeight) ~/ 2;

@@ -381,8 +381,7 @@ class LineChart extends _TwoAxisChart {
           ..strokeStyle = strokeColor;
         for (var point in points) {
           if (point.value != null) {
-            point.draw(
-                _seriesContext, 1.0, point.index == _focusedEntityGroupIndex);
+            point.draw(_seriesContext, 1.0, point.index == _focusedEntityIndex);
           }
         }
       }
@@ -410,7 +409,7 @@ class LineChart extends _TwoAxisChart {
       }
     }
 
-    return percent == 1.0;
+    return false;
   }
 
   @override

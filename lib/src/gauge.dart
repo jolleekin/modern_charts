@@ -103,7 +103,7 @@ class GaugeChart extends Chart {
       ..strokeStyle = 'white'
       ..textAlign = 'center';
     for (_Gauge gauge in _seriesList[0].entities) {
-      var highlight = gauge.index == _focusedEntityGroupIndex;
+      var highlight = gauge.index == _focusedEntityIndex;
       gauge.draw(_seriesContext, percent, highlight);
 
       if (!labelsEnabled) continue;
@@ -168,15 +168,13 @@ class GaugeChart extends Chart {
 
   @override
   void _updateTooltipContent() {
-    var gauge = _seriesList[0].entities[_focusedEntityGroupIndex] as _Gauge;
+    var gauge = _seriesList[0].entities[_focusedEntityIndex] as _Gauge;
     _tooltip.style
       ..borderColor = gauge.color
       ..padding = '4px 12px';
-    var value = gauge.value.toString();
-    if (_tooltipValueFormatter != null) {
-      value = _tooltipValueFormatter(gauge.value);
-    }
-    _tooltip.innerHtml = '${gauge.name}: <strong>$value%</strong>';
+    var label = _tooltipLabelFormatter(gauge.name);
+    var value = _tooltipValueFormatter(gauge.value);
+    _tooltip.innerHtml = '$label: <strong>$value%</strong>';
   }
 
   @override
@@ -190,7 +188,7 @@ class GaugeChart extends Chart {
 
   @override
   Point _getTooltipPosition() {
-    var gauge = _seriesList[0].entities[_focusedEntityGroupIndex] as _Gauge;
+    var gauge = _seriesList[0].entities[_focusedEntityIndex] as _Gauge;
     var x = gauge.center.x - _tooltip.offsetWidth ~/ 2;
     var y = gauge.center.y -
         _highlightOuterRadiusFactor * gauge.outerRadius -

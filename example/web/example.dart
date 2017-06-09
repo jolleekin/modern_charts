@@ -59,22 +59,13 @@ void createBarChart() {
         insertRemoveRowButton.disabled = false;
       }
     },
-    'legend': {
-      'labelFormatter': (String label) {
-        if (label.length <= 10) return label;
-        return label.substring(0, 7) + '...';
-      }
-    },
     'series': {
       'labels': {'enabled': true}
     },
     'yAxis': {'maxValue': 30, 'minInterval': 5},
     'title': {'text': 'Bar Chart Demo'},
     'tooltip': {
-      'labelFormatter': (String label) {
-        if (label.length <= 10) return label;
-        return label.substring(0, 7) + '...';
-      }
+      'valueFormatter': (value) => '$value units'
     }
   };
 
@@ -248,11 +239,11 @@ void createPieChart() {
     },
     'pieHole': .5,
     'series': {
-//      'counterclockwise': true,
+      'counterclockwise': true,
       'labels': {'enabled': true},
       'startAngle': 90 + 10 * 360,
     },
-    'title': {'text': 'Pie Chart Demo'}
+    'title': {'text': 'Pie Chart Demo'},
   });
 
   void disableAllButtons() {
@@ -320,7 +311,10 @@ void createRadarChart() {
     'series': {
       'labels': {'enabled': true}
     },
-    'title': {'text': 'Radar Chart Demo'}
+    'title': {'text': 'Radar Chart Demo'},
+    'tooltip': {
+      'valueFormatter': (value) => '$value units'
+    }
   };
 
   var chart = new RadarChart(container);
@@ -402,7 +396,7 @@ void createGaugeChart() {
       }
     },
     'gaugeLabels': {'enabled': false},
-    'title': {'text': 'Gauge Chart Demo'}
+    'title': {'text': 'Gauge Chart Demo'},
   });
 
   void disableAllButtons() {

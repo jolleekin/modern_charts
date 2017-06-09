@@ -1,3 +1,7 @@
+#### 0.1.7
+- Fix tooltip label formatter and value formatter
+- Update README.md
+
 #### 0.1.6
 - Fix [#10](https://github.com/jolleekin/modern_charts/issues/10)
 - Fix broken links in __CHANGELOG.md__

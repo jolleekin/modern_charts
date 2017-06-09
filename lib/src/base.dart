@@ -148,11 +148,15 @@ const _titlePadding = 6;
 /// labels also have left margin.
 const _axisLabelMargin = 12;
 
-typedef String ValueFormatter(num value);
+typedef String LabelFormatter(String label);
+
+typedef String ValueFormatter(value);
+
+String _defaultLabelFormatter(String label) => label;
+
+String _defaultValueFormatter(value) => '$value';
 
 enum _VisibilityState { hidden, hiding, showing, shown }
-
-String _defaultFormatter(num value) => '$value';
 
 /// A chart entity such as a point, a bar, a pie...
 abstract class _Entity {
@@ -224,7 +228,7 @@ class Chart {
   int _width;
 
   /// Index of the highlighted point group/bar group/pie/...
-  int _focusedEntityGroupIndex = -1;
+  int _focusedEntityIndex = -1;
 
   int _focusedSeriesIndex = -1;
 
@@ -241,6 +245,9 @@ class Chart {
 
   /// The tooltip element. To position the tooltip, change its transform CSS.
   Element _tooltip;
+
+  /// The function used to format series names to display in the tooltip.
+  LabelFormatter _tooltipLabelFormatter;
 
   /// The function used to format series data to display in the tooltip.
   ValueFormatter _tooltipValueFormatter;
@@ -523,9 +530,8 @@ class Chart {
   ///
   /// If this method returns `true`, the animation is stopped immediately.
   /// This is useful as there are cases where no animation is expected.
-  /// For example, for line charts, there's no animation for toggling the
-  /// visibility of a series. In that case, the overriding method will return
-  /// `true` to stop the animation.
+  /// In those cases, the overriding method will return `true` to stop the
+  /// animation.
   ///
   /// To be overridden.
   bool _drawSeries(double percent) => true;
@@ -642,10 +648,17 @@ class Chart {
 
   void _updateLegendContent() {
     var labels = _getLegendLabels();
+    var formatter =
+        _options['legend']['labelFormatter'] ?? _defaultLabelFormatter;
     _legendItemSubscriptionTracker.clear();
     _legend.innerHtml = '';
     for (var i = 0; i < labels.length; i++) {
-      var e = _createTooltipOrLegendItem(_getColor(i), labels[i]);
+      var label = labels[i];
+      var formattedLabel = formatter(label);
+      var e = _createTooltipOrLegendItem(_getColor(i), formattedLabel);
+      if (label != formattedLabel) {
+        e.title = label;
+      }
       e.style.cursor = 'pointer';
       e.style.userSelect = 'none';
       _legendItemSubscriptionTracker
@@ -669,12 +682,8 @@ class Chart {
     }
   }
 
-  List<String> _getLegendLabels() {
-    var labels = _dataTable.columns.skip(1).map((e) => e.name);
-    var formatter = _options['legend']['labelFormatter'];
-    if (formatter != null) labels = labels.map(formatter);
-    return labels.toList();
-  }
+  List<String> _getLegendLabels() =>
+      _dataTable.columns.skip(1).map((e) => e.name).toList();
 
   void _legendItemClick(MouseEvent e) {
     if (animating) return;
@@ -730,8 +739,8 @@ class Chart {
     var y = e.client.y - rect.top;
     var index = _getEntityGroupIndex(x, y);
 
-    if (index != _focusedEntityGroupIndex) {
-      _focusedEntityGroupIndex = index;
+    if (index != _focusedEntityIndex) {
+      _focusedEntityIndex = index;
       _drawFrame(null);
       if (index >= 0) {
         _updateTooltipContent();
@@ -753,7 +762,8 @@ class Chart {
     var opt = _options['tooltip'];
     if (!opt['enabled']) return;
 
-    _tooltipValueFormatter = opt['valueFormatter'];
+    _tooltipLabelFormatter = opt['labelFormatter'] ?? _defaultLabelFormatter;
+    _tooltipValueFormatter = opt['valueFormatter'] ?? _defaultValueFormatter;
     _tooltip = _createTooltipOrLegend(opt['style'])
       ..hidden = true
       ..style.left = '0'
@@ -766,13 +776,13 @@ class Chart {
     _mouseMoveSub = window.onMouseMove.listen(_mouseMove);
   }
 
-  /// Returns the position of the tooltip based on [_focusedEntityGroupIndex].
+  /// Returns the position of the tooltip based on [_focusedEntityIndex].
   /// To be overridden.
   Point _getTooltipPosition() => null;
 
   void _updateTooltipContent() {
     var columnCount = _dataTable.columns.length;
-    var row = _dataTable.rows[_focusedEntityGroupIndex];
+    var row = _dataTable.rows[_focusedEntityIndex];
     _tooltip.innerHtml = '';
 
     // Tooltip title.
@@ -791,12 +801,8 @@ class Chart {
       var value = row[i];
       if (value == null) continue;
 
-      if (_tooltipValueFormatter != null) {
-        value = _tooltipValueFormatter(value);
-      }
-
-      var formatter = _options['tooltip']['labelFormatter'];
-      var label = formatter == null ? series.name : formatter(series.name);
+      value = _tooltipValueFormatter(value);
+      var label = _tooltipLabelFormatter(series.name);
 
       var e = _createTooltipOrLegendItem(
           series.color, '$label: <strong>$value</strong>');
@@ -1062,7 +1068,8 @@ class _TwoAxisChart extends Chart {
 
     // Tooltip.
 
-    _tooltipValueFormatter ??= _yLabelFormatter;
+    _tooltipValueFormatter =
+        _options['tooltip']['valueFormatter'] ?? _yLabelFormatter;
 
     // x-axis title.
 
@@ -1330,9 +1337,8 @@ class _TwoAxisChart extends Chart {
 
   @override
   Point _getTooltipPosition() {
-    var x = _xLabelX(_focusedEntityGroupIndex) + _tooltipOffset;
-    var y =
-        _averageYValues[_focusedEntityGroupIndex] - _tooltip.offsetHeight ~/ 2;
+    var x = _xLabelX(_focusedEntityIndex) + _tooltipOffset;
+    var y = _averageYValues[_focusedEntityIndex] - _tooltip.offsetHeight ~/ 2;
     if (x + _tooltip.offsetWidth > _width) {
       x -= _tooltip.offsetWidth + 2 * _tooltipOffset;
     }

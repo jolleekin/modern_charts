@@ -146,7 +146,8 @@ class PieChart extends Chart {
     _innerRadius = pieHole * _outerRadius;
 
     var opt = _options['series'];
-    _entityValueFormatter = opt['labels']['formatter'] ?? _defaultFormatter;
+    _entityValueFormatter =
+        opt['labels']['formatter'] ?? _defaultValueFormatter;
     _direction = opt['counterclockwise'] ? _counterclockwise : _clockwise;
     _startAngle = deg2rad(opt['startAngle']);
   }
@@ -170,26 +171,10 @@ class PieChart extends Chart {
     _seriesContext.font = _getFont(labelOptions['style']);
     for (var pie in pies) {
       if (pie.isEmpty && percent == 1.0) continue;
-      var highlight = pie.index == _focusedSeriesIndex ||
-          pie.index == _focusedEntityGroupIndex;
+      var highlight =
+          pie.index == _focusedSeriesIndex || pie.index == _focusedEntityIndex;
       pie.draw(_seriesContext, percent, highlight);
     }
-
-//    if (percent == 1.0) {
-//      var opt = _options['series']['labels'];
-//      if (opt['enabled']) {
-//        _seriesContext
-//          ..fillStyle = opt['style']['color']
-//          ..font = _getFont(opt['style']);
-//        for (var pie in pies) {
-//          if (pie.isEmpty) continue;
-//          var angle = .5 * (pie.startAngle + pie.endAngle);
-//          var p = polarToCartesian(
-//              _center, .25 * _innerRadius + .75 * _outerRadius, angle);
-//          _seriesContext.fillText(_labelFormatter(pie.value), p.x, p.y);
-//        }
-//      }
-//    }
 
     return false;
   }
@@ -210,7 +195,7 @@ class PieChart extends Chart {
 
   @override
   Point _getTooltipPosition() {
-    var pie = _seriesList.first.entities[_focusedEntityGroupIndex] as _Pie;
+    var pie = _seriesList.first.entities[_focusedEntityIndex] as _Pie;
     var angle = .5 * (pie.startAngle + pie.endAngle);
     var radius = .5 * (_innerRadius + _outerRadius);
     var point = polarToCartesian(_center, radius, angle);
@@ -293,15 +278,13 @@ class PieChart extends Chart {
 
   @override
   void _updateTooltipContent() {
-    var pie = _seriesList[0].entities[_focusedEntityGroupIndex] as _Pie;
+    var pie = _seriesList[0].entities[_focusedEntityIndex] as _Pie;
     _tooltip.style
       ..borderColor = pie.color
       ..padding = '4px 12px';
-    var value = _tooltipValueFormatter == null
-        ? pie.value.toString()
-        : _tooltipValueFormatter(pie.value);
-
-    _tooltip.innerHtml = '${pie.name}: <strong>$value</strong>';
+    var label = _tooltipLabelFormatter(pie.name);
+    var value = _tooltipValueFormatter(pie.value);
+    _tooltip.innerHtml = '$label: <strong>$value</strong>';
   }
 
   PieChart(Element container) : super(container) {
