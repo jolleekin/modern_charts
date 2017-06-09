@@ -2,19 +2,24 @@ A package for creating simple yet modern looking charts.
 
 #### Five chart types
 - Bar
-![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/bar.png)
+
+  ![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/bar.png)
 
 - Gauge
-![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/gauge.png)
+
+  ![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/gauge.png)
 
 - Line
-![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/line.png)
 
-- Pie/Donut
-![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/pie.png)
+  ![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/line.png)
+
+- Pie
+
+  ![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/pie.png)
 
 - Radar
-![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/radar.png)
+
+  ![](https://raw.githubusercontent.com/jolleekin/modern_charts/master/doc/images/radar.png)
 
 #### Canvas + DOM
 **modern_charts** combines Canvas and DOM to achieve the best performance and
