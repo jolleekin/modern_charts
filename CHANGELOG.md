@@ -1,3 +1,7 @@
+#### 0.1.8
+- BarChart: add `xAxis:labels:maxRotation` and `xAxis:labels:minRotation`
+- LineChart: add `xAxis:labels:maxRotation` and `xAxis:labels:minRotation`
+
 #### 0.1.7
 - Fix tooltip label formatter and value formatter
 - Update README.md

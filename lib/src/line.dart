@@ -59,6 +59,12 @@ final _lineChartDefaultOptions = {
 
     // Map - An object that controls the axis labels.
     'labels': {
+      // The maximum rotation angle in degrees. Must be <= 90.
+      'maxRotation': 0,
+
+      // The minimum rotation angle in degrees. Must be >= -90.
+      'minRotation': -90,
+
       'style': {
         // String - The labels' color.
         'color': '#212121',
@@ -237,7 +243,7 @@ class LineChart extends _TwoAxisChart {
     var start = index ?? 0;
     var end = index == null ? entityCount : index + 1;
 
-    _averageYValues ??= <int>[];
+    _averageYValues ??= <num>[];
     _averageYValues.length = entityCount;
 
     for (var i = start; i < end; i++) {
@@ -251,7 +257,7 @@ class LineChart extends _TwoAxisChart {
           count++;
         }
       }
-      _averageYValues[i] = (count > 0) ? sum ~/ count : null;
+      _averageYValues[i] = (count > 0) ? sum / count : null;
     }
   }
 

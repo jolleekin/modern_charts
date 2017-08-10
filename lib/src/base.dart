@@ -955,15 +955,16 @@ class Chart {
 
 /// Base class for charts having two axes.
 class _TwoAxisChart extends Chart {
-  int _xAxisTop;
-  int _yAxisLeft;
-  int _xAxisLength;
-  int _yAxisLength;
-  int _xLabelMaxWidth;
-  int _yLabelMaxWidth;
-  int _xLabelRotation; // 0..90
-  double _xLabelHop; // Distance between two consecutive x-axis labels.
-  double _yLabelHop; // Distance between two consecutive x-axis labels.
+  num _xAxisTop;
+  num _yAxisLeft;
+  num _xAxisLength;
+  num _yAxisLength;
+  num _xLabelMaxWidth;
+  num _yLabelMaxWidth;
+  num _xLabelRotation; // 0..90
+  int _xLabelStep;
+  num _xLabelHop; // Distance between two consecutive x-axis labels.
+  num _yLabelHop; // Distance between two consecutive x-axis labels.
 //  Rectangle _xTitleBox;
 //  Rectangle _yTitleBox;
   Point _xTitleCenter;
@@ -980,7 +981,7 @@ class _TwoAxisChart extends Chart {
   num _tooltipOffset;
 
   ValueFormatter _yLabelFormatter;
-  List<int> _averageYValues;
+  List<num> _averageYValues;
 
   /// Returns the x coordinate of the x-axis label at [index].
   num _xLabelX(int index) => _yAxisLeft + _xLabelHop * (index + .5);
@@ -1118,6 +1119,7 @@ class _TwoAxisChart extends Chart {
     } else {
       _xAxisTop -= _axisLabelMargin;
     }
+    _xAxisTop -= _axisLabelMargin;
 
     // x-axis labels and x-axis's position.
 
@@ -1126,23 +1128,36 @@ class _TwoAxisChart extends Chart {
       _xLabels.add(_dataTable.rows[i][0].toString());
     }
     _xLabelMaxWidth = calculateMaxTextWidth(
-            _context, _getFont(_options['xAxis']['labels']['style']), _xLabels)
-        .round();
+        _context, _getFont(_options['xAxis']['labels']['style']), _xLabels);
     _xLabelHop = _xAxisLength / _xLabels.length;
     _xLabelRotation = 0;
-    var availableWidth = _xLabelHop - 5;
-    if (_xLabelMaxWidth <= availableWidth) {
-      _xAxisTop -= _options['xAxis']['labels']['style']['fontSize'];
-    } else {
-      _xLabelRotation = 45;
-      if (_xLabelMaxWidth * cos(_xLabelRotation) <= availableWidth) {
-        _xAxisTop -= (_xLabelMaxWidth * sin(_xLabelRotation)).round();
-      } else {
-        _xLabelRotation = 90;
-        _xAxisTop -= _xLabelMaxWidth;
+
+    var fontSize = _options['xAxis']['labels']['style']['fontSize'];
+    var maxRotation = _options['xAxis']['labels']['maxRotation'];
+    var minRotation = _options['xAxis']['labels']['minRotation'];
+    const angles = const [0, -45, 45, -90, 90];
+
+    outer:
+    for (var step = 1; step <= _xLabels.length; step++) {
+      var scaledLabelHop = step * _xLabelHop;
+      var minSpacing = max(.1 * scaledLabelHop, 10);
+      for (var angle in angles) {
+        if (angle > maxRotation) continue;
+        if (angle < minRotation) continue;
+
+        var absAngleRad = deg2rad(angle).abs();
+        var labelSpacing = angle == 0
+            ? scaledLabelHop - _xLabelMaxWidth
+            : scaledLabelHop * sin(absAngleRad) - fontSize;
+        if (labelSpacing < minSpacing) continue;
+
+        _xLabelRotation = angle;
+        _xLabelStep = step;
+        _xAxisTop -=
+            _xLabelMaxWidth * sin(absAngleRad) + fontSize * cos(absAngleRad);
+        break outer;
       }
     }
-    _xAxisTop -= _axisLabelMargin;
 
     // Wrap up.
 
@@ -1223,24 +1238,25 @@ class _TwoAxisChart extends Chart {
       ..textBaseline = 'alphabetic';
     var x = _xLabelX(0);
     var y = _xAxisTop + _axisLabelMargin + opt['style']['fontSize'];
+    var skipWidth = _xLabelStep * _xLabelHop;
 
     if (_xLabelRotation == 0) {
       _axesContext.textAlign = 'center';
-      for (var label in _xLabels) {
-        _axesContext.fillText(label, x, y);
-        x += _xLabelHop;
+      for (var i = 0; i < _xLabels.length; i += _xLabelStep) {
+        _axesContext.fillText(_xLabels[i], x, y);
+        x += skipWidth;
       }
     } else {
-      _axesContext.textAlign = 'right';
-      var angle = rad2deg(-_xLabelRotation);
-      for (var label in _xLabels) {
+      _axesContext.textAlign = _xLabelRotation < 0 ? 'right' : 'left';
+      var angle = deg2rad(_xLabelRotation);
+      for (var i = 0; i < _xLabels.length; i += _xLabelStep) {
         _axesContext
           ..save()
           ..translate(x, y)
           ..rotate(angle)
-          ..fillText(label, 0, 0)
+          ..fillText(_xLabels[i], 0, 0)
           ..restore();
-        x += _xLabelHop;
+        x += skipWidth;
       }
     }
 

@@ -32,6 +32,12 @@ final _barChartDefaultOptions = {
 
     // Map - An object that controls the axis labels.
     'labels': const {
+      // The maximum rotation angle in degrees. Must be <= 90.
+      'maxRotation': 0,
+
+      // The minimum rotation angle in degrees. Must be >= -90.
+      'minRotation': -90,
+
       'style': const {
         // String - The labels' color.
         'color': '#212121',
@@ -217,7 +223,7 @@ class BarChart extends _TwoAxisChart {
     var start = index ?? 0;
     var end = index == null ? entityCount : index + 1;
 
-    _averageYValues ??= <int>[];
+    _averageYValues ??= <num>[];
     _averageYValues.length = entityCount;
 
     for (var i = start; i < end; i++) {
@@ -234,7 +240,7 @@ class BarChart extends _TwoAxisChart {
           count++;
         }
       }
-      _averageYValues[i] = (count > 0) ? _xAxisTop - sum ~/ count : null;
+      _averageYValues[i] = (count > 0) ? _xAxisTop - sum / count : null;
     }
   }
 

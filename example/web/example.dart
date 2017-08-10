@@ -19,23 +19,28 @@ void main() {
 Element createContainer() {
   var e = new DivElement()
     ..style.height = '400px'
-    ..style.width = '800px'
+//    ..style.width = '800px'
     ..style.maxWidth = '100%'
     ..style.marginBottom = '50px';
   document.body.append(e);
   return e;
 }
-
+// February
 void createBarChart() {
   var table = new DataTable([
     ['Categories', 'Long series name', 'Series 2', 'Series 3'],
-    ['Monday', 1, 3, 5],
-    ['Tuesday', 3, 4, 6],
-    ['Wednesday', 4, 3, 1],
-    ['Thursday', null, 5, 1],
-    ['Friday', 3, 4, 2],
-    ['Saturday', 5, 10, 4],
-    ['Sunday', 4, 12, 8]
+    ['January', 1, 3, 5],
+    ['February', 3, 4, 6],
+    ['March', 4, 3, 1],
+    ['April', null, 5, 1],
+    ['May', 3, 4, 2],
+    ['June', 5, 10, 4],
+    ['July', 4, 12, 8],
+    ['August', 1, 3, 5],
+    ['September', 3, 4, 6],
+    ['October', 4, 3, 1],
+    ['November', null, 5, 1],
+    ['December', 3, 4, 2],
   ]);
 
   var changeDataButton = new ButtonElement()..text = 'Change data';
@@ -62,11 +67,12 @@ void createBarChart() {
     'series': {
       'labels': {'enabled': true}
     },
+    'xAxis': {
+      'labels': {'maxRotation': 90, 'minRotation': 0}
+    },
     'yAxis': {'maxValue': 30, 'minInterval': 5},
     'title': {'text': 'Bar Chart Demo'},
-    'tooltip': {
-      'valueFormatter': (value) => '$value units'
-    }
+    'tooltip': {'valueFormatter': (value) => '$value units'}
   };
 
   var chart = new BarChart(container);
@@ -312,9 +318,7 @@ void createRadarChart() {
       'labels': {'enabled': true}
     },
     'title': {'text': 'Radar Chart Demo'},
-    'tooltip': {
-      'valueFormatter': (value) => '$value units'
-    }
+    'tooltip': {'valueFormatter': (value) => '$value units'}
   };
 
   var chart = new RadarChart(container);
