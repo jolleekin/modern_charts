@@ -62,13 +62,13 @@ class _Gauge extends _Pie {
   }
 }
 
-const _gaugeStartAngle = -_PI_2;
 
 class GaugeChart extends Chart {
   num _gaugeHop;
   num _gaugeInnerRadius;
   num _gaugeOuterRadius;
   num _gaugeCenterY;
+  final num _startAngle = -_PI_2;
 
   Point _getGaugeCenter(int index) =>
       new Point((index + .5) * _gaugeHop, _gaugeCenterY);
@@ -138,13 +138,13 @@ class GaugeChart extends Chart {
       ..backgroundColor = _options['gaugeBackgroundColor']
       ..highlightColor = highlightColor
       ..oldValue = 0
-      ..oldStartAngle = _gaugeStartAngle
-      ..oldEndAngle = _gaugeStartAngle
+      ..oldStartAngle = _startAngle
+      ..oldEndAngle = _startAngle
       ..center = _getGaugeCenter(entityIndex)
       ..innerRadius = _gaugeInnerRadius
       ..outerRadius = _gaugeOuterRadius
-      ..startAngle = _gaugeStartAngle
-      ..endAngle = _gaugeStartAngle + _valueToAngle(value);
+      ..startAngle = _startAngle
+      ..endAngle = _startAngle + _valueToAngle(value);
   }
 
   @override
@@ -162,7 +162,7 @@ class GaugeChart extends Chart {
         ..center = _getGaugeCenter(i)
         ..innerRadius = _gaugeInnerRadius
         ..outerRadius = _gaugeOuterRadius
-        ..endAngle = _gaugeStartAngle + _valueToAngle(gauge.value);
+        ..endAngle = _startAngle + _valueToAngle(gauge.value);
     }
   }
 

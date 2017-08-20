@@ -59,10 +59,10 @@ final _lineChartDefaultOptions = {
 
     // Map - An object that controls the axis labels.
     'labels': {
-      // The maximum rotation angle in degrees. Must be <= 90.
+      // num - The maximum rotation angle in degrees. Must be <= 90.
       'maxRotation': 0,
 
-      // The minimum rotation angle in degrees. Must be >= -90.
+      // num - The minimum rotation angle in degrees. Must be >= -90.
       'minRotation': -90,
 
       'style': {
@@ -236,6 +236,9 @@ class _Point extends _Entity {
 
 class LineChart extends _TwoAxisChart {
   @override
+  final num _xLabelOffsetFactor = 0;
+
+  @override
   void _calculateAverageYValues([int index]) {
     if (!_options['tooltip']['enabled']) return;
 
@@ -316,6 +319,8 @@ class LineChart extends _TwoAxisChart {
       var series = _seriesList[i];
       var points = _lerpPoints(series.entities, percent);
       var scale = (i != _focusedSeriesIndex) ? 1 : 2;
+
+      _seriesContext.lineJoin = 'round';
 
       // Draw series with filling.
 

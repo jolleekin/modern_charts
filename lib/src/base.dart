@@ -983,8 +983,11 @@ class _TwoAxisChart extends Chart {
   ValueFormatter _yLabelFormatter;
   List<num> _averageYValues;
 
+  final num _xLabelOffsetFactor = .5;
+
   /// Returns the x coordinate of the x-axis label at [index].
-  num _xLabelX(int index) => _yAxisLeft + _xLabelHop * (index + .5);
+  num _xLabelX(int index) =>
+      _yAxisLeft + _xLabelHop * (index + _xLabelOffsetFactor);
 
   /// Returns the y-coordinate corresponding to the data point [value] and
   /// the animation percent [percent].
@@ -1129,7 +1132,11 @@ class _TwoAxisChart extends Chart {
     }
     _xLabelMaxWidth = calculateMaxTextWidth(
         _context, _getFont(_options['xAxis']['labels']['style']), _xLabels);
-    _xLabelHop = _xAxisLength / _xLabels.length;
+    if (_xLabelOffsetFactor > 0 && _xLabels.length > 1) {
+      _xLabelHop = _xAxisLength / _xLabels.length;
+    } else {
+      _xLabelHop = _xAxisLength / (_xLabels.length - 1);
+    }
     _xLabelRotation = 0;
 
     var fontSize = _options['xAxis']['labels']['style']['fontSize'];
@@ -1338,7 +1345,7 @@ class _TwoAxisChart extends Chart {
 
   @override
   int _getEntityGroupIndex(num x, num y) {
-    var dx = x - _yAxisLeft;
+    var dx = x - _yAxisLeft - (_xLabelOffsetFactor - .5) * _xLabelHop;
     // If (x, y) is inside the rectangle defined by the two axes.
     if (y > _xAxisTop - _yAxisLength &&
         y < _xAxisTop &&

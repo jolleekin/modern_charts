@@ -55,18 +55,16 @@ class _Pie extends _Entity {
     p -= center;
     var mag = p.magnitude;
     if (mag > outerRadius || mag < innerRadius) return false;
+
     var angle = atan2(p.y, p.x);
+    var chartStartAngle = (chart as dynamic)._startAngle;
 
-    if (chart is PieChart) {
-      var start = (chart as PieChart)._startAngle;
+    // Make sure [angle] is in range [chartStartAngle]..[chartStartAngle] + 2PI.
+    angle = (angle - chartStartAngle) % _2PI + chartStartAngle;
 
-      // Make sure [angle] is in range [start]..[start] + 2*PI.
-      angle = (angle - start) % _2PI + start;
-
-      // If counterclockwise, make sure [angle] is in range
-      // [start] - 2*PI..[start].
-      if (startAngle > endAngle) angle -= _2PI;
-    }
+    // If counterclockwise, make sure [angle] is in range
+    // [start] - 2*PI..[start].
+    if (startAngle > endAngle) angle -= _2PI;
 
     if (startAngle <= endAngle) {
       // Clockwise.

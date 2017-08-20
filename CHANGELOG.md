@@ -1,3 +1,7 @@
+#### 0.1.9
+- GaugeChart: fix a bug that causes the tooltip not to show when hovering the top left quadrant 
+- LineChart: adjust the position of x-axis labels so they span the whole x-axis
+
 #### 0.1.8
 - BarChart: add `xAxis:labels:maxRotation` and `xAxis:labels:minRotation`
 - LineChart: add `xAxis:labels:maxRotation` and `xAxis:labels:minRotation`

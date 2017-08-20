@@ -32,10 +32,10 @@ final _barChartDefaultOptions = {
 
     // Map - An object that controls the axis labels.
     'labels': const {
-      // The maximum rotation angle in degrees. Must be <= 90.
+      // num - The maximum rotation angle in degrees. Must be <= 90.
       'maxRotation': 0,
 
-      // The minimum rotation angle in degrees. Must be >= -90.
+      // num - The minimum rotation angle in degrees. Must be >= -90.
       'minRotation': -90,
 
       'style': const {
