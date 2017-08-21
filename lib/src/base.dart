@@ -60,7 +60,7 @@ final globalOptions = {
 
     // Map - An object that controls the styling of the legend.
     'style': {
-      'backgroundColor': 'white',
+      'backgroundColor': 'transparent',
       'borderColor': '#212121',
       'borderWidth': 0,
       'color': '#212121',
@@ -1239,22 +1239,25 @@ class _TwoAxisChart extends Chart {
     // x-axis labels.
 
     var opt = _options['xAxis']['labels'];
-    _axesContext
-      ..fillStyle = opt['style']['color']
-      ..font = _getFont(opt['style'])
-      ..textBaseline = 'alphabetic';
+    _axesContext.fillStyle = opt['style']['color'];
+    _axesContext.font = _getFont(opt['style']);
     var x = _xLabelX(0);
     var y = _xAxisTop + _axisLabelMargin + opt['style']['fontSize'];
-    var skipWidth = _xLabelStep * _xLabelHop;
+    var scaledLabelHop = _xLabelStep * _xLabelHop;
 
     if (_xLabelRotation == 0) {
       _axesContext.textAlign = 'center';
+      _axesContext.textBaseline = 'alphabetic';
       for (var i = 0; i < _xLabels.length; i += _xLabelStep) {
         _axesContext.fillText(_xLabels[i], x, y);
-        x += skipWidth;
+        x += scaledLabelHop;
       }
     } else {
       _axesContext.textAlign = _xLabelRotation < 0 ? 'right' : 'left';
+      _axesContext.textBaseline = 'middle';
+      if (_xLabelRotation == 90) {
+        x += _xLabelRotation.sign * (opt['style']['fontSize'] ~/ 8);
+      }
       var angle = deg2rad(_xLabelRotation);
       for (var i = 0; i < _xLabels.length; i += _xLabelStep) {
         _axesContext
@@ -1263,7 +1266,7 @@ class _TwoAxisChart extends Chart {
           ..rotate(angle)
           ..fillText(_xLabels[i], 0, 0)
           ..restore();
-        x += skipWidth;
+        x += scaledLabelHop;
       }
     }
 
@@ -1275,7 +1278,7 @@ class _TwoAxisChart extends Chart {
       ..textAlign = 'right'
       ..textBaseline = 'middle';
     x = _yAxisLeft - _axisLabelMargin;
-    y = _xAxisTop - 1; // Shift the baseline up by 1 pixel.
+    y = _xAxisTop - (_options['yAxis']['labels']['style']['fontSize'] ~/ 8);
     for (var label in _yLabels) {
       _axesContext.fillText(label, x, y);
       y -= _yLabelHop;
@@ -1301,6 +1304,9 @@ class _TwoAxisChart extends Chart {
 
     var lineWidth = _options['yAxis']['gridLineWidth'];
     x = _yAxisLeft;
+    if (_xLabelStep > 1) {
+      x = _xLabelX(0);
+    }
     if (lineWidth > 0) {
       y = _xAxisTop - _yAxisLength;
     } else {
@@ -1311,10 +1317,10 @@ class _TwoAxisChart extends Chart {
       ..lineWidth = lineWidth
       ..strokeStyle = _options['yAxis']['gridLineColor']
       ..beginPath();
-    for (var i = _xLabels.length; i >= 0; i--) {
+    for (var i = 0; i < _xLabels.length; i += _xLabelStep) {
       _axesContext.moveTo(x, y);
       _axesContext.lineTo(x, _xAxisTop);
-      x += _xLabelHop;
+      x += scaledLabelHop;
     }
     _axesContext.stroke();
 
@@ -1345,13 +1351,13 @@ class _TwoAxisChart extends Chart {
 
   @override
   int _getEntityGroupIndex(num x, num y) {
-    var dx = x - _yAxisLeft - (_xLabelOffsetFactor - .5) * _xLabelHop;
+    var dx = x - _yAxisLeft;
     // If (x, y) is inside the rectangle defined by the two axes.
     if (y > _xAxisTop - _yAxisLength &&
         y < _xAxisTop &&
         dx > 0 &&
         dx < _xAxisLength) {
-      var index = dx ~/ _xLabelHop;
+      var index = (dx / _xLabelHop - _xLabelOffsetFactor).round();
       // If there is at least one visible point in the current point group...
       if (_averageYValues[index] != null) return index;
     }

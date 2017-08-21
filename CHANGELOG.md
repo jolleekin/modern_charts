@@ -1,3 +1,12 @@
+#### 0.1.10
+- All: change the default background color of legend to transparent
+- BarChart: change bar group hover effect
+- BarChart: change tooltip offset
+- BarChart: change the positions of x-axis tick marks based on whether x-axis labels are skipped or not
+- BarChart, LineChart: hide x-axis tick marks whose corresponding labels are hidden
+- BarChart, LineChart: axis label baselines are adjusted with respect to font size
+- BarChart, LineChart: fix a bug in the calculation of hovered entity group
+
 #### 0.1.9
 - GaugeChart: fix a bug that causes the tooltip not to show when hovering the top left quadrant 
 - LineChart: adjust the position of x-axis labels so they span the whole x-axis

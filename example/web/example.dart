@@ -68,6 +68,7 @@ void createBarChart() {
       'labels': {'enabled': true}
     },
     'xAxis': {
+      'crosshair': {'enabled': true},
       'labels': {'maxRotation': 90, 'minRotation': 0}
     },
     'yAxis': {'maxValue': 30, 'minInterval': 5},

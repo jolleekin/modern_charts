@@ -7,6 +7,7 @@ final _barChartDefaultOptions = {
     'labels': {
       // bool - Whether to show the labels.
       'enabled': false,
+
       'style': {
         'color': '#212121',
         'fontFamily': _fontFamily,
@@ -17,7 +18,16 @@ final _barChartDefaultOptions = {
   },
 
   // Map - An object that controls the x-axis.
-  'xAxis': const {
+  'xAxis': {
+    // Map - An object that controls the crosshair.
+    'crosshair': {
+      // String - The fill color of the crosshair.
+      'color': 'rgba(0, 0, 0, .02)',
+
+      // bool - Whether the crosshair is enabled.
+      'enabled': false,
+    },
+
     // String - The color of the horizontal grid lines.
     'gridLineColor': '#c0c0c0',
 
@@ -31,14 +41,14 @@ final _barChartDefaultOptions = {
     'lineWidth': 1,
 
     // Map - An object that controls the axis labels.
-    'labels': const {
+    'labels': {
       // num - The maximum rotation angle in degrees. Must be <= 90.
       'maxRotation': 0,
 
       // num - The minimum rotation angle in degrees. Must be >= -90.
       'minRotation': -90,
 
-      'style': const {
+      'style': {
         // String - The labels' color.
         'color': '#212121',
 
@@ -58,9 +68,9 @@ final _barChartDefaultOptions = {
     'position': 'bottom',
 
     // Map - An object that controls the axis title.
-    'title': const {
+    'title': {
       // Map - An object that controls the styling of the axis title.
-      'style': const {
+      'style': {
         // String - The title's color.
         'color': '#212121',
 
@@ -80,7 +90,7 @@ final _barChartDefaultOptions = {
   },
 
   // Map - An object that controls the y-axis.
-  'yAxis': const {
+  'yAxis': {
     // String - The color of the vertical grid lines.
     'gridLineColor': '#c0c0c0',
 
@@ -98,12 +108,12 @@ final _barChartDefaultOptions = {
     'interval': null,
 
     // Map - An object that controls the axis labels.
-    'labels': const {
+    'labels': {
       // (num value) -> String - A function that formats the labels.
       'formatter': null,
 
       // Map - An object that controls the styling of the axis labels.
-      'style': const {
+      'style': {
         // String - The labels' color.
         'color': '#212121',
 
@@ -135,9 +145,9 @@ final _barChartDefaultOptions = {
     'position': 'left',
 
     // Map - An object that controls the axis title.
-    'title': const {
+    'title': {
       // Map - An object that controls the styling of the axis title.
-      'style': const {
+      'style': {
         // String - The title's color.
         'color': '#212121',
 
@@ -248,7 +258,7 @@ class BarChart extends _TwoAxisChart {
   void _calculateDrawingSizes() {
     super._calculateDrawingSizes();
     _barGroupWidth = .618 * _xLabelHop; // Golden ratio.
-    _tooltipOffset = .5 * _barGroupWidth + 5;
+    _tooltipOffset = .5 * _xLabelHop + 4;
     _updateBarWidth();
   }
 
@@ -262,20 +272,20 @@ class BarChart extends _TwoAxisChart {
       // Draw the bars.
       for (_Bar bar in series.entities) {
         if (bar.value == null) continue;
-        var highlight = bar.index == _focusedEntityIndex;
-        bar.draw(_seriesContext, percent, highlight);
+        bar.draw(_seriesContext, percent, false);
       }
 
-//      if (_focusedEntityGroupIndex >= 0) {
-//        _seriesContext
-//          ..fillStyle = 'rgba(0,0,0,.05)'
-//          ..fillRect(_yAxisLeft + _xLabelHop * _focusedEntityGroupIndex,
-//              _xAxisTop - _yAxisLength, _xLabelHop, _yAxisLength);
-//      }
+      var opt = _options['xAxis']['crosshair'];
+      if (_focusedEntityIndex >= 0 && opt['enabled']) {
+        _seriesContext
+          ..fillStyle = opt['color']
+          ..fillRect(_yAxisLeft + _xLabelHop * _focusedEntityIndex,
+              _xAxisTop - _yAxisLength, _xLabelHop, _yAxisLength);
+      }
 
       // Draw the labels.
       if (percent == 1.0) {
-        var opt = _options['series']['labels'];
+        opt = _options['series']['labels'];
         if (!opt['enabled']) continue;
         _seriesContext
           ..fillStyle = opt['style']['color']
@@ -299,11 +309,6 @@ class BarChart extends _TwoAxisChart {
       String highlightColor) {
     var left = _getBarLeft(seriesIndex, entityIndex);
     var oldLeft = left;
-//    if (seriesIndex > 0 && _seriesList != null) {
-//      var leftAdjacentBar =
-//          _seriesList[seriesIndex - 1].entities[entityIndex] as _Bar;
-//      oldLeft = leftAdjacentBar.right;
-//    }
     var height = _valueToBarHeight(value);
 
     // Animate width.

@@ -17,6 +17,7 @@ final _lineChartDefaultOptions = {
     'labels': {
       // bool - Whether to show the labels.
       'enabled': false,
+
       'style': {
         'color': '#212121',
         'fontFamily': _fontFamily,
