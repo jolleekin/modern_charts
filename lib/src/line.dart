@@ -28,6 +28,9 @@ final _lineChartDefaultOptions = {
 
     // Map - An object that controls the markers.
     'markers': {
+      // bool - Whether markers are enabled.
+      'enabled': true,
+
       // String - The fill color. If `null`, the stroke color of the series
       // will be used.
       'fillColor': null,
@@ -39,7 +42,7 @@ final _lineChartDefaultOptions = {
       // will be used.
       'strokeColor': 'white',
 
-      // num - Size of the markers. To disable markers, set this to zero.
+      // num - Size of the markers.
       'size': 4
     }
   },
@@ -339,17 +342,17 @@ class LineChart extends _TwoAxisChart {
 
           // Connect a series of contiguous points with a non-null value and
           // fill the area between them and the x-axis.
-          var point = points[j];
+          var p = points[j];
           _seriesContext
             ..beginPath()
-            ..moveTo(point.x, _xAxisTop)
-            ..lineTo(point.x, point.y);
-          var lastPoint = point;
+            ..moveTo(p.x, _xAxisTop)
+            ..lineTo(p.x, p.y);
+          var lastPoint = p;
           var count = 1;
           while (++j < entityCount && points[j].value != null) {
-            point = points[j];
-            curveTo(lastPoint.cp2, point.cp1, point);
-            lastPoint = point;
+            p = points[j];
+            curveTo(lastPoint.cp2, p.cp1, p);
+            lastPoint = p;
             count++;
           }
           if (count >= 2) {
@@ -369,15 +372,15 @@ class LineChart extends _TwoAxisChart {
           ..lineWidth = scale * seriesLineWidth
           ..strokeStyle = series.color
           ..beginPath();
-        for (var point in points) {
-          if (point.value != null) {
+        for (var p in points) {
+          if (p.value != null) {
             if (lastPoint.value != null) {
-              curveTo(lastPoint.cp2, point.cp1, point);
+              curveTo(lastPoint.cp2, p.cp1, p);
             } else {
-              _seriesContext.moveTo(point.x, point.y);
+              _seriesContext.moveTo(p.x, p.y);
             }
           }
-          lastPoint = point;
+          lastPoint = p;
         }
         _seriesContext.stroke();
       }
@@ -391,9 +394,14 @@ class LineChart extends _TwoAxisChart {
           ..fillStyle = fillColor
           ..lineWidth = scale * markerOptions['lineWidth']
           ..strokeStyle = strokeColor;
-        for (var point in points) {
-          if (point.value != null) {
-            point.draw(_seriesContext, 1.0, point.index == _focusedEntityIndex);
+        for (var p in points) {
+          if (p.value != null) {
+            if (markerOptions['enabled']) {
+              p.draw(_seriesContext, 1.0, p.index == _focusedEntityIndex);
+            } else if (p.index == _focusedEntityIndex) {
+              // Only draw marker on hover.
+              p.draw(_seriesContext, 1.0, true);
+            }
           }
         }
       }
@@ -412,10 +420,10 @@ class LineChart extends _TwoAxisChart {
         if (_seriesStates[i] != _VisibilityState.showing) continue;
 
         var points = _seriesList[i].entities as List<_Point>;
-        for (var point in points) {
-          if (point.value != null) {
-            var y = point.y - markerSize - 5;
-            _seriesContext.fillText(point.formattedValue, point.x, y);
+        for (var p in points) {
+          if (p.value != null) {
+            var y = p.y - markerSize - 5;
+            _seriesContext.fillText(p.formattedValue, p.x, y);
           }
         }
       }

@@ -23,6 +23,9 @@ final _radarChartDefaultOptions = {
 
     // Map - An object that controls the markers.
     'markers': {
+      // bool - Whether markers are enabled.
+      'enabled': true,
+
       // String - The fill color. If `null`, the stroke color of the series
       // will be used.
       'fillColor': null,
@@ -373,7 +376,12 @@ class RadarChart extends Chart {
           ..lineWidth = scale * markerOptions['lineWidth']
           ..strokeStyle = strokeColor;
         for (var p in series.entities) {
-          p.draw(_seriesContext, percent, p.index == _focusedEntityIndex);
+          if (markerOptions['enabled']) {
+            p.draw(_seriesContext, percent, p.index == _focusedEntityIndex);
+          } else if (p.index == _focusedEntityIndex) {
+            // Only draw marker on hover.
+            p.draw(_seriesContext, percent, true);
+          }
         }
       }
     }

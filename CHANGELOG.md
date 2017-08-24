@@ -1,3 +1,7 @@
+#### 0.1.11
+- LineChart: add `series:markers:enabled` option
+- RadarChart: add `series:markers:enabled` option
+
 #### 0.1.10
 - All: change the default background color of legend to transparent
 - BarChart: change bar group hover effect
