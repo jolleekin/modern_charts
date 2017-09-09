@@ -111,7 +111,7 @@ double calculateMaxTextWidth(
   var result = 0.0;
   context.font = font;
   for (var text in texts) {
-    var width = context.measureText(text).width;
+    double width = context.measureText(text).width.toDouble();
     if (result < width) result = width;
   }
   return result;
