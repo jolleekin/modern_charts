@@ -162,6 +162,7 @@ void createLineChart() {
     },
     'series': {
       'fillOpacity': 0.25,
+      'labels': {'enabled': true},
     },
     'yAxis': {'minInterval': 5},
     'title': {'text': 'Line Chart Demo'}

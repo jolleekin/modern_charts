@@ -417,7 +417,7 @@ class LineChart extends _TwoAxisChart {
         ..textAlign = 'center'
         ..textBaseline = 'alphabetic';
       for (var i = 0; i < seriesCount; i++) {
-        if (_seriesStates[i] != _VisibilityState.showing) continue;
+        if (_seriesStates[i] != _VisibilityState.shown) continue;
 
         var points = _seriesList[i].entities as List<_Point>;
         for (var p in points) {

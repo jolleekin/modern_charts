@@ -1,3 +1,6 @@
+#### 0.1.12
+- LineChart: fix a bug causing data labels not to be displayed even when enabled
+
 #### 0.1.11
 - LineChart: add `series:markers:enabled` option
 - RadarChart: add `series:markers:enabled` option
