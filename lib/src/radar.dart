@@ -157,6 +157,7 @@ class RadarChart extends Chart {
   ValueFormatter _yLabelFormatter;
 
   /// Each element is the bounding box of each entity group.
+  /// A `null` element means the group has no visible entities.
   List<Rectangle> _boundingBoxes;
 
   num _getAngle(int entityIndex) => entityIndex * _angleInterval - _PI_2;
@@ -175,15 +176,24 @@ class RadarChart extends Chart {
       var minY = double.MAX_FINITE;
       var maxX = -double.MAX_FINITE;
       var maxY = -double.MAX_FINITE;
+      var count = 0;
       for (var j = 0; j < seriesCount; j++) {
+        if (_seriesStates[j] == _VisibilityState.hidden) continue;
+        if (_seriesStates[j] == _VisibilityState.hiding) continue;
+
         var pp = _seriesList[j].entities[i] as _PolarPoint;
+        if (pp.value == null) continue;
+
         var cp = polarToCartesian(pp.center, pp.radius, pp.angle);
         minX = min(minX, cp.x);
         minY = min(minY, cp.y);
         maxX = max(maxX, cp.x);
         maxY = max(maxY, cp.y);
+        count++;
       }
-      _boundingBoxes[i] = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+      _boundingBoxes[i] = count > 0
+          ? new Rectangle(minX, minY, maxX - minX, maxY - minY)
+          : null;
     }
   }
 
@@ -396,6 +406,8 @@ class RadarChart extends Chart {
     var angle = atan2(p.y, p.x);
     var points = _seriesList.first.entities as List<_PolarPoint>;
     for (var i = points.length - 1; i >= 0; i--) {
+      if (_boundingBoxes[i] == null) continue;
+
       var delta = angle - points[i].angle;
       if (delta.abs() < .5 * _angleInterval) return i;
       if ((delta + _2PI).abs() < .5 * _angleInterval) return i;

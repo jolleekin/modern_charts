@@ -1,3 +1,8 @@
+#### 0.1.13
+- base: charts no longer resize automatically on window resize
+- base: fixed a bug that happens when `Chart.resize` and `Chart.update` is called while the width or height of the chart is zero
+- RadarChart: fixed a bug where the tooltip is still shown when all series are hidden
+
 #### 0.1.12
 - LineChart: fix a bug causing data labels not to be displayed even when enabled
 

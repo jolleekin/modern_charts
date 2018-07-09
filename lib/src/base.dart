@@ -1,19 +1,5 @@
 part of modern_charts;
 
-Set<Chart> _instances;
-Timer _timer;
-
-void _resizeAll() {
-  for (var chart in _instances) {
-    chart.resize();
-  }
-}
-
-void _windowResize(_) {
-  _timer?.cancel();
-  _timer = new Timer(const Duration(milliseconds: 500), _resizeAll);
-}
-
 /// The global drawing options.
 final globalOptions = {
   // Map - An object that controls the animation.
@@ -861,12 +847,6 @@ class Chart {
     _seriesContext = new CanvasElement().getContext('2d');
 
     container.append(_context.canvas);
-
-    if (_instances == null) {
-      _instances = new Set<Chart>();
-      window.onResize.listen(_windowResize);
-    }
-    _instances.add(this);
   }
 
   /// Whether the chart is animating.
@@ -905,6 +885,8 @@ class Chart {
     var w = container.clientWidth;
     var h = container.clientHeight;
 
+    if (w == 0 || h == 0) return;
+    
     if (w != _width || h != _height) {
       _width = w;
       _height = h;
@@ -943,6 +925,8 @@ class Chart {
   ///  This method should be called after [dataTable] has been modified.
   // TODO: handle updates while animation is happening.
   void update() {
+    if (_width == 0 || _height == 0) return;
+
     // This call is redundant for row and column changes but necessary for
     // cell changes.
     _calculateDrawingSizes();
