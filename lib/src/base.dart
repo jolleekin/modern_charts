@@ -105,11 +105,11 @@ final globalOptions = {
   }
 };
 
-/// The 2*PI constant.
-const _2PI = 2 * PI;
+/// The 2*pi constant.
+const _2pi = 2 * pi;
 
-/// The PI/2 constant.
-const _PI_2 = PI / 2;
+/// The pi/2 constant.
+const _pi_2 = pi / 2;
 
 const _fontFamily = '"Segoe UI", "Open Sans", Verdana, Arial';
 
@@ -225,7 +225,7 @@ class Chart {
 
   /// The subscription tracker for legend items' events.
   StreamSubscriptionTracker _legendItemSubscriptionTracker =
-      new StreamSubscriptionTracker();
+      StreamSubscriptionTracker();
 
   StreamSubscription _mouseMoveSub;
 
@@ -295,7 +295,7 @@ class Chart {
   }
 
   String _getColor(int index) {
-    var colors = _options['colors'] as List<String>;
+    var colors = _options['colors'] as List;
     return colors[index % colors.length];
   }
 
@@ -335,7 +335,7 @@ class Chart {
     if (title['position'] != 'none' && title['text'] != null) {
       titleH = title['style']['fontSize'] + 2 * _titlePadding;
     }
-    _seriesAndAxesBox = new MutableRectangle(_chartPadding, _chartPadding,
+    _seriesAndAxesBox = MutableRectangle(_chartPadding, _chartPadding,
         _width - 2 * _chartPadding, _height - 2 * _chartPadding);
 
     // Consider the title.
@@ -360,7 +360,7 @@ class Chart {
           _context.measureText(title['text']).width.round() + 2 * _titlePadding;
       titleX = (_width - titleW - 2 * _titlePadding) ~/ 2;
     }
-    _titleBox = new Rectangle(titleX, titleY, titleW, titleH);
+    _titleBox = Rectangle(titleX, titleY, titleW, titleH);
 
     // Consider the legend.
 
@@ -388,7 +388,7 @@ class Chart {
 
   List<_Entity> _createEntities(int seriesIndex, int start, int end,
       String color, String highlightColor) {
-    var result = [];
+    var result = <_Entity>[];
     while (start < end) {
       var value = _dataTable.rows[start][seriesIndex + 1];
       var e = _createEntity(seriesIndex, start, value, color, highlightColor);
@@ -412,7 +412,7 @@ class Chart {
       var highlightColor = _getHighlightColor(color);
       var entities =
           _createEntities(start, 0, entityCount, color, highlightColor);
-      result.add(new _Series(name, color, highlightColor, entities));
+      result.add(_Series(name, color, highlightColor, entities));
       start++;
     }
     return result;
@@ -499,7 +499,7 @@ class Chart {
       _seriesStates.removeRange(index, index + removedCount);
     }
     if (addedCount > 0) {
-      var list = new List.filled(addedCount, _VisibilityState.showing);
+      var list = List.filled(addedCount, _VisibilityState.showing);
       _seriesStates.insertAll(index, list);
     }
   }
@@ -525,7 +525,7 @@ class Chart {
   /// Draws the current animation frame.
   ///
   /// If [time] is `null`, draws the last frame.
-  void _drawFrame(double time) {
+  void _drawFrame(num time) {
     var percent = 1.0;
     var duration = _options['animation']['duration'];
     _animationStartTime ??= time;
@@ -577,8 +577,7 @@ class Chart {
 
   void _initializeLegend() {
     var n = _getLegendLabels().length;
-    _seriesStates = new List<_VisibilityState>.filled(
-        n, _VisibilityState.showing,
+    _seriesStates = List<_VisibilityState>.filled(n, _VisibilityState.showing,
         growable: true);
 
     if (_legend != null) {
@@ -648,9 +647,9 @@ class Chart {
       e.style.cursor = 'pointer';
       e.style.userSelect = 'none';
       _legendItemSubscriptionTracker
-        ..add(e.onClick, _legendItemClick)
-        ..add(e.onMouseOver, _legendItemMouseOver)
-        ..add(e.onMouseOut, _legendItemMouseOut);
+        ..add(e.onClick.listen(_legendItemClick))
+        ..add(e.onMouseOver.listen(_legendItemMouseOver))
+        ..add(e.onMouseOut.listen(_legendItemMouseOut));
 
       var state = _seriesStates[i];
       if (state == _VisibilityState.hidden ||
@@ -772,7 +771,7 @@ class Chart {
     _tooltip.innerHtml = '';
 
     // Tooltip title.
-    _tooltip.append(new DivElement()
+    _tooltip.append(DivElement()
       ..text = row[0]
       ..style.padding = '4px 12px'
       ..style.fontWeight = 'bold');
@@ -798,7 +797,7 @@ class Chart {
 
   /// Creates an absolute positioned div with styles specified by [style].
   Element _createTooltipOrLegend(Map style) {
-    return new DivElement()
+    return DivElement()
       ..style.backgroundColor = style['backgroundColor']
       ..style.borderColor = style['borderColor']
       ..style.borderStyle = 'solid'
@@ -811,7 +810,7 @@ class Chart {
   }
 
   Element _createTooltipOrLegendItem(String color, String text) {
-    var e = new DivElement()
+    var e = DivElement()
       ..innerHtml = '<span></span> $text'
       ..style.padding = '4px 12px';
     e.children.first.style
@@ -842,9 +841,9 @@ class Chart {
     if (container.getComputedStyle().position == 'static') {
       container.style.position = 'relative';
     }
-    _context = new CanvasElement().getContext('2d');
-    _axesContext = new CanvasElement().getContext('2d');
-    _seriesContext = new CanvasElement().getContext('2d');
+    _context = CanvasElement().getContext('2d');
+    _axesContext = CanvasElement().getContext('2d');
+    _seriesContext = CanvasElement().getContext('2d');
 
     container.append(_context.canvas);
   }
@@ -871,7 +870,7 @@ class Chart {
     _dataColumnsChangeSub =
         dataTable.onColumnsChange.listen(_dataColumnsChanged);
     _dataRowsChangeSub = dataTable.onRowsChange.listen(_dataRowsChanged);
-    _options = mergeMap(options, _defaultOptions);
+    _options = mergeMap(mergeMap({}, options), _defaultOptions);
     _easingFunction = getEasingFunction(_options['animation']['easing']);
     _initializeLegend();
     _initializeTooltip();
@@ -886,7 +885,7 @@ class Chart {
     var h = container.clientHeight;
 
     if (w == 0 || h == 0) return;
-    
+
     if (w != _width || h != _height) {
       _width = w;
       _height = h;
@@ -995,13 +994,13 @@ class _TwoAxisChart extends Chart {
 
     // y-axis min-max.
 
-    _yMaxValue = _options['yAxis']['maxValue'] ?? double.NEGATIVE_INFINITY;
+    _yMaxValue = _options['yAxis']['maxValue'] ?? double.negativeInfinity;
     _yMaxValue = max(_yMaxValue, findMaxValue(_dataTable));
-    if (_yMaxValue == double.NEGATIVE_INFINITY) _yMaxValue = 0.0;
+    if (_yMaxValue == double.negativeInfinity) _yMaxValue = 0.0;
 
-    _yMinValue = _options['yAxis']['minValue'] ?? double.INFINITY;
+    _yMinValue = _options['yAxis']['minValue'] ?? double.infinity;
     _yMinValue = min(_yMinValue, findMinValue(_dataTable));
-    if (_yMinValue == double.INFINITY) _yMinValue = 0.0;
+    if (_yMinValue == double.infinity) _yMinValue = 0.0;
 
     _yInterval = _options['yAxis']['interval'];
     var minInterval = _options['yAxis']['minInterval'];
@@ -1038,7 +1037,7 @@ class _TwoAxisChart extends Chart {
     if (_yLabelFormatter == null) {
       var maxDecimalPlaces =
           max(getDecimalPlaces(_yInterval), getDecimalPlaces(_yMinValue));
-      var numberFormat = new NumberFormat.decimalPattern()
+      var numberFormat = NumberFormat.decimalPattern()
         ..maximumFractionDigits = maxDecimalPlaces
         ..minimumFractionDigits = maxDecimalPlaces;
       _yLabelFormatter = numberFormat.format;
@@ -1126,7 +1125,7 @@ class _TwoAxisChart extends Chart {
     var fontSize = _options['xAxis']['labels']['style']['fontSize'];
     var maxRotation = _options['xAxis']['labels']['maxRotation'];
     var minRotation = _options['xAxis']['labels']['minRotation'];
-    const angles = const [0, -45, 45, -90, 90];
+    const angles = [0, -45, 45, -90, 90];
 
     outer:
     for (var step = 1; step <= _xLabels.length; step++) {
@@ -1162,9 +1161,9 @@ class _TwoAxisChart extends Chart {
 
     if (xTitleHeight > 0) {
 //      _xTitleBox =
-//          new Rectangle(xTitleLeft, xTitleTop, xTitleWidth, xTitleHeight);
-      _xTitleCenter = new Point(
-          xTitleLeft + xTitleWidth ~/ 2, xTitleTop + xTitleHeight ~/ 2);
+//          Rectangle(xTitleLeft, xTitleTop, xTitleWidth, xTitleHeight);
+      _xTitleCenter =
+          Point(xTitleLeft + xTitleWidth ~/ 2, xTitleTop + xTitleHeight ~/ 2);
     } else {
 //      _xTitleBox = null;
       _xTitleCenter = null;
@@ -1172,9 +1171,9 @@ class _TwoAxisChart extends Chart {
 
     if (yTitleHeight > 0) {
 //      _yTitleBox =
-//          new Rectangle(yTitleLeft, yTitleTop, yTitleWidth, yTitleHeight);
-      _yTitleCenter = new Point(
-          yTitleLeft + yTitleWidth ~/ 2, yTitleTop + yTitleHeight ~/ 2);
+//          Rectangle(yTitleLeft, yTitleTop, yTitleWidth, yTitleHeight);
+      _yTitleCenter =
+          Point(yTitleLeft + yTitleWidth ~/ 2, yTitleTop + yTitleHeight ~/ 2);
     } else {
 //      _yTitleBox = null;
       _yTitleCenter = null;
@@ -1213,7 +1212,7 @@ class _TwoAxisChart extends Chart {
         ..fillStyle = opt['style']['color']
         ..font = _getFont(opt['style'])
         ..translate(_yTitleCenter.x, _yTitleCenter.y)
-        ..rotate(-_PI_2)
+        ..rotate(-_pi_2)
         ..textAlign = 'center'
         ..textBaseline = 'middle'
         ..fillText(opt['text'], 0, 0)
@@ -1355,7 +1354,7 @@ class _TwoAxisChart extends Chart {
     if (x + _tooltip.offsetWidth > _width) {
       x -= _tooltip.offsetWidth + 2 * _tooltipOffset;
     }
-    return new Point(x, y);
+    return Point(x, y);
   }
 
   _TwoAxisChart(Element container) : super(container);

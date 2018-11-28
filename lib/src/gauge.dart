@@ -29,7 +29,7 @@ class _Gauge extends _Pie {
 
     // Draw the background.
 
-    endAngle = startAngle + _2PI;
+    endAngle = startAngle + _2pi;
     color = backgroundColor;
     super.draw(ctx, 1.0, false);
 
@@ -62,18 +62,17 @@ class _Gauge extends _Pie {
   }
 }
 
-
 class GaugeChart extends Chart {
   num _gaugeHop;
   num _gaugeInnerRadius;
   num _gaugeOuterRadius;
   num _gaugeCenterY;
-  final num _startAngle = -_PI_2;
+  final num _startAngle = -_pi_2;
 
   Point _getGaugeCenter(int index) =>
-      new Point((index + .5) * _gaugeHop, _gaugeCenterY);
+      Point((index + .5) * _gaugeHop, _gaugeCenterY);
 
-  num _valueToAngle(num value) => value * _2PI / 100;
+  num _valueToAngle(num value) => value * _2pi / 100;
 
   @override
   void _calculateDrawingSizes() {
@@ -130,7 +129,7 @@ class GaugeChart extends Chart {
     highlightColor = _changeColorAlpha(color, .5);
 
     var name = _dataTable.rows[entityIndex][0];
-    return new _Gauge()
+    return _Gauge()
       ..index = entityIndex
       ..value = value
       ..name = name
@@ -179,7 +178,7 @@ class GaugeChart extends Chart {
 
   @override
   int _getEntityGroupIndex(num x, num y) {
-    var p = new Point(x, y);
+    var p = Point(x, y);
     for (_Gauge g in _seriesList[0].entities) {
       if (g.containsPoint(p)) return g.index;
     }
@@ -194,7 +193,7 @@ class GaugeChart extends Chart {
         _highlightOuterRadiusFactor * gauge.outerRadius -
         _tooltip.offsetHeight -
         5;
-    return new Point(x, y);
+    return Point(x, y);
   }
 
   GaugeChart(Element container) : super(container) {

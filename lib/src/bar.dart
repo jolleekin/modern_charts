@@ -312,8 +312,8 @@ class BarChart extends _TwoAxisChart {
     var height = _valueToBarHeight(value);
 
     // Animate width.
-    var oldHeight = height;
-    var oldWidth = 0;
+    num oldHeight = height;
+    num oldWidth = 0;
 
     if (_seriesList == null) {
       // Data table changed. Animate height.
@@ -321,7 +321,7 @@ class BarChart extends _TwoAxisChart {
       oldWidth = _barWidth;
     }
 
-    return new _Bar()
+    return _Bar()
       ..index = entityIndex
       ..value = value
       ..formattedValue = value != null ? _entityValueFormatter(value) : null

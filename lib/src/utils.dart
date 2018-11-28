@@ -7,13 +7,13 @@ import 'dart:math';
 import 'datatable.dart';
 
 /// Converts [angle] in radians to degrees.
-double rad2deg(num angle) => angle * 180 / PI;
+double rad2deg(num angle) => angle * 180 / pi;
 
 /// Converts [angle] in degrees to radians.
-double deg2rad(num angle) => angle * PI / 180;
+double deg2rad(num angle) => angle * pi / 180;
 
 /// Returns the base-10 logarithm of [value].
-double log10(num value) => log(value) / LN10;
+double log10(num value) => log(value) / ln10;
 
 /// Returns a linear interpolated value based on the start value [start], the
 /// end value [end], and the interpolation factor [f].
@@ -27,7 +27,7 @@ bool isInRange(num value, num min, num max) => value >= min && value <= max;
 Point<double> polarToCartesian(Point center, num radius, num angle) {
   var x = center.x + radius * cos(angle);
   var y = center.y + radius * sin(angle);
-  return new Point<double>(x, y);
+  return Point<double>(x, y);
 }
 
 /// Rounds [value] to [places] decimal places.
@@ -55,14 +55,14 @@ String hexToRgba(String hexColor, num alpha) {
 
 /// Returns the hyphenated version of [s].
 String hyphenate(String s) {
-  return s.replaceAllMapped(new RegExp('[A-Z]'), (Match m) {
+  return s.replaceAllMapped(RegExp('[A-Z]'), (Match m) {
     return '-' + m[0].toLowerCase();
   });
 }
 
 /// Returns the maximum value in a [DataTable].
 num findMaxValue(DataTable table) {
-  var maxValue = double.NEGATIVE_INFINITY;
+  var maxValue = double.negativeInfinity;
   for (var row in table.rows) {
     for (var col in table.columns) {
       var value = row[col.index];
@@ -74,7 +74,7 @@ num findMaxValue(DataTable table) {
 
 /// Returns the minimum value in a [DataTable].
 num findMinValue(DataTable table) {
-  var minValue = double.INFINITY;
+  var minValue = double.infinity;
   for (var row in table.rows) {
     for (var col in table.columns) {
       var value = row[col.index];
@@ -150,7 +150,6 @@ int getDecimalPlaces(num value) {
 ///
 /// Returns [dst].
 Map mergeMap(Map dst, Map src) {
-  dst ??= {};
   for (var k in dst.keys.toList()) {
     if (!src.containsKey(k)) dst.remove(k);
   }
@@ -161,7 +160,7 @@ Map mergeMap(Map dst, Map src) {
     } else {
       if (dst.containsKey(k)) return;
       if (v is List) {
-        dst[k] = new List.from(v);
+        dst[k] = List.from(v);
       } else {
         dst[k] = v;
       }
@@ -170,14 +169,14 @@ Map mergeMap(Map dst, Map src) {
   return dst;
 }
 
-/// Creates a copy of [src].
+/// Creates a deep copy of [src].
 Map cloneMap(Map src) {
   var result = {};
   src.forEach((k, v) {
     if (v is Map) {
       result[k] = cloneMap(v);
     } else if (v is List) {
-      result[k] = new List.from(v);
+      result[k] = List.from(v);
     } else {
       result[k] = v;
     }
@@ -195,10 +194,10 @@ Map extendMap(Map src, Map ext) {
 }
 
 class StreamSubscriptionTracker {
-  List<StreamSubscription> _subs = <StreamSubscription>[];
+  final _subs = <StreamSubscription>[];
 
-  void add(Stream stream, void listener(event)) {
-    _subs.add(stream.listen(listener));
+  void add(StreamSubscription sub) {
+    _subs.add(sub);
   }
 
   void clear() {

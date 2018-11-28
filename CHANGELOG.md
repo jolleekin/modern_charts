@@ -1,3 +1,6 @@
+#### 0.1.14
+- *BREAKING CHANGE*: This version requires Dart 2.0.0 or later
+
 #### 0.1.13
 - base: charts no longer resize automatically on window resize
 - base: fixed a bug that happens when `Chart.resize` and `Chart.update` is called while the width or height of the chart is zero

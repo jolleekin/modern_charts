@@ -102,7 +102,7 @@ class DataCollectionIterator<E extends _TableEntity> implements Iterator<E> {
   bool moveNext() {
     int length = _iterable.length;
     if (_length != length) {
-      throw new ConcurrentModificationError(_iterable);
+      throw ConcurrentModificationError(_iterable);
     }
     if (_index >= length) {
       _current = null;
@@ -139,7 +139,7 @@ class DataCollectionBase<E extends _TableEntity> extends ListBase<E> {
         _table = table;
 
   @override
-  Iterator<E> get iterator => new DataCollectionIterator<E>(this);
+  Iterator<E> get iterator => DataCollectionIterator<E>(this);
 
   @override
   E get first => _base.first;
@@ -156,7 +156,7 @@ class DataCollectionBase<E extends _TableEntity> extends ListBase<E> {
   @override
   void set length(int value) {
     // TODO: implement.
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   @override
@@ -165,7 +165,7 @@ class DataCollectionBase<E extends _TableEntity> extends ListBase<E> {
   @override
   operator []=(int index, E value) {
     // TODO: implement.
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 
   void add(E value) {
@@ -237,7 +237,7 @@ class DataCollectionBase<E extends _TableEntity> extends ListBase<E> {
 
 class DataRowCollection extends DataCollectionBase<DataRow> {
   DataRow _toDataRow(value) =>
-      value is DataRow ? value : new DataRow._internal(_table, value);
+      value is DataRow ? value : DataRow._internal(_table, value);
 
   DataRowCollection(DataTable table) : super(table);
 
@@ -279,7 +279,7 @@ class DataColumnCollection extends DataCollectionBase<DataColumn> {
 
   /// Adds a new column given its [name] and [type].
   void add2(String name, Type type) {
-    add(new DataColumn(name, type));
+    add(DataColumn(name, type));
   }
 }
 
@@ -295,14 +295,14 @@ class DataTable {
   void _onCellChanged(int rowIndex, int columnIndex, oldValue, newValue) {
     if (_cellChangeController != null) {
       var record =
-          new DataCellChangeRecord(rowIndex, columnIndex, oldValue, newValue);
+          DataCellChangeRecord(rowIndex, columnIndex, oldValue, newValue);
       _cellChangeController.add(record);
     }
   }
 
   void _onRowsOrColumnsInserted(
       DataCollectionBase source, int index, int count) {
-    var record = new DataCollectionChangeRecord(index, count, 0);
+    var record = DataCollectionChangeRecord(index, count, 0);
     if (source == _columns) {
       _insertColumns(index, count);
       _updateColumnIndexes(index);
@@ -314,7 +314,7 @@ class DataTable {
 
   void _onRowsOrColumnsRemoved(
       DataCollectionBase source, int index, int count) {
-    var record = new DataCollectionChangeRecord(index, 0, count);
+    var record = DataCollectionChangeRecord(index, 0, count);
     if (source == _columns) {
       _removeColumns(index, count);
       _updateColumnIndexes(index);
@@ -326,7 +326,7 @@ class DataTable {
 
   void _insertColumns(int start, int count) {
     for (var row in _rows) {
-      row._cells.insertAll(start, new List(count));
+      row._cells.insertAll(start, List(count));
     }
   }
 
@@ -353,8 +353,8 @@ class DataTable {
   /// and all rows are expected to have the same length.
   DataTable([List<List> data]) {
     _columnIndexByName = <String, int>{};
-    _rows = new DataRowCollection(this);
-    _columns = new DataColumnCollection(this);
+    _rows = DataRowCollection(this);
+    _columns = DataColumnCollection(this);
 
     if (data == null) return;
 
@@ -386,7 +386,7 @@ class DataTable {
 
   /// Fired when a cell is changed.
   Stream<DataCellChangeRecord> get onCellChange {
-    _cellChangeController ??= new StreamController.broadcast(
+    _cellChangeController ??= StreamController.broadcast(
         sync: true,
         onCancel: () {
           _cellChangeController = null;
@@ -396,7 +396,7 @@ class DataTable {
 
   /// Fired when [columns] are changed.
   Stream<DataCollectionChangeRecord> get onColumnsChange {
-    _columnsChangeController ??= new StreamController.broadcast(
+    _columnsChangeController ??= StreamController.broadcast(
         sync: true,
         onCancel: () {
           _columnsChangeController = null;
@@ -406,7 +406,7 @@ class DataTable {
 
   /// Fired when [rows] are changed.
   Stream<DataCollectionChangeRecord> get onRowsChange {
-    _rowsChangeController ??= new StreamController.broadcast(
+    _rowsChangeController ??= StreamController.broadcast(
         sync: true,
         onCancel: () {
           _rowsChangeController = null;
@@ -423,8 +423,8 @@ class DataTable {
   }
 
   /// Gets the values of the column specified by [columnIndex].
-  List getColumnValues(int columnIndex) {
-    var list = [];
+  List<T> getColumnValues<T>(int columnIndex) {
+    var list = <T>[];
     for (var row in _rows) {
       list.add(row[columnIndex]);
     }

@@ -83,15 +83,15 @@ double easeInOutQuint(double t) {
 }
 
 double easeInSine(double t) {
-  return 1 - cos(t * PI / 2);
+  return 1 - cos(t * pi / 2);
 }
 
 double easeOutSine(double t) {
-  return sin(t * PI / 2);
+  return sin(t * pi / 2);
 }
 
 double easeInOutSine(double t) {
-  return .5 * (1 - cos(PI * t));
+  return .5 * (1 - cos(pi * t));
 }
 
 double easeInExpo(double t) {
@@ -138,10 +138,10 @@ double easeInElastic(double t) {
     a = 1.0;
     s = p / 4;
   } else {
-    s = p / (2 * PI) * asin(1 / a);
+    s = p / (2 * pi) * asin(1 / a);
   }
   t--;
-  return -(a * pow(2, 10 * t) * sin((t - s) * (2 * PI) / p));
+  return -(a * pow(2, 10 * t) * sin((t - s) * (2 * pi) / p));
 }
 
 double easeOutElastic(double t) {
@@ -155,9 +155,9 @@ double easeOutElastic(double t) {
     a = 1.0;
     s = p / 4;
   } else {
-    s = p / (2 * PI) * asin(1 / a);
+    s = p / (2 * pi) * asin(1 / a);
   }
-  return a * pow(2, -10 * t) * sin((t - s) * (2 * PI) / p) + 1;
+  return a * pow(2, -10 * t) * sin((t - s) * (2 * pi) / p) + 1;
 }
 
 double easeInOutElastic(double t) {
@@ -171,11 +171,11 @@ double easeInOutElastic(double t) {
     a = 1.0;
     s = p / 4;
   } else {
-    s = p / (2 * PI) * asin(1 / a);
+    s = p / (2 * pi) * asin(1 / a);
   }
   t = 2 * t - 1;
-  if (t < 0) return -.5 * (a * pow(2, 10 * t) * sin((t - s) * (2 * PI) / p));
-  return a * pow(2, -10 * t) * sin((t - s) * (2 * PI) / p) * .5 + 1;
+  if (t < 0) return -.5 * (a * pow(2, 10 * t) * sin((t - s) * (2 * pi) / p));
+  return a * pow(2, -10 * t) * sin((t - s) * (2 * pi) / p) * .5 + 1;
 }
 
 double easeInBack(double t) {
@@ -291,6 +291,6 @@ EasingFunction getEasingFunction(name) {
     case 'easeInOutBounce':
       return easeInOutBounce;
     default:
-      throw new ArgumentError.value(name, 'name');
+      throw ArgumentError.value(name, 'name');
   }
 }

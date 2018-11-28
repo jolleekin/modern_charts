@@ -216,11 +216,11 @@ class _Point extends _Entity {
     if (highlight) {
       ctx.fillStyle = highlightColor;
       ctx.beginPath();
-      ctx.arc(cx, cy, 2 * pr, 0, _2PI);
+      ctx.arc(cx, cy, 2 * pr, 0, _2pi);
       ctx.fill();
     }
     ctx.beginPath();
-    ctx.arc(cx, cy, pr, 0, _2PI);
+    ctx.arc(cx, cy, pr, 0, _2pi);
     ctx.fill();
     ctx.stroke();
   }
@@ -235,7 +235,7 @@ class _Point extends _Entity {
     super.save();
   }
 
-  Point get asPoint => new Point(x, y);
+  Point get asPoint => Point(x, y);
 }
 
 class LineChart extends _TwoAxisChart {
@@ -280,7 +280,7 @@ class LineChart extends _TwoAxisChart {
       var y = lerp(p.oldY, p.y, percent);
       var cp1 = (p.cp1 != null) ? lerp(p.oldCp1, p.cp1, percent) : null;
       var cp2 = (p.cp2 != null) ? lerp(p.oldCp2, p.cp2, percent) : null;
-      return new _Point()
+      return _Point()
         ..index = p.index
         ..value = p.value
         ..color = p.color
@@ -321,7 +321,7 @@ class LineChart extends _TwoAxisChart {
       if (_seriesStates[i] == _VisibilityState.hidden) continue;
 
       var series = _seriesList[i];
-      var points = _lerpPoints(series.entities, percent);
+      var points = _lerpPoints(series.entities.cast<_Point>(), percent);
       var scale = (i != _focusedSeriesIndex) ? 1 : 2;
 
       _seriesContext.lineJoin = 'round';
@@ -367,7 +367,7 @@ class LineChart extends _TwoAxisChart {
       // Draw series without filling.
 
       if (seriesLineWidth > 0) {
-        var lastPoint = new _Point();
+        var lastPoint = _Point();
         _seriesContext
           ..lineWidth = scale * seriesLineWidth
           ..strokeStyle = series.color
@@ -419,8 +419,8 @@ class LineChart extends _TwoAxisChart {
       for (var i = 0; i < seriesCount; i++) {
         if (_seriesStates[i] != _VisibilityState.shown) continue;
 
-        var points = _seriesList[i].entities as List<_Point>;
-        for (var p in points) {
+        var points = _seriesList[i].entities;
+        for (_Point p in points) {
           if (p.value != null) {
             var y = p.y - markerSize - 5;
             _seriesContext.fillText(p.formattedValue, p.x, y);
@@ -438,7 +438,7 @@ class LineChart extends _TwoAxisChart {
     var x = _xLabelX(entityIndex);
     var oldY = _xAxisTop;
     // oldCp1 and oldCp2 are calculated in [_updateSeries].
-    return new _Point()
+    return _Point()
       ..index = entityIndex
       ..value = value
       ..formattedValue = value != null ? _entityValueFormatter(value) : null
@@ -496,8 +496,8 @@ class LineChart extends _TwoAxisChart {
             e1.asPoint, e2.asPoint, e3.asPoint, curveTension);
         e2.cp1 = list[0];
         e2.cp2 = list[1];
-        e2.oldCp1 ??= new Point(e2.cp1.x, _xAxisTop);
-        e2.oldCp2 ??= new Point(e2.cp2.x, _xAxisTop);
+        e2.oldCp1 ??= Point(e2.cp1.x, _xAxisTop);
+        e2.oldCp2 ??= Point(e2.cp2.x, _xAxisTop);
       }
     }
   }

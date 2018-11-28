@@ -59,12 +59,12 @@ class _Pie extends _Entity {
     var angle = atan2(p.y, p.x);
     var chartStartAngle = (chart as dynamic)._startAngle;
 
-    // Make sure [angle] is in range [chartStartAngle]..[chartStartAngle] + 2PI.
-    angle = (angle - chartStartAngle) % _2PI + chartStartAngle;
+    // Make sure [angle] is in range [chartStartAngle]..[chartStartAngle] + 2pi.
+    angle = (angle - chartStartAngle) % _2pi + chartStartAngle;
 
     // If counterclockwise, make sure [angle] is in range
-    // [start] - 2*PI..[start].
-    if (startAngle > endAngle) angle -= _2PI;
+    // [start] - 2*pi..[start].
+    if (startAngle > endAngle) angle -= _2pi;
 
     if (startAngle <= endAngle) {
       // Clockwise.
@@ -99,7 +99,7 @@ class _Pie extends _Entity {
     ctx.fill();
     ctx.stroke();
 
-    if (formattedValue != null && chart is PieChart && a2 - a1 > PI / 36) {
+    if (formattedValue != null && chart is PieChart && a2 - a1 > pi / 36) {
       var options = chart._options['series']['labels'];
       if (options['enabled']) {
         var r = .25 * innerRadius + .75 * outerRadius;
@@ -136,7 +136,7 @@ class PieChart extends Chart {
     var rect = _seriesAndAxesBox;
     var halfW = rect.width >> 1;
     var halfH = rect.height >> 1;
-    _center = new Point(rect.left + halfW, rect.top + halfH);
+    _center = Point(rect.left + halfW, rect.top + halfH);
     _outerRadius = min(halfW, halfH) / _highlightOuterRadiusFactor;
     var pieHole = _options['pieHole'];
     if (pieHole > 1) pieHole = 0;
@@ -164,10 +164,10 @@ class PieChart extends Chart {
       ..strokeStyle = '#fff'
       ..textAlign = 'center'
       ..textBaseline = 'middle';
-    var pies = _seriesList.first.entities as List<_Pie>;
+    var pies = _seriesList.first.entities;
     var labelOptions = _options['series']['labels'];
     _seriesContext.font = _getFont(labelOptions['style']);
-    for (var pie in pies) {
+    for (_Pie pie in pies) {
       if (pie.isEmpty && percent == 1.0) continue;
       var highlight =
           pie.index == _focusedSeriesIndex || pie.index == _focusedEntityIndex;
@@ -179,7 +179,7 @@ class PieChart extends Chart {
 
   @override
   int _getEntityGroupIndex(num x, num y) {
-    var p = new Point(x, y);
+    var p = Point(x, y);
     var entities = _seriesList.first.entities;
     for (var i = entities.length - 1; i >= 0; i--) {
       var pie = entities[i] as _Pie;
@@ -189,7 +189,8 @@ class PieChart extends Chart {
   }
 
   @override
-  List<String> _getLegendLabels() => _dataTable.getColumnValues(0);
+  List<String> _getLegendLabels() =>
+      _dataTable.getColumnValues<String>(0);
 
   @override
   Point _getTooltipPosition() {
@@ -199,7 +200,7 @@ class PieChart extends Chart {
     var point = polarToCartesian(_center, radius, angle);
     var x = point.x - .5 * _tooltip.offsetWidth;
     var y = point.y - _tooltip.offsetHeight;
-    return new Point(x, y);
+    return Point(x, y);
   }
 
   @override
@@ -214,7 +215,7 @@ class PieChart extends Chart {
       var prevPie = _seriesList[0].entities[entityIndex - 1] as _Pie;
       startAngle = prevPie.endAngle;
     }
-    return new _Pie()
+    return _Pie()
       ..index = entityIndex
       ..value = value
       ..formattedValue = value != null ? _entityValueFormatter(value) : null
@@ -242,17 +243,17 @@ class PieChart extends Chart {
     var sum = 0.0;
     var startAngle = _startAngle;
     var pieCount = _dataTable.rows.length;
-    var pies = _seriesList[0].entities as List<_Pie>;
+    var entities = _seriesList[0].entities;
 
     // Sum the values of all visible pies.
     for (var i = 0; i < pieCount; i++) {
       if (_seriesStates[i].index >= _VisibilityState.showing.index) {
-        sum += pies[i].value;
+        sum += entities[i].value;
       }
     }
 
     for (var i = 0; i < pieCount; i++) {
-      var pie = pies[i];
+      _Pie pie = entities[i];
       var color = _getColor(i);
       pie.index = i;
       pie.name = _dataTable.rows[i][0];
@@ -262,7 +263,7 @@ class PieChart extends Chart {
 
       if (_seriesStates[i].index >= _VisibilityState.showing.index) {
         pie.startAngle = startAngle;
-        pie.endAngle = startAngle + _direction * pie.value * _2PI / sum;
+        pie.endAngle = startAngle + _direction * pie.value * _2pi / sum;
         startAngle = pie.endAngle;
       } else {
         pie.startAngle = startAngle;

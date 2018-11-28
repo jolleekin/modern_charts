@@ -127,12 +127,12 @@ class _PolarPoint extends _Entity {
     if (highlight) {
       ctx.fillStyle = highlightColor;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 2 * pr, 0, _2PI);
+      ctx.arc(p.x, p.y, 2 * pr, 0, _2pi);
       ctx.fill();
     }
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, pr, 0, _2PI);
+    ctx.arc(p.x, p.y, pr, 0, _2pi);
     ctx.fill();
     ctx.stroke();
   }
@@ -160,7 +160,7 @@ class RadarChart extends Chart {
   /// A `null` element means the group has no visible entities.
   List<Rectangle> _boundingBoxes;
 
-  num _getAngle(int entityIndex) => entityIndex * _angleInterval - _PI_2;
+  num _getAngle(int entityIndex) => entityIndex * _angleInterval - _pi_2;
 
   num _valueToRadius(num value) =>
       (value != null) ? value * _radius / _yMaxValue : 0.0;
@@ -170,12 +170,12 @@ class RadarChart extends Chart {
 
     var seriesCount = _seriesList.length;
     var entityCount = _seriesList.first.entities.length;
-    _boundingBoxes = new List<Rectangle>(entityCount);
+    _boundingBoxes = List<Rectangle>(entityCount);
     for (var i = 0; i < entityCount; i++) {
-      var minX = double.MAX_FINITE;
-      var minY = double.MAX_FINITE;
-      var maxX = -double.MAX_FINITE;
-      var maxY = -double.MAX_FINITE;
+      var minX = double.maxFinite;
+      var minY = double.maxFinite;
+      var maxX = -double.maxFinite;
+      var maxY = -double.maxFinite;
       var count = 0;
       for (var j = 0; j < seriesCount; j++) {
         if (_seriesStates[j] == _VisibilityState.hidden) continue;
@@ -191,9 +191,8 @@ class RadarChart extends Chart {
         maxY = max(maxY, cp.y);
         count++;
       }
-      _boundingBoxes[i] = count > 0
-          ? new Rectangle(minX, minY, maxX - minX, maxY - minY)
-          : null;
+      _boundingBoxes[i] =
+          count > 0 ? Rectangle(minX, minY, maxX - minX, maxY - minY) : null;
     }
   }
 
@@ -201,18 +200,18 @@ class RadarChart extends Chart {
   void _calculateDrawingSizes() {
     super._calculateDrawingSizes();
 
-    _xLabels = _dataTable.getColumnValues(0);
-    _angleInterval = _2PI / _xLabels.length;
+    _xLabels = _dataTable.getColumnValues<String>(0);
+    _angleInterval = _2pi / _xLabels.length;
 
     var rect = _seriesAndAxesBox;
     var xLabelFontSize = _options['xAxis']['labels']['style']['fontSize'];
 
     // [_radius]*factor equals the height of the largest polygon.
-    var factor = 1 + sin((_xLabels.length >> 1) * _angleInterval - _PI_2);
+    var factor = 1 + sin((_xLabels.length >> 1) * _angleInterval - _pi_2);
     _radius = min(rect.width, rect.height) / factor -
         factor * (xLabelFontSize + _axisLabelMargin);
     _center =
-        new Point(rect.left + rect.width / 2, rect.top + rect.height / factor);
+        Point(rect.left + rect.width / 2, rect.top + rect.height / factor);
 
     // The minimum value on the y-axis is always zero.
     var yInterval = _options['yAxis']['interval'];
@@ -226,7 +225,7 @@ class RadarChart extends Chart {
     _yLabelFormatter = _options['yAxis']['labels']['formatter'];
     if (_yLabelFormatter == null) {
       var decimalPlaces = getDecimalPlaces(yInterval);
-      var numberFormat = new NumberFormat.decimalPattern()
+      var numberFormat = NumberFormat.decimalPattern()
         ..maximumFractionDigits = decimalPlaces
         ..minimumFractionDigits = decimalPlaces;
       _yLabelFormatter = numberFormat.format;
@@ -263,7 +262,7 @@ class RadarChart extends Chart {
         ..beginPath();
       var radius = _radius;
       for (var i = yLabelCount - 1; i >= 1; i--) {
-        var angle = -_PI_2 + _angleInterval;
+        var angle = -_pi_2 + _angleInterval;
         _axesContext.moveTo(_center.x, _center.y - radius);
         for (var j = 0; j < xLabelCount; j++) {
           var point = polarToCartesian(_center, radius, angle);
@@ -283,7 +282,7 @@ class RadarChart extends Chart {
         ..lineWidth = lineWidth
         ..strokeStyle = _options['yAxis']['gridLineColor']
         ..beginPath();
-      var angle = -_PI_2;
+      var angle = -_pi_2;
       for (var i = 0; i < xLabelCount; i++) {
         var point = polarToCartesian(_center, _radius, angle);
         _axesContext
@@ -318,7 +317,7 @@ class RadarChart extends Chart {
       ..textAlign = 'center'
       ..textBaseline = 'middle';
     var fontSize = style['fontSize'];
-    var angle = -_PI_2;
+    var angle = -_pi_2;
     var radius = _radius + _axisLabelMargin;
     for (var i = 0; i < xLabelCount; i++) {
       _drawText(_axesContext, _xLabels[i], radius, angle, fontSize);
@@ -401,16 +400,16 @@ class RadarChart extends Chart {
 
   @override
   int _getEntityGroupIndex(num x, num y) {
-    var p = new Point(x - _center.x, y - _center.y);
+    var p = Point(x - _center.x, y - _center.y);
     if (p.magnitude >= _radius) return -1;
     var angle = atan2(p.y, p.x);
-    var points = _seriesList.first.entities as List<_PolarPoint>;
+    var points = _seriesList.first.entities.cast<_PolarPoint>();
     for (var i = points.length - 1; i >= 0; i--) {
       if (_boundingBoxes[i] == null) continue;
 
       var delta = angle - points[i].angle;
       if (delta.abs() < .5 * _angleInterval) return i;
-      if ((delta + _2PI).abs() < .5 * _angleInterval) return i;
+      if ((delta + _2pi).abs() < .5 * _angleInterval) return i;
     }
     return -1;
   }
@@ -423,14 +422,14 @@ class RadarChart extends Chart {
     var y = box.top + (box.height - _tooltip.offsetHeight) ~/ 2;
     if (x + _tooltip.offsetWidth > _width)
       x = box.left - _tooltip.offsetWidth - offset;
-    return new Point(x, y);
+    return Point(x, y);
   }
 
   @override
   _Entity _createEntity(int seriesIndex, int entityIndex, value, String color,
       String highlightColor) {
     var angle = _getAngle(entityIndex);
-    return new _PolarPoint()
+    return _PolarPoint()
       ..index = entityIndex
       ..value = value
       ..color = color

@@ -1,2 +1,4 @@
-analyzer:
-  strong-mode: true
+linter:
+  rules:
+    - unnecessary_const
+    - unnecessary_new

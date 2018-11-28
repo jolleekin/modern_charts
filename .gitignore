@@ -1,4 +1,5 @@
 # Files and directories created by pub
+.dart_tool
 .packages
 .pub/
 build/
@@ -20,3 +21,6 @@ doc/api/
 *.iml
 *.ipr
 *.iws
+
+# VS Code
+.vscode
