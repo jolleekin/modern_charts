@@ -197,7 +197,7 @@ class GaugeChart extends Chart {
   }
 
   GaugeChart(Element container) : super(container) {
-    _defaultOptions = extendMap(globalOptions, _gaugeChartDefaultOptions);
+    _defaultOptions = mergeMaps(globalOptions, _gaugeChartDefaultOptions);
     _defaultOptions['legend']['position'] = 'none';
   }
 }

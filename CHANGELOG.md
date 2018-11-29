@@ -1,3 +1,8 @@
+#### 0.1.15
+- Chart: fix a bug that happens when `options` is not provided to `draw`
+- Chart: fix an animation bug when clicking a legend item
+- test: use package `test`
+
 #### 0.1.14
 - *BREAKING CHANGE*: This version requires Dart 2.0.0 or later
 

@@ -256,7 +256,6 @@ class Chart {
   List<_Series> _seriesList;
 
   /// A list used to keep track of the visibility of the series.
-//  List<bool> _seriesVisible;
   List<_VisibilityState> _seriesStates;
 
   /// The color cache used by [_changeColorAlpha].
@@ -524,7 +523,7 @@ class Chart {
 
   /// Draws the current animation frame.
   ///
-  /// If [time] is `null`, draws the last frame.
+  /// If [time] is `null`, draws the last frame (i.e. no animation).
   void _drawFrame(num time) {
     var percent = 1.0;
     var duration = _options['animation']['duration'];
@@ -556,7 +555,7 @@ class Chart {
 
     if (percent < 1.0) {
       _animationFrameId = window.requestAnimationFrame(_drawFrame);
-    } else {
+    } else if (time != null) {
       _animationEnd();
     }
   }
@@ -870,7 +869,7 @@ class Chart {
     _dataColumnsChangeSub =
         dataTable.onColumnsChange.listen(_dataColumnsChanged);
     _dataRowsChangeSub = dataTable.onRowsChange.listen(_dataRowsChanged);
-    _options = mergeMap(mergeMap({}, options), _defaultOptions);
+    _options = mergeMaps(_defaultOptions, options);
     _easingFunction = getEasingFunction(_options['animation']['easing']);
     _initializeLegend();
     _initializeTooltip();

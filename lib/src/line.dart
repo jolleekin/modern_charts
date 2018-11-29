@@ -509,6 +509,6 @@ class LineChart extends _TwoAxisChart {
   }
 
   LineChart(Element container) : super(container) {
-    _defaultOptions = extendMap(globalOptions, _lineChartDefaultOptions);
+    _defaultOptions = mergeMaps(globalOptions, _lineChartDefaultOptions);
   }
 }

@@ -287,6 +287,6 @@ class PieChart extends Chart {
   }
 
   PieChart(Element container) : super(container) {
-    _defaultOptions = extendMap(globalOptions, _pieChartDefaultOptions);
+    _defaultOptions = mergeMaps(globalOptions, _pieChartDefaultOptions);
   }
 }

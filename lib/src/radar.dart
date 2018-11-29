@@ -483,7 +483,7 @@ class RadarChart extends Chart {
   }
 
   RadarChart(Element container) : super(container) {
-    _defaultOptions = extendMap(globalOptions, _radarChartDefaultOptions);
+    _defaultOptions = mergeMaps(globalOptions, _radarChartDefaultOptions);
   }
 
   @override

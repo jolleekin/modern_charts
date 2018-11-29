@@ -372,6 +372,6 @@ class BarChart extends _TwoAxisChart {
   }
 
   BarChart(Element container) : super(container) {
-    _defaultOptions = extendMap(globalOptions, _barChartDefaultOptions);
+    _defaultOptions = mergeMaps(globalOptions, _barChartDefaultOptions);
   }
 }

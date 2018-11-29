@@ -1,52 +1,62 @@
+import 'package:test/test.dart';
+
 import 'package:modern_charts/src/datatable.dart';
 
-String toFixedLengthString(obj, int length) => '$obj'.padRight(length);
-
-void printTable(DataTable dt) {
-  var sb = StringBuffer();
-  for (var row in dt.rows) {
-    var first = true;
-    for (var col in dt.columns) {
-      if (!first) sb.write(',');
-      sb.write(toFixedLengthString(row[col.index], 20));
-      first = false;
-    }
-    sb.writeln();
-  }
-  print(sb.toString());
-}
-
-void onChange(record) {
-  print(record);
-}
+DataTable createDataTable() => DataTable([
+      ['Browser', 'Share'],
+      ['Chrome', 35],
+      ['IE', 30],
+      ['Firefox', 20]
+    ]);
 
 void main() {
-  var dt = DataTable([
-    ['Browser', 'Share'],
-    ['Chrome', 35],
-    ['IE', 30],
-    ['Firefox', 20]
-  ]);
-  dt.onCellChange.listen(onChange);
-  dt.onColumnsChange.listen(onChange);
-  dt.onRowsChange.listen(onChange);
-  printTable(dt);
+  test('columns', () {
+    final table = createDataTable();
+    expect(table.columns.length, equals(2));
+    expect(table.columns[0].name, equals('Browser'));
+  });
 
-  dt.columns.insert(1, DataColumn('Latest Version', num));
-  printTable(dt);
+  test('getColumnIndexByName', () {
+    final table = createDataTable();
+    expect(table.getColumnIndexByName('Share'), equals(1));
+    expect(table.getColumnIndexByName('X'), equals(-1));
+  });
 
-  dt.rows.add(['Opera', 10, 5]);
-  printTable(dt);
+  test('getColumnValues', () {
+    final table = createDataTable();
+    expect(table.getColumnValues(1), orderedEquals([35, 30, 20]));
+  });
 
-  dt.rows.removeRange(1, 3);
-  printTable(dt);
+  test('rows', () {
+    final table = createDataTable();
+    expect(table.rows.length, equals(3));
+    expect(table.rows[1].toList(), orderedEquals(['IE', 30]));
+  });
 
-  dt.rows[0]['Latest Version'] = 38;
-  printTable(dt);
+  test('columns.insert', () {
+    final table = createDataTable();
+    table.columns.insert(1, DataColumn('Latest Version', num));
+    expect(table.columns.length, equals(3));
+    expect(table.columns[1].name, equals('Latest Version'));
+  });
 
-  dt.rows.insertAll(1, [
-    ['Safari', null, 4],
-    ['Other', null, 3]
-  ]);
-  printTable(dt);
+  test('rows.add', () {
+    final table = createDataTable();
+    table.rows.add(['Opera', 10, 'discarded']);
+    expect(table.rows.length, equals(4));
+    expect(table.rows.last.toList(), orderedEquals(['Opera', 10]));
+  });
+
+  test('rows.removeRange', () {
+    final table = createDataTable();
+    table.rows.removeRange(0, 3);
+    expect(table.rows, isEmpty);
+  });
+
+  test('cells', () {
+    final table = createDataTable();
+    expect(table.rows[0][0], equals('Chrome'));
+    table.rows[0][0] = 'Unknown';
+    expect(table.rows[0][0], equals('Unknown'));
+  });
 }

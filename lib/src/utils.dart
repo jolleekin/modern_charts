@@ -131,7 +131,7 @@ List<Point> calculateControlPoints(Point p1, Point p2, Point p3, num t) {
   var v13 = p3 - p1;
   var cp1 = p2 - v13 * fa;
   var cp2 = p2 + v13 * fb;
-  return [cp1, cp2];
+  return <Point>[cp1, cp2];
 }
 
 /// Returns the number of decimal digits of [value].
@@ -141,55 +141,14 @@ int getDecimalPlaces(num value) {
   return '$value.0'.split('.')[1].length;
 }
 
-/// Recursively merges [src] into [dst].
-///
-/// Values in [dst] override values in [src].
-/// [dst] can be `null`.
-///
-/// Keys that exist in [dst] but not in [src] will be removed.
-///
-/// Returns [dst].
-Map mergeMap(Map dst, Map src) {
-  for (var k in dst.keys.toList()) {
-    if (!src.containsKey(k)) dst.remove(k);
+/// Deeply merges [map1] and [map2] into a new [Map].
+Map mergeMaps(Map map1, Map map2) {
+  final result = {};
+  cb(k, v) {
+    result[k] = v is Map ? mergeMaps(result[k], v) : v;
   }
-  src.forEach((k, v) {
-    if (v is Map) {
-      if (!dst.containsKey(k)) dst[k] = {};
-      mergeMap(dst[k], v);
-    } else {
-      if (dst.containsKey(k)) return;
-      if (v is List) {
-        dst[k] = List.from(v);
-      } else {
-        dst[k] = v;
-      }
-    }
-  });
-  return dst;
-}
-
-/// Creates a deep copy of [src].
-Map cloneMap(Map src) {
-  var result = {};
-  src.forEach((k, v) {
-    if (v is Map) {
-      result[k] = cloneMap(v);
-    } else if (v is List) {
-      result[k] = List.from(v);
-    } else {
-      result[k] = v;
-    }
-  });
-  return result;
-}
-
-/// Creates a new map by cloning [src] and extending that copy with [ext].
-Map extendMap(Map src, Map ext) {
-  var result = cloneMap(src);
-  ext.forEach((k, v) {
-    result[k] = v;
-  });
+  map1?.forEach(cb);
+  map2?.forEach(cb);
   return result;
 }
 

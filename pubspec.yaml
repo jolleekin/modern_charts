@@ -1,5 +1,5 @@
 name: modern_charts
-version: 0.1.14
+version: 0.1.15
 author: Man Hoang <jolleekin@outlook.com>
 description: A package for creating simple yet modern looking charts.
 environment:
@@ -11,3 +11,4 @@ dependencies:
 dev_dependencies:
   build_runner: ^1.1.2
   build_web_compilers: ^0.4.4
+  test: ^1.5.1
