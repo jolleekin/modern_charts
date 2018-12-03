@@ -1,3 +1,7 @@
+#### 0.1.16
+- pubspec: fix the documentation link
+- example: move files from `example/web` to `example`
+
 #### 0.1.15
 - Chart: fix a bug that happens when `options` is not provided to `draw`
 - Chart: fix an animation bug when clicking a legend item

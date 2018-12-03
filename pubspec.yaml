@@ -1,11 +1,11 @@
 name: modern_charts
-version: 0.1.15
+version: 0.1.16
 author: Man Hoang <jolleekin@outlook.com>
 description: A package for creating simple yet modern looking charts.
 environment:
   sdk: '>=2.0.0 <3.0.0'
 homepage: https://github.com/jolleekin/modern_charts
-documentation: https://github.com/jolleekin/modern_charts/wiki/Docs
+documentation: https://github.com/jolleekin/modern_charts/wiki
 dependencies:
   intl: ^0.15.7
 dev_dependencies:
