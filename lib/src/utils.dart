@@ -143,10 +143,11 @@ int getDecimalPlaces(num value) {
 
 /// Deeply merges [map1] and [map2] into a new [Map].
 Map mergeMaps(Map map1, Map map2) {
-  final result = {};
+  var result = {};
   cb(k, v) {
     result[k] = v is Map ? mergeMaps(result[k], v) : v;
   }
+
   map1?.forEach(cb);
   map2?.forEach(cb);
   return result;

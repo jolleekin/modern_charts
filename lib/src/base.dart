@@ -757,7 +757,7 @@ class Chart {
     container.append(_tooltip);
 
     _mouseMoveSub?.cancel();
-    _mouseMoveSub = window.onMouseMove.listen(_mouseMove);
+    _mouseMoveSub = container.onMouseMove.listen(_mouseMove);
   }
 
   /// Returns the position of the tooltip based on [_focusedEntityIndex].
@@ -877,8 +877,6 @@ class Chart {
   }
 
   /// Resizes the chart to fit the new size of the container.
-  ///
-  /// This method is automatically called when the browser window is resized.
   void resize([bool forceRedraw = false]) {
     var w = container.clientWidth;
     var h = container.clientHeight;
@@ -922,8 +920,12 @@ class Chart {
   ///
   ///  This method should be called after [dataTable] has been modified.
   // TODO: handle updates while animation is happening.
-  void update() {
+  void update([Map options]) {
     if (_width == 0 || _height == 0) return;
+
+    if (options != null) {
+      _options = mergeMaps(_options, options);
+    }
 
     // This call is redundant for row and column changes but necessary for
     // cell changes.
@@ -1359,8 +1361,8 @@ class _TwoAxisChart extends Chart {
   _TwoAxisChart(Element container) : super(container);
 
   @override
-  void update() {
-    super.update();
+  void update([Map options]) {
+    super.update(options);
     _calculateAverageYValues();
   }
 }

@@ -1,3 +1,8 @@
+#### 0.1.17
+- Chart: listen for `mousemove` on the container rather than `window`
+- Chart: allow updating the drawing options via method `update`
+- PieChart: fix a bug where pies' inner and outer radii are not updated
+
 #### 0.1.16
 - pubspec: fix the documentation link
 - example: move files from `example/web` to `example`

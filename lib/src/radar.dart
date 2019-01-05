@@ -487,8 +487,8 @@ class RadarChart extends Chart {
   }
 
   @override
-  void update() {
-    super.update();
+  void update([Map options]) {
+    super.update(options);
     _calculateBoundingBoxes();
   }
 }

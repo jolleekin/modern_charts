@@ -1,7 +1,7 @@
 part of modern_charts;
 
 final _pieChartDefaultOptions = {
-  // num - If between 0 and 1, displays a donut chart. The hole with have a
+  // num - If between 0 and 1, displays a donut chart. The hole will have a
   // radius equal to this value times the radius of the chart.
   'pieHole': 0,
 
@@ -189,8 +189,7 @@ class PieChart extends Chart {
   }
 
   @override
-  List<String> _getLegendLabels() =>
-      _dataTable.getColumnValues<String>(0);
+  List<String> _getLegendLabels() => _dataTable.getColumnValues<String>(0);
 
   @override
   Point _getTooltipPosition() {
@@ -260,6 +259,8 @@ class PieChart extends Chart {
       pie.color = color;
       pie.highlightColor = _getHighlightColor(color);
       pie.center = _center;
+      pie.innerRadius = _innerRadius;
+      pie.outerRadius = _outerRadius;
 
       if (_seriesStates[i].index >= _VisibilityState.showing.index) {
         pie.startAngle = startAngle;
