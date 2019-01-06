@@ -1,7 +1,12 @@
 #### 0.1.17
+- Fix [#18](https://github.com/jolleekin/modern_charts/issues/18)
+- Chart: add `isInteractive`
+- Chart: add method `dispose`
+- Chart: deprecate `animating`, use `isAnimating` instead
 - Chart: listen for `mousemove` on the container rather than `window`
 - Chart: allow updating the drawing options via method `update`
 - PieChart: fix a bug where pies' inner and outer radii are not updated
+- utils: optimize `mergeMaps`
 
 #### 0.1.16
 - pubspec: fix the documentation link

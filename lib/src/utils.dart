@@ -142,7 +142,13 @@ int getDecimalPlaces(num value) {
 }
 
 /// Deeply merges [map1] and [map2] into a new [Map].
+///
+/// [map1] must not be `null`.
+///
+/// If [map2] is `null`, returns [map1].
 Map mergeMaps(Map map1, Map map2) {
+  if (map2 == null) return map1;
+
   var result = {};
   cb(k, v) {
     result[k] = v is Map ? mergeMaps(result[k], v) : v;

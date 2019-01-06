@@ -189,9 +189,7 @@ class Chart {
   /// The starting time of an animation cycle.
   num _animationStartTime;
 
-  StreamSubscription _dataCellChangeSub;
-  StreamSubscription _dataColumnsChangeSub;
-  StreamSubscription _dataRowsChangeSub;
+  final _dataTableSubscriptionTracker = StreamSubscriptionTracker();
 
   /// The data table.
   /// Row 0 contains column names.
@@ -224,8 +222,7 @@ class Chart {
   Element _legend;
 
   /// The subscription tracker for legend items' events.
-  StreamSubscriptionTracker _legendItemSubscriptionTracker =
-      StreamSubscriptionTracker();
+  final _legendItemSubscriptionTracker = StreamSubscriptionTracker();
 
   StreamSubscription _mouseMoveSub;
 
@@ -482,8 +479,6 @@ class Chart {
   /// Called when [_dataTable] has been changed.
   void _dataTableChanged() {
     _calculateDrawingSizes();
-    // Set this to `null` to indicate that the data table has been changed.
-    _seriesList = null;
     _seriesList = _createSeriesList(0, _dataTable.columns.length - 1);
   }
 
@@ -670,7 +665,7 @@ class Chart {
       _dataTable.columns.skip(1).map((e) => e.name).toList();
 
   void _legendItemClick(MouseEvent e) {
-    if (animating) return;
+    if (!isInteractive) return;
 
     var item = e.currentTarget as Element;
     var index = item.parent.children.indexOf(item);
@@ -688,14 +683,14 @@ class Chart {
   }
 
   void _legendItemMouseOver(MouseEvent e) {
-    if (animating) return;
+    if (!isInteractive) return;
     var item = e.currentTarget as Element;
     _focusedSeriesIndex = item.parent.children.indexOf(item);
     _drawFrame(null);
   }
 
   void _legendItemMouseOut(MouseEvent e) {
-    if (animating) return;
+    if (!isInteractive) return;
     _focusedSeriesIndex = -1;
     _drawFrame(null);
   }
@@ -716,7 +711,7 @@ class Chart {
   /// Handles `mousemove` or `touchstart` events to highlight appropriate
   /// points/bars/pies/... as well as update the tooltip.
   void _mouseMove(MouseEvent e) {
-    if (animating || e.buttons != 0) return;
+    if (!isInteractive || e.buttons != 0) return;
 
     var rect = _context.canvas.getBoundingClientRect();
     var x = e.client.x - rect.left;
@@ -847,8 +842,17 @@ class Chart {
     container.append(_context.canvas);
   }
 
+  @Deprecated('Use [isAnimating] instead')
+  bool get animating => isAnimating;
+
   /// Whether the chart is animating.
-  bool get animating => _animationStartTime != null;
+  bool get isAnimating => _animationStartTime != null;
+
+  /// Whether the chart is interactive.
+  ///
+  /// This property returns `false` if the chart is animating or there are no
+  /// series to draw.
+  bool get isInteractive => !isAnimating && _seriesList != null;
 
   /// The element that contains this chart.
   final Element container;
@@ -856,19 +860,31 @@ class Chart {
   /// The data table that stores chart data.
   DataTable get dataTable => _dataTable;
 
+  /// Disposes of resources used by this chart. The chart will become unusable
+  /// until [draw] is called again.
+  ///
+  /// Be sure to call this method when the chart is no longer used to avoid any
+  /// memory leaks.
+  ///
+  /// @mustCallSuper
+  void dispose() {
+    // This causes [canHandleInteraction] to be `false`.
+    _seriesList = null;
+    _mouseMoveSub?.cancel();
+    _mouseMoveSub = null;
+    _dataTableSubscriptionTracker.clear();
+    _legendItemSubscriptionTracker.clear();
+  }
+
   /// Draws the chart given a data table [dataTable] and an optional set of
   /// options [options].
   void draw(DataTable dataTable, [Map options]) {
-    if (_dataCellChangeSub != null) {
-      _dataCellChangeSub.cancel();
-      _dataColumnsChangeSub.cancel();
-      _dataRowsChangeSub.cancel();
-    }
+    dispose();
     _dataTable = dataTable;
-    _dataCellChangeSub = dataTable.onCellChange.listen(_dataCellChanged);
-    _dataColumnsChangeSub =
-        dataTable.onColumnsChange.listen(_dataColumnsChanged);
-    _dataRowsChangeSub = dataTable.onRowsChange.listen(_dataRowsChanged);
+    _dataTableSubscriptionTracker
+      ..add(dataTable.onCellChange.listen(_dataCellChanged))
+      ..add(dataTable.onColumnsChange.listen(_dataColumnsChanged))
+      ..add(dataTable.onRowsChange.listen(_dataRowsChanged));
     _options = mergeMaps(_defaultOptions, options);
     _easingFunction = getEasingFunction(_options['animation']['easing']);
     _initializeLegend();
