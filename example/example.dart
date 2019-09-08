@@ -71,7 +71,7 @@ void createBarChart() {
       'crosshair': {'enabled': true},
       'labels': {'maxRotation': 90, 'minRotation': 0}
     },
-    'yAxis': {'maxValue': 30, 'minInterval': 5},
+    'yAxis': {'minValue': 0, 'minInterval': 5},
     'title': {'text': 'Bar Chart Demo'},
     'tooltip': {'valueFormatter': (value) => '$value units'}
   };

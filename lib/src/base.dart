@@ -1126,16 +1126,19 @@ class _TwoAxisChart extends Chart {
 
     // x-axis labels and x-axis's position.
 
+    var rowCount = _dataTable.rows.length;
     _xLabels = <String>[];
-    for (var i = 0; i < _dataTable.rows.length; i++) {
+    for (var i = 0; i < rowCount; i++) {
       _xLabels.add(_dataTable.rows[i][0].toString());
     }
     _xLabelMaxWidth = calculateMaxTextWidth(
         _context, _getFont(_options['xAxis']['labels']['style']), _xLabels);
-    if (_xLabelOffsetFactor > 0 && _xLabels.length > 1) {
-      _xLabelHop = _xAxisLength / _xLabels.length;
+    if (_xLabelOffsetFactor > 0 && rowCount > 1) {
+      _xLabelHop = _xAxisLength / rowCount;
+    } else if (rowCount > 1) {
+      _xLabelHop = _xAxisLength / (rowCount - 1);
     } else {
-      _xLabelHop = _xAxisLength / (_xLabels.length - 1);
+      _xLabelHop = _xAxisLength;
     }
     _xLabelRotation = 0;
 
@@ -1145,7 +1148,7 @@ class _TwoAxisChart extends Chart {
     const angles = [0, -45, 45, -90, 90];
 
     outer:
-    for (var step = 1; step <= _xLabels.length; step++) {
+    for (var step = 1; step <= rowCount; step++) {
       var scaledLabelHop = step * _xLabelHop;
       var minSpacing = max(.1 * scaledLabelHop, 10);
       for (var angle in angles) {
@@ -1367,9 +1370,11 @@ class _TwoAxisChart extends Chart {
   @override
   Point _getTooltipPosition() {
     var x = _xLabelX(_focusedEntityIndex) + _tooltipOffset;
-    var y = _averageYValues[_focusedEntityIndex] - _tooltip.offsetHeight ~/ 2;
+    var y = max(_xAxisTop - _yAxisLength,
+        _averageYValues[_focusedEntityIndex] - _tooltip.offsetHeight ~/ 2);
     if (x + _tooltip.offsetWidth > _width) {
       x -= _tooltip.offsetWidth + 2 * _tooltipOffset;
+      x = max(x, _yAxisLeft);
     }
     return Point(x, y);
   }
