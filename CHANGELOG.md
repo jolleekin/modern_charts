@@ -1,5 +1,9 @@
+### 0.1.19
+- Loosen the version constraint on package `intl`
+  (fix [#20](https://github.com/jolleekin/modern_charts/issues/20))
+
 ### 0.1.18
-- Fix #19
+- Fix [#19](https://github.com/jolleekin/modern_charts/issues/19)
 - BarChart, LineChart: make sure the tooltip stay within the area defined by the
   two axes
 - Upgrade dependencies
