@@ -22,12 +22,12 @@ double log10(num value) => log(value) / ln10;
 lerp(start, end, double f) => start + (end - start) * f;
 
 /// Tests if [value] is in range [min]..[max], inclusively.
-bool isInRange(num value, num min, num max) => value >= min && value <= max;
+bool isInRange(num value, num min, num? max) => value >= min && value <= max!;
 
 Point<double> polarToCartesian(Point center, num radius, num angle) {
-  var x = center.x + radius * cos(angle);
-  var y = center.y + radius * sin(angle);
-  return Point<double>(x, y);
+  num x = center.x + radius * cos(angle);
+  num y = center.y + radius * sin(angle);
+  return Point<double>(x as double, y as double);
 }
 
 /// Rounds [value] to [places] decimal places.
@@ -38,7 +38,7 @@ double roundToPlaces(double value, int places) {
 }
 
 /// Converts [hexColor] and [alpha] to an RGBA color string.
-String hexToRgba(String hexColor, num alpha) {
+String hexToRgba(String hexColor, num? alpha) {
   var componentLength = hexColor.length ~/ 3;
   var i = 1 + componentLength;
   var j = i + componentLength;
@@ -56,17 +56,17 @@ String hexToRgba(String hexColor, num alpha) {
 /// Returns the hyphenated version of [s].
 String hyphenate(String s) {
   return s.replaceAllMapped(RegExp('[A-Z]'), (Match m) {
-    return '-' + m[0].toLowerCase();
+    return '-' + m[0]!.toLowerCase();
   });
 }
 
 /// Returns the maximum value in a [DataTable].
 num findMaxValue(DataTable table) {
   var maxValue = double.negativeInfinity;
-  for (var row in table.rows) {
-    for (var col in table.columns) {
-      var value = row[col.index];
-      if (value is num && value > maxValue) maxValue = value;
+  for (var row in table.rows!) {
+    for (var col in table.columns!) {
+      var value = row![col!.index];
+      if (value is num && value > maxValue) maxValue = value as double;
     }
   }
   return maxValue;
@@ -75,10 +75,10 @@ num findMaxValue(DataTable table) {
 /// Returns the minimum value in a [DataTable].
 num findMinValue(DataTable table) {
   var minValue = double.infinity;
-  for (var row in table.rows) {
-    for (var col in table.columns) {
-      var value = row[col.index];
-      if (value is num && value < minValue) minValue = value;
+  for (var row in table.rows!) {
+    for (var col in table.columns!) {
+      var value = row![col!.index];
+      if (value is num && value < minValue) minValue = value as double;
     }
   }
   return minValue;
@@ -88,12 +88,12 @@ num findMinValue(DataTable table) {
 /// - the axis range [range]
 /// - the desired number of steps [targetSteps]
 /// - and the minimum interval [minInterval]
-num calculateInterval(num range, int targetSteps, [num minInterval]) {
+num calculateInterval(num range, int targetSteps, [num? minInterval]) {
   var interval = range / targetSteps;
   var mag = log10(interval).floor();
   var magPow = pow(10, mag).toDouble();
   if (minInterval != null) {
-    magPow = max(magPow, minInterval);
+    magPow = max(magPow, minInterval as double);
   }
   var msd = (interval / magPow).round();
   if (msd > 5) {
@@ -111,8 +111,8 @@ double calculateMaxTextWidth(
   var result = 0.0;
   context.font = font;
   for (var text in texts) {
-    var width = context.measureText(text).width;
-    if (result < width) result = width;
+    var width = context.measureText(text).width!;
+    if (result < width) result = width as double;
   }
   return result;
 }
@@ -146,7 +146,7 @@ int getDecimalPlaces(num value) {
 /// [map1] must not be `null`.
 ///
 /// If [map2] is `null`, returns [map1].
-Map mergeMaps(Map map1, Map map2) {
+Map? mergeMaps(Map? map1, Map? map2) {
   if (map2 == null) return map1;
 
   var result = {};
@@ -155,7 +155,7 @@ Map mergeMaps(Map map1, Map map2) {
   }
 
   map1?.forEach(cb);
-  map2?.forEach(cb);
+  map2.forEach(cb);
   return result;
 }
 

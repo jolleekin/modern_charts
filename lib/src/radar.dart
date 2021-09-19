@@ -108,29 +108,29 @@ final _radarChartDefaultOptions = {
 };
 
 class _PolarPoint extends _Entity {
-  num oldRadius;
-  num oldAngle;
-  num oldPointRadius;
+  num? oldRadius;
+  num? oldAngle;
+  num? oldPointRadius;
 
-  num radius;
-  num angle;
-  num pointRadius;
+  num? radius;
+  num? angle;
+  num? pointRadius;
 
-  Point center;
+  Point? center;
 
   @override
-  void draw(CanvasRenderingContext2D ctx, double percent, bool highlight) {
+  void draw(CanvasRenderingContext2D? ctx, double percent, bool highlight) {
     var r = lerp(oldRadius, radius, percent);
     var a = lerp(oldAngle, angle, percent);
     var pr = lerp(oldPointRadius, pointRadius, percent);
-    var p = polarToCartesian(center, r, a);
+    var p = polarToCartesian(center!, r, a);
     if (highlight) {
-      ctx.fillStyle = highlightColor;
+      ctx!.fillStyle = highlightColor;
       ctx.beginPath();
       ctx.arc(p.x, p.y, 2 * pr, 0, _2pi);
       ctx.fill();
     }
-    ctx.fillStyle = color;
+    ctx!.fillStyle = color;
     ctx.beginPath();
     ctx.arc(p.x, p.y, pr, 0, _2pi);
     ctx.fill();
@@ -147,30 +147,31 @@ class _PolarPoint extends _Entity {
 }
 
 class RadarChart extends Chart {
-  Point _center;
-  num _radius;
-  num _angleInterval;
-  List<String> _xLabels;
-  List<String> _yLabels;
-  num _yMaxValue;
-  num _yLabelHop;
-  ValueFormatter _yLabelFormatter;
+  Point? _center;
+  num? _radius;
+  late num _angleInterval;
+  late List<String?> _xLabels;
+  late List<String> _yLabels;
+  late num _yMaxValue;
+  late num _yLabelHop;
+  ValueFormatter? _yLabelFormatter;
 
   /// Each element is the bounding box of each entity group.
   /// A `null` element means the group has no visible entities.
-  List<Rectangle> _boundingBoxes;
+  late List<Rectangle?> _boundingBoxes;
 
   num _getAngle(int entityIndex) => entityIndex * _angleInterval - _pi_2;
 
-  num _valueToRadius(num value) =>
-      (value != null) ? value * _radius / _yMaxValue : 0.0;
+  num _valueToRadius(num? value) =>
+      (value != null) ? value * _radius! / _yMaxValue : 0.0;
 
   void _calculateBoundingBoxes() {
-    if (!_options['tooltip']['enabled']) return;
+    if (!_options!['tooltip']['enabled']) return;
 
-    var seriesCount = _seriesList.length;
-    var entityCount = _seriesList.first.entities.length;
-    _boundingBoxes = List<Rectangle>(entityCount);
+    var seriesCount = _seriesList!.length;
+    var entityCount = _seriesList!.first.entities.length;
+    _boundingBoxes = List<Rectangle<num>?>.filled(entityCount, null);
+
     for (var i = 0; i < entityCount; i++) {
       var minX = double.maxFinite;
       var minY = double.maxFinite;
@@ -181,10 +182,10 @@ class RadarChart extends Chart {
         if (_seriesStates[j] == _VisibilityState.hidden) continue;
         if (_seriesStates[j] == _VisibilityState.hiding) continue;
 
-        var pp = _seriesList[j].entities[i] as _PolarPoint;
+        var pp = _seriesList![j].entities[i] as _PolarPoint;
         if (pp.value == null) continue;
 
-        var cp = polarToCartesian(pp.center, pp.radius, pp.angle);
+        var cp = polarToCartesian(pp.center!, pp.radius!, pp.angle!);
         minX = min(minX, cp.x);
         minY = min(minY, cp.y);
         maxX = max(maxX, cp.x);
@@ -200,11 +201,11 @@ class RadarChart extends Chart {
   void _calculateDrawingSizes() {
     super._calculateDrawingSizes();
 
-    _xLabels = _dataTable.getColumnValues<String>(0);
+    _xLabels = _dataTable!.getColumnValues<String>(0);
     _angleInterval = _2pi / _xLabels.length;
 
     var rect = _seriesAndAxesBox;
-    var xLabelFontSize = _options['xAxis']['labels']['style']['fontSize'];
+    var xLabelFontSize = _options!['xAxis']['labels']['style']['fontSize'];
 
     // [_radius]*factor equals the height of the largest polygon.
     var factor = 1 + sin((_xLabels.length >> 1) * _angleInterval - _pi_2);
@@ -214,15 +215,15 @@ class RadarChart extends Chart {
         Point(rect.left + rect.width / 2, rect.top + rect.height / factor);
 
     // The minimum value on the y-axis is always zero.
-    var yInterval = _options['yAxis']['interval'];
+    var yInterval = _options!['yAxis']['interval'];
     if (yInterval == null) {
-      var yMinInterval = _options['yAxis']['minInterval'];
-      _yMaxValue = findMaxValue(_dataTable);
+      var yMinInterval = _options!['yAxis']['minInterval'];
+      _yMaxValue = findMaxValue(_dataTable!);
       yInterval = calculateInterval(_yMaxValue, 3, yMinInterval);
       _yMaxValue = (_yMaxValue / yInterval).ceilToDouble() * yInterval;
     }
 
-    _yLabelFormatter = _options['yAxis']['labels']['formatter'];
+    _yLabelFormatter = _options!['yAxis']['labels']['formatter'];
     if (_yLabelFormatter == null) {
       var decimalPlaces = getDecimalPlaces(yInterval);
       var numberFormat = NumberFormat.decimalPattern()
@@ -235,16 +236,16 @@ class RadarChart extends Chart {
     _yLabels = <String>[];
     var value = 0.0;
     while (value <= _yMaxValue) {
-      _yLabels.add(_yLabelFormatter(value));
+      _yLabels.add(_yLabelFormatter!(value));
       value += yInterval;
     }
 
-    _yLabelHop = _radius / (_yLabels.length - 1);
+    _yLabelHop = _radius! / (_yLabels.length - 1);
 
     // Tooltip.
 
     _tooltipValueFormatter =
-        _options['tooltip']['valueFormatter'] ?? _yLabelFormatter;
+        _options!['tooltip']['valueFormatter'] ?? _yLabelFormatter;
   }
 
   @override
@@ -254,18 +255,18 @@ class RadarChart extends Chart {
 
     // x-axis grid lines (i.e. concentric equilateral polygons).
 
-    var lineWidth = _options['xAxis']['gridLineWidth'];
+    var lineWidth = _options!['xAxis']['gridLineWidth'];
     if (lineWidth > 0) {
       _axesContext
         ..lineWidth = lineWidth
-        ..strokeStyle = _options['xAxis']['gridLineColor']
+        ..strokeStyle = _options!['xAxis']['gridLineColor']
         ..beginPath();
       var radius = _radius;
       for (var i = yLabelCount - 1; i >= 1; i--) {
         var angle = -_pi_2 + _angleInterval;
-        _axesContext.moveTo(_center.x, _center.y - radius);
+        _axesContext.moveTo(_center!.x, _center!.y - radius!);
         for (var j = 0; j < xLabelCount; j++) {
-          var point = polarToCartesian(_center, radius, angle);
+          var point = polarToCartesian(_center!, radius, angle);
           _axesContext.lineTo(point.x, point.y);
           angle += _angleInterval;
         }
@@ -276,17 +277,17 @@ class RadarChart extends Chart {
 
     // y-axis grid lines (i.e. radii from the center to the x-axis labels).
 
-    lineWidth = _options['yAxis']['gridLineWidth'];
+    lineWidth = _options!['yAxis']['gridLineWidth'];
     if (lineWidth > 0) {
       _axesContext
         ..lineWidth = lineWidth
-        ..strokeStyle = _options['yAxis']['gridLineColor']
+        ..strokeStyle = _options!['yAxis']['gridLineColor']
         ..beginPath();
       var angle = -_pi_2;
       for (var i = 0; i < xLabelCount; i++) {
-        var point = polarToCartesian(_center, _radius, angle);
+        var point = polarToCartesian(_center!, _radius!, angle);
         _axesContext
-          ..moveTo(_center.x, _center.y)
+          ..moveTo(_center!.x, _center!.y)
           ..lineTo(point.x, point.y);
         angle += _angleInterval;
       }
@@ -295,9 +296,9 @@ class RadarChart extends Chart {
 
     // y-axis labels - don't draw the first (at center) and the last ones.
 
-    var style = _options['yAxis']['labels']['style'];
-    var x = _center.x - _axisLabelMargin;
-    var y = _center.y - _yLabelHop;
+    var style = _options!['yAxis']['labels']['style'];
+    var x = _center!.x - _axisLabelMargin;
+    var y = _center!.y - _yLabelHop;
     _axesContext
       ..fillStyle = style['color']
       ..font = _getFont(style)
@@ -310,7 +311,7 @@ class RadarChart extends Chart {
 
     // x-axis labels.
 
-    style = _options['xAxis']['labels']['style'];
+    style = _options!['xAxis']['labels']['style'];
     _axesContext
       ..fillStyle = style['color']
       ..font = _getFont(style)
@@ -318,33 +319,33 @@ class RadarChart extends Chart {
       ..textBaseline = 'middle';
     var fontSize = style['fontSize'];
     var angle = -_pi_2;
-    var radius = _radius + _axisLabelMargin;
+    var radius = _radius! + _axisLabelMargin;
     for (var i = 0; i < xLabelCount; i++) {
-      _drawText(_axesContext, _xLabels[i], radius, angle, fontSize);
+      _drawText(_axesContext, _xLabels[i]!, radius, angle, fontSize);
       angle += _angleInterval;
     }
   }
 
   void _drawText(CanvasRenderingContext2D ctx, String text, num radius,
       num angle, num fontSize) {
-    var w = ctx.measureText(text).width;
-    var x = _center.x + cos(angle) * (radius + .5 * w);
-    var y = _center.y + sin(angle) * (radius + .5 * fontSize);
+    var w = ctx.measureText(text).width!;
+    num x = _center!.x + cos(angle) * (radius + .5 * w);
+    num y = _center!.y + sin(angle) * (radius + .5 * fontSize);
     ctx.fillText(text, x, y);
   }
 
   @override
   bool _drawSeries(double percent) {
-    var fillOpacity = _options['series']['fillOpacity'];
-    var seriesLineWidth = _options['series']['lineWidth'];
-    var markerOptions = _options['series']['markers'];
+    var fillOpacity = _options!['series']['fillOpacity'];
+    var seriesLineWidth = _options!['series']['lineWidth'];
+    var markerOptions = _options!['series']['markers'];
     var markerSize = markerOptions['size'];
     var pointCount = _xLabels.length;
 
-    for (var i = 0; i < _seriesList.length; i++) {
+    for (var i = 0; i < _seriesList!.length; i++) {
       if (_seriesStates[i] == _VisibilityState.hidden) continue;
 
-      var series = _seriesList[i];
+      var series = _seriesList![i];
       var scale = (i != _focusedSeriesIndex) ? 1 : 2;
 
       // Draw the polygon.
@@ -355,10 +356,9 @@ class RadarChart extends Chart {
         ..beginPath();
       for (var j = 0; j < pointCount; j++) {
         var point = series.entities[j] as _PolarPoint;
-        // TODO: Optimize.
         var radius = lerp(point.oldRadius, point.radius, percent);
         var angle = lerp(point.oldAngle, point.angle, percent);
-        var p = polarToCartesian(_center, radius, angle);
+        var p = polarToCartesian(_center!, radius, angle);
         if (j > 0) {
           _seriesContext.lineTo(p.x, p.y);
         } else {
@@ -400,14 +400,14 @@ class RadarChart extends Chart {
 
   @override
   int _getEntityGroupIndex(num x, num y) {
-    var p = Point(x - _center.x, y - _center.y);
-    if (p.magnitude >= _radius) return -1;
+    var p = Point(x - _center!.x, y - _center!.y);
+    if (p.magnitude >= _radius!) return -1;
     var angle = atan2(p.y, p.x);
-    var points = _seriesList.first.entities.cast<_PolarPoint>();
+    var points = _seriesList!.first.entities.cast<_PolarPoint>();
     for (var i = points.length - 1; i >= 0; i--) {
       if (_boundingBoxes[i] == null) continue;
 
-      var delta = angle - points[i].angle;
+      var delta = angle - points[i].angle!;
       if (delta.abs() < .5 * _angleInterval) return i;
       if ((delta + _2pi).abs() < .5 * _angleInterval) return i;
     }
@@ -416,12 +416,12 @@ class RadarChart extends Chart {
 
   @override
   Point _getTooltipPosition() {
-    var box = _boundingBoxes[_focusedEntityIndex];
-    var offset = _options['series']['markers']['size'] * 2 + 5;
+    var box = _boundingBoxes[_focusedEntityIndex!]!;
+    var offset = _options!['series']['markers']['size'] * 2 + 5;
     var x = box.right + offset;
-    var y = box.top + (box.height - _tooltip.offsetHeight) ~/ 2;
-    if (x + _tooltip.offsetWidth > _width)
-      x = box.left - _tooltip.offsetWidth - offset;
+    var y = box.top + (box.height - _tooltip!.offsetHeight) ~/ 2;
+    if (x + _tooltip!.offsetWidth > _width!)
+      x = box.left - _tooltip!.offsetWidth - offset;
     return Point(x, y);
   }
 
@@ -440,14 +440,14 @@ class RadarChart extends Chart {
       ..oldPointRadius = 0
       ..radius = _valueToRadius(value)
       ..angle = angle
-      ..pointRadius = _options['series']['markers']['size'];
+      ..pointRadius = _options!['series']['markers']['size'];
   }
 
   @override
-  void _updateSeries([int index]) {
-    var entityCount = _dataTable.rows.length;
-    for (var i = 0; i < _seriesList.length; i++) {
-      var series = _seriesList[i];
+  void _updateSeries() {
+    var entityCount = _dataTable!.rows!.length;
+    for (var i = 0; i < _seriesList!.length; i++) {
+      var series = _seriesList![i];
       var color = _getColor(i);
       var highlightColor = _getHighlightColor(color);
       var visible = _seriesStates[i].index >= _VisibilityState.showing.index;
@@ -468,8 +468,9 @@ class RadarChart extends Chart {
   @override
   void _seriesVisibilityChanged(int index) {
     var visible = _seriesStates[index].index >= _VisibilityState.showing.index;
-    var markerSize = _options['series']['markers']['size'];
-    for (_PolarPoint p in _seriesList[index].entities) {
+    var markerSize = _options!['series']['markers']['size'];
+    for (_PolarPoint p
+        in _seriesList![index].entities as Iterable<_PolarPoint>) {
       if (visible) {
         p.radius = _valueToRadius(p.value);
         p.pointRadius = markerSize;
@@ -487,7 +488,7 @@ class RadarChart extends Chart {
   }
 
   @override
-  void update([Map options]) {
+  void update([Map? options]) {
     super.update(options);
     _calculateBoundingBoxes();
   }
