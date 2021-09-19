@@ -252,7 +252,7 @@ class DataRowCollection extends DataCollectionBase<DataRow> {
   /// Each element in [iterable] can be a [DataRow] or a [List].
   @override
   void addAll(Iterable iterable) {
-    super.addAll(iterable.map(_toDataRow));
+    super.addAll(iterable.map(_toDataRow).toList());
   }
 
   /// Inserts [value] at position [index] in this collection.
