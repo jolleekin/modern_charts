@@ -167,7 +167,7 @@ class PieChart extends Chart {
     var pies = _seriesList!.first.entities;
     var labelOptions = _options!['series']['labels'];
     _seriesContext.font = _getFont(labelOptions['style']);
-    for (_Pie pie in pies as Iterable<_Pie>) {
+    for (_Pie pie in pies.cast<_Pie>()) {
       if (pie.isEmpty && percent == 1.0) continue;
       var highlight =
           pie.index == _focusedSeriesIndex || pie.index == _focusedEntityIndex;

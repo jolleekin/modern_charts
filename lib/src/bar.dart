@@ -270,7 +270,7 @@ class BarChart extends _TwoAxisChart {
       var series = _seriesList![i];
 
       // Draw the bars.
-      for (_Bar bar in series.entities as Iterable<_Bar>) {
+      for (_Bar bar in series.entities.cast<_Bar>()) {
         if (bar.value == null) continue;
         bar.draw(_seriesContext, percent, false);
       }
