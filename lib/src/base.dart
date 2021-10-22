@@ -740,8 +740,7 @@ class Chart {
     var opt = _options!['tooltip'];
     if (!opt['enabled']) return;
 
-    _tooltipLabelFormatter = opt['labelFormatter'] ??
-        _defaultLabelFormatter as String Function(String?);
+    _tooltipLabelFormatter = opt['labelFormatter'] ?? _defaultLabelFormatter;
     _tooltipValueFormatter = opt['valueFormatter'] ?? _defaultValueFormatter;
     _tooltip = _createTooltipOrLegend(opt['style'])
       ..hidden = true
