@@ -134,7 +134,7 @@ const _titlePadding = 6;
 /// labels also have left margin.
 const _axisLabelMargin = 12;
 
-typedef String LabelFormatter(String? label);
+typedef String LabelFormatter(String label);
 
 typedef String ValueFormatter(value);
 
@@ -167,7 +167,7 @@ abstract class _Entity {
 
 class _Series {
   _Series(this.name, this.color, this.highlightColor, this.entities);
-  String? name;
+  String name;
   String color;
   String highlightColor;
   List<_Entity> entities;
@@ -403,7 +403,7 @@ class Chart {
     var result = <_Series>[];
     var entityCount = _dataTable!.rows!.length;
     while (start < end) {
-      var name = _dataTable!.columns![start + 1]!.name;
+      var name = _dataTable!.columns![start + 1]!.name!;
       var color = _getColor(start);
       var highlightColor = _getHighlightColor(color);
       var entities =

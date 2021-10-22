@@ -116,7 +116,7 @@ class GaugeChart extends Chart {
         ..fillStyle = style['color']
         ..font = _getFont(style)
         ..textAlign = 'center'
-        ..fillText(gauge.name!, x, y);
+        ..fillText(gauge.name, x, y);
     }
     return false;
   }

@@ -47,7 +47,7 @@ class _Pie extends _Entity {
   num? outerRadius;
 
   // [_Series] field.
-  String? name;
+  String name = '';
 
   bool get isEmpty => startAngle == endAngle;
 
@@ -208,7 +208,7 @@ class PieChart extends Chart {
     // Override the colors.
     color = _getColor(entityIndex);
     highlightColor = _changeColorAlpha(color, .5);
-    var name = _dataTable!.rows![entityIndex]![0];
+    var name = _dataTable!.rows![entityIndex]![0] as String;
     var startAngle = _startAngle;
     if (entityIndex > 0 && _seriesList != null) {
       var prevPie = _seriesList![0].entities[entityIndex - 1] as _Pie;
