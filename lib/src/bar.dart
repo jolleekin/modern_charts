@@ -292,7 +292,7 @@ class BarChart extends _TwoAxisChart {
           ..font = _getFont(opt['style'])
           ..textAlign = 'center'
           ..textBaseline = 'alphabetic';
-        for (_Bar bar in series.entities as Iterable<_Bar>) {
+        for (_Bar bar in series.entities.cast<_Bar>()) {
           if (bar.value == null) continue;
           num x = bar.left! + .5 * bar.width!;
           var y = _xAxisTop - bar.height! - 5;
