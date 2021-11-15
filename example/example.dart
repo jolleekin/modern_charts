@@ -22,7 +22,7 @@ Element createContainer() {
 //    ..style.width = '800px'
     ..style.maxWidth = '100%'
     ..style.marginBottom = '50px';
-  document.body.append(e);
+  document.body!.append(e);
   return e;
 }
 
@@ -45,14 +45,14 @@ void createBarChart() {
   ]);
 
   var changeDataButton = ButtonElement()..text = 'Change data';
-  document.body.append(changeDataButton);
+  document.body!.append(changeDataButton);
 
   var insertRemoveColumnButton = ButtonElement()
     ..text = 'Insert/remove data column';
-  document.body.append(insertRemoveColumnButton);
+  document.body!.append(insertRemoveColumnButton);
 
   var insertRemoveRowButton = ButtonElement()..text = 'Insert/remove data row';
-  document.body.append(insertRemoveRowButton);
+  document.body!.append(insertRemoveRowButton);
 
   var container = createContainer();
 
@@ -87,9 +87,9 @@ void createBarChart() {
 
   changeDataButton.onClick.listen((_) {
     disableAllButtons();
-    for (var row in table.rows) {
-      for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand(2, 20);
+    for (var row in table.rows!) {
+      for (var i = 1; i < table.columns!.length; i++) {
+        row![i] = rand(2, 20);
       }
     }
     chart.update();
@@ -99,12 +99,12 @@ void createBarChart() {
   insertRemoveColumnButton.onClick.listen((_) {
     disableAllButtons();
     if (insertColumn) {
-      table.columns.insert(2, DataColumn('New series', num));
-      for (var row in table.rows) {
-        row[2] = rand(2, 20);
+      table.columns!.insert(2, DataColumn('New series', num));
+      for (var row in table.rows!) {
+        row![2] = rand(2, 20);
       }
     } else {
-      table.columns.removeAt(2);
+      table.columns!.removeAt(2);
     }
     insertColumn = !insertColumn;
     chart.update();
@@ -115,12 +115,12 @@ void createBarChart() {
     disableAllButtons();
     if (insertRow) {
       var values = <dynamic>['New'];
-      for (var i = 1; i < table.columns.length; i++) {
+      for (var i = 1; i < table.columns!.length; i++) {
         values.add(rand(2, 20));
       }
-      table.rows.insert(2, values);
+      table.rows!.insert(2, values);
     } else {
-      table.rows.removeAt(2);
+      table.rows!.removeAt(2);
     }
     insertRow = !insertRow;
     chart.update();
@@ -140,14 +140,14 @@ void createLineChart() {
   ]);
 
   var changeDataButton = ButtonElement()..text = 'Change data';
-  document.body.append(changeDataButton);
+  document.body!.append(changeDataButton);
 
   var insertRemoveColumnButton = ButtonElement()
     ..text = 'Insert/remove data column';
-  document.body.append(insertRemoveColumnButton);
+  document.body!.append(insertRemoveColumnButton);
 
   var insertRemoveRowButton = ButtonElement()..text = 'Insert/remove data row';
-  document.body.append(insertRemoveRowButton);
+  document.body!.append(insertRemoveRowButton);
 
   var container = createContainer();
 
@@ -178,9 +178,9 @@ void createLineChart() {
 
   changeDataButton.onClick.listen((_) {
     disableAllButtons();
-    for (var row in table.rows) {
-      for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand(2, 20);
+    for (var row in table.rows!) {
+      for (var i = 1; i < table.columns!.length; i++) {
+        row![i] = rand(2, 20);
       }
     }
     chart.update();
@@ -190,12 +190,12 @@ void createLineChart() {
   insertRemoveColumnButton.onClick.listen((_) {
     disableAllButtons();
     if (insertColumn) {
-      table.columns.insert(2, DataColumn('New series', num));
-      for (var row in table.rows) {
-        row[2] = rand(2, 20);
+      table.columns!.insert(2, DataColumn('New series', num));
+      for (var row in table.rows!) {
+        row![2] = rand(2, 20);
       }
     } else {
-      table.columns.removeAt(2);
+      table.columns!.removeAt(2);
     }
     insertColumn = !insertColumn;
     chart.update();
@@ -206,12 +206,12 @@ void createLineChart() {
     disableAllButtons();
     if (insertRow) {
       var values = <Object>['New'];
-      for (var i = 1; i < table.columns.length; i++) {
+      for (var i = 1; i < table.columns!.length; i++) {
         values.add(rand(2, 20));
       }
-      table.rows.insert(2, values);
+      table.rows!.insert(2, values);
     } else {
-      table.rows.removeAt(2);
+      table.rows!.removeAt(2);
     }
     insertRow = !insertRow;
     chart.update();
@@ -220,10 +220,10 @@ void createLineChart() {
 
 void createPieChart() {
   var changeDataButton = ButtonElement()..text = 'Change data';
-  document.body.append(changeDataButton);
+  document.body!.append(changeDataButton);
 
   var insertRemoveRowButton = ButtonElement()..text = 'Insert/remove data row';
-  document.body.append(insertRemoveRowButton);
+  document.body!.append(insertRemoveRowButton);
 
   var container = createContainer();
   var table = DataTable([
@@ -259,9 +259,9 @@ void createPieChart() {
 
   changeDataButton.onClick.listen((_) {
     disableAllButtons();
-    for (var row in table.rows) {
-      for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand(2, 25);
+    for (var row in table.rows!) {
+      for (var i = 1; i < table.columns!.length; i++) {
+        row![i] = rand(2, 25);
       }
     }
     chart.update();
@@ -272,9 +272,9 @@ void createPieChart() {
     insertRemoveRowButton.disabled = true;
     if (insertRow) {
       var values = ['New', 6];
-      table.rows.insert(2, values);
+      table.rows!.insert(2, values);
     } else {
-      table.rows.removeAt(2);
+      table.rows!.removeAt(2);
     }
     insertRow = !insertRow;
     chart.update();
@@ -294,14 +294,14 @@ void createRadarChart() {
   ]);
 
   var changeDataButton = ButtonElement()..text = 'Change data';
-  document.body.append(changeDataButton);
+  document.body!.append(changeDataButton);
 
   var insertRemoveColumnButton = ButtonElement()
     ..text = 'Insert/remove data column';
-  document.body.append(insertRemoveColumnButton);
+  document.body!.append(insertRemoveColumnButton);
 
   var insertRemoveRowButton = ButtonElement()..text = 'Insert/remove data row';
-  document.body.append(insertRemoveRowButton);
+  document.body!.append(insertRemoveRowButton);
 
   var container = createContainer();
 
@@ -331,9 +331,9 @@ void createRadarChart() {
 
   changeDataButton.onClick.listen((_) {
     disableAllButtons();
-    for (var row in table.rows) {
-      for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand(5, 20);
+    for (var row in table.rows!) {
+      for (var i = 1; i < table.columns!.length; i++) {
+        row![i] = rand(5, 20);
       }
     }
     chart.update();
@@ -343,12 +343,12 @@ void createRadarChart() {
   insertRemoveColumnButton.onClick.listen((_) {
     disableAllButtons();
     if (insertColumn) {
-      table.columns.insert(2, DataColumn('New series', num));
-      for (var row in table.rows) {
-        row[2] = rand(5, 20);
+      table.columns!.insert(2, DataColumn('New series', num));
+      for (var row in table.rows!) {
+        row![2] = rand(5, 20);
       }
     } else {
-      table.columns.removeAt(2);
+      table.columns!.removeAt(2);
     }
     insertColumn = !insertColumn;
     chart.update();
@@ -359,12 +359,12 @@ void createRadarChart() {
     disableAllButtons();
     if (insertRow) {
       var values = <Object>['New'];
-      for (var i = 1; i < table.columns.length; i++) {
+      for (var i = 1; i < table.columns!.length; i++) {
         values.add(rand(5, 20));
       }
-      table.rows.insert(2, values);
+      table.rows!.insert(2, values);
     } else {
-      table.rows.removeAt(2);
+      table.rows!.removeAt(2);
     }
     insertRow = !insertRow;
     chart.update();
@@ -373,10 +373,10 @@ void createRadarChart() {
 
 void createGaugeChart() {
   var changeDataButton = ButtonElement()..text = 'Change data';
-  document.body.append(changeDataButton);
+  document.body!.append(changeDataButton);
 
   var insertRemoveRowButton = ButtonElement()..text = 'Insert/remove data row';
-  document.body.append(insertRemoveRowButton);
+  document.body!.append(insertRemoveRowButton);
 
   var container = createContainer();
   var table = DataTable([
@@ -408,9 +408,9 @@ void createGaugeChart() {
 
   changeDataButton.onClick.listen((_) {
     disableAllButtons();
-    for (var row in table.rows) {
-      for (var i = 1; i < table.columns.length; i++) {
-        row[i] = rand(0, 101);
+    for (var row in table.rows!) {
+      for (var i = 1; i < table.columns!.length; i++) {
+        row![i] = rand(0, 101);
       }
     }
     chart.update();
@@ -421,9 +421,9 @@ void createGaugeChart() {
     insertRemoveRowButton.disabled = true;
     if (insertRow) {
       var values = ['New', rand(0, 101)];
-      table.rows.insert(1, values);
+      table.rows!.insert(1, values);
     } else {
-      table.rows.removeAt(1);
+      table.rows!.removeAt(1);
     }
     insertRow = !insertRow;
     chart.update();

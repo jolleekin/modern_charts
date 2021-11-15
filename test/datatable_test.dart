@@ -12,8 +12,8 @@ DataTable createDataTable() => DataTable([
 void main() {
   test('columns', () {
     final table = createDataTable();
-    expect(table.columns.length, equals(2));
-    expect(table.columns[0].name, equals('Browser'));
+    expect(table.columns!.length, equals(2));
+    expect(table.columns![0]!.name, equals('Browser'));
   });
 
   test('getColumnIndexByName', () {
@@ -29,34 +29,34 @@ void main() {
 
   test('rows', () {
     final table = createDataTable();
-    expect(table.rows.length, equals(3));
-    expect(table.rows[1].toList(), orderedEquals(['IE', 30]));
+    expect(table.rows!.length, equals(3));
+    expect(table.rows![1]!.toList(), orderedEquals(['IE', 30]));
   });
 
   test('columns.insert', () {
     final table = createDataTable();
-    table.columns.insert(1, DataColumn('Latest Version', num));
-    expect(table.columns.length, equals(3));
-    expect(table.columns[1].name, equals('Latest Version'));
+    table.columns!.insert(1, DataColumn('Latest Version', num));
+    expect(table.columns!.length, equals(3));
+    expect(table.columns![1]!.name, equals('Latest Version'));
   });
 
   test('rows.add', () {
     final table = createDataTable();
-    table.rows.add(['Opera', 10, 'discarded']);
-    expect(table.rows.length, equals(4));
-    expect(table.rows.last.toList(), orderedEquals(['Opera', 10]));
+    table.rows!.add(['Opera', 10, 'discarded']);
+    expect(table.rows!.length, equals(4));
+    expect(table.rows!.last!.toList(), orderedEquals(['Opera', 10]));
   });
 
   test('rows.removeRange', () {
     final table = createDataTable();
-    table.rows.removeRange(0, 3);
+    table.rows!.removeRange(0, 3);
     expect(table.rows, isEmpty);
   });
 
   test('cells', () {
     final table = createDataTable();
-    expect(table.rows[0][0], equals('Chrome'));
-    table.rows[0][0] = 'Unknown';
-    expect(table.rows[0][0], equals('Unknown'));
+    expect(table.rows![0]![0], equals('Chrome'));
+    table.rows![0]![0] = 'Unknown';
+    expect(table.rows![0]![0], equals('Unknown'));
   });
 }

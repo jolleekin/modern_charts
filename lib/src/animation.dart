@@ -95,11 +95,11 @@ double easeInOutSine(double t) {
 }
 
 double easeInExpo(double t) {
-  return (t == 0.0) ? 1.0 : pow(2, 10 * (t - 1));
+  return (t == 0.0) ? 1.0 : pow(2, 10 * (t - 1)) as double;
 }
 
 double easeOutExpo(double t) {
-  return (t == 1.0) ? 1.0 : (1 - pow(2, -10 * t));
+  return (t == 1.0) ? 1.0 : (1 - (pow(2, -10 * t) as double));
 }
 
 double easeInOutExpo(double t) {

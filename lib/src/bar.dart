@@ -168,26 +168,26 @@ final _barChartDefaultOptions = {
 };
 
 class _Bar extends _Entity {
-  num oldLeft;
-  num oldWidth;
-  num oldHeight;
-  num bottom;
-  num left;
-  num width;
-  num height;
+  num? oldLeft;
+  num? oldWidth;
+  num? oldHeight;
+  num? bottom;
+  num? left;
+  num? width;
+  num? height;
 
-  num get right => left + width;
+  num get right => left! + width!;
 
   @override
-  void draw(CanvasRenderingContext2D ctx, double percent, bool highlight) {
+  void draw(CanvasRenderingContext2D? ctx, double percent, bool highlight) {
     var x = lerp(oldLeft, left, percent);
     var h = lerp(oldHeight, height, percent);
     var w = lerp(oldWidth, width, percent);
-    ctx.fillStyle = color;
-    ctx.fillRect(x, bottom - h, w, h);
+    ctx!.fillStyle = color;
+    ctx.fillRect(x, bottom! - h, w, h);
     if (highlight) {
       ctx.fillStyle = 'rgba(255, 255, 255, .25)';
-      ctx.fillRect(x, bottom - h, w, h);
+      ctx.fillRect(x, bottom! - h, w, h);
     }
   }
 
@@ -201,14 +201,14 @@ class _Bar extends _Entity {
 }
 
 class BarChart extends _TwoAxisChart {
-  num _barWidth;
+  num? _barWidth;
   num _barSpacing = 0;
-  num _barGroupWidth;
+  late num _barGroupWidth;
 
   num _getBarLeft(int seriesIndex, int barIndex) {
     return _xLabelX(barIndex) -
         .5 * _barGroupWidth +
-        _countVisibleSeries(seriesIndex) * (_barWidth + _barSpacing);
+        _countVisibleSeries(seriesIndex) * (_barWidth! + _barSpacing);
   }
 
   void _updateBarWidth() {
@@ -220,37 +220,37 @@ class BarChart extends _TwoAxisChart {
     }
   }
 
-  num _valueToBarHeight(num value) {
-    if (value != null) return _xAxisTop - _valueToY(value);
+  num _valueToBarHeight(num? value) {
+    if (value != null) return _xAxisTop - _valueToY(value)!;
     return 0;
   }
 
   @override
-  void _calculateAverageYValues([int index]) {
-    if (!_options['tooltip']['enabled']) return;
+  void _calculateAverageYValues([int? index]) {
+    if (!_options!['tooltip']['enabled']) return;
 
-    var entityCount = _seriesList.first.entities.length;
+    var entityCount = _seriesList!.first.entities.length;
     var start = index ?? 0;
     var end = index == null ? entityCount : index + 1;
 
-    _averageYValues ??= <num>[];
-    _averageYValues.length = entityCount;
+    _averageYValues ??= <num?>[];
+    _averageYValues!.length = entityCount;
 
     for (var i = start; i < end; i++) {
       var sum = 0.0;
       var count = 0;
-      for (var j = _seriesList.length - 1; j >= 0; j--) {
+      for (var j = _seriesList!.length - 1; j >= 0; j--) {
         var state = _seriesStates[j];
         if (state == _VisibilityState.hidden) continue;
         if (state == _VisibilityState.hiding) continue;
 
-        var bar = _seriesList[j].entities[i] as _Bar;
+        var bar = _seriesList![j].entities[i] as _Bar;
         if (bar.value != null) {
-          sum += bar.height;
+          sum += bar.height!;
           count++;
         }
       }
-      _averageYValues[i] = (count > 0) ? _xAxisTop - sum / count : null;
+      _averageYValues![i] = (count > 0) ? _xAxisTop - sum / count : null;
     }
   }
 
@@ -264,39 +264,39 @@ class BarChart extends _TwoAxisChart {
 
   @override
   bool _drawSeries(double percent) {
-    for (var i = 0, n = _seriesList.length; i < n; i++) {
+    for (var i = 0, n = _seriesList!.length; i < n; i++) {
       if (_seriesStates[i] == _VisibilityState.hidden) continue;
 
-      var series = _seriesList[i];
+      var series = _seriesList![i];
 
       // Draw the bars.
-      for (_Bar bar in series.entities) {
+      for (_Bar bar in series.entities.cast<_Bar>()) {
         if (bar.value == null) continue;
         bar.draw(_seriesContext, percent, false);
       }
 
-      var opt = _options['xAxis']['crosshair'];
-      if (_focusedEntityIndex >= 0 && opt['enabled']) {
+      var opt = _options!['xAxis']['crosshair'];
+      if (_focusedEntityIndex! >= 0 && opt['enabled']) {
         _seriesContext
           ..fillStyle = opt['color']
-          ..fillRect(_yAxisLeft + _xLabelHop * _focusedEntityIndex,
+          ..fillRect(_yAxisLeft + _xLabelHop * _focusedEntityIndex!,
               _xAxisTop - _yAxisLength, _xLabelHop, _yAxisLength);
       }
 
       // Draw the labels.
       if (percent == 1.0) {
-        opt = _options['series']['labels'];
+        opt = _options!['series']['labels'];
         if (!opt['enabled']) continue;
         _seriesContext
           ..fillStyle = opt['style']['color']
           ..font = _getFont(opt['style'])
           ..textAlign = 'center'
           ..textBaseline = 'alphabetic';
-        for (_Bar bar in series.entities) {
+        for (_Bar bar in series.entities.cast<_Bar>()) {
           if (bar.value == null) continue;
-          var x = bar.left + .5 * bar.width;
-          var y = _xAxisTop - bar.height - 5;
-          _seriesContext.fillText(bar.formattedValue, x, y);
+          num x = bar.left! + .5 * bar.width!;
+          var y = _xAxisTop - bar.height! - 5;
+          _seriesContext.fillText(bar.formattedValue!, x, y);
         }
       }
     }
@@ -313,7 +313,7 @@ class BarChart extends _TwoAxisChart {
 
     // Animate width.
     num oldHeight = height;
-    num oldWidth = 0;
+    num? oldWidth = 0;
 
     if (_seriesList == null) {
       // Data table changed. Animate height.
@@ -324,7 +324,7 @@ class BarChart extends _TwoAxisChart {
     return _Bar()
       ..index = entityIndex
       ..value = value
-      ..formattedValue = value != null ? _entityValueFormatter(value) : null
+      ..formattedValue = value != null ? _entityValueFormatter!(value) : null
       ..color = color
       ..highlightColor = highlightColor
       ..bottom = _xAxisTop
@@ -337,14 +337,14 @@ class BarChart extends _TwoAxisChart {
   }
 
   @override
-  void _updateSeries([int index]) {
-    var entityCount = _dataTable.rows.length;
-    for (var i = 0; i < _seriesList.length; i++) {
-      var series = _seriesList[i];
+  void _updateSeries() {
+    var entityCount = _dataTable!.rows!.length;
+    for (var i = 0; i < _seriesList!.length; i++) {
+      var series = _seriesList![i];
       var left = _getBarLeft(i, 0);
-      var barWidth = 0.0;
+      double? barWidth = 0.0;
       if (_seriesStates[i].index >= _VisibilityState.showing.index) {
-        barWidth = _barWidth;
+        barWidth = _barWidth as double?;
       }
       var color = _getColor(i);
       var highlightColor = _getHighlightColor(color);
